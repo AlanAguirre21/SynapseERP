@@ -5,51 +5,23 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.inventario.models import (
-    InventarioSucursalMateriaPrima,
-    InventarioSucursalProducto,
-    MovimientoInventario,
+from apps.inventario.models import MovimientoInventario
+from apps.inventario.services import (
+    bloquear_inventario_materia_prima,
+    bloquear_inventario_producto,
+    registrar_movimiento_inventario,
 )
 
 from .models import Compra
 from .serializers import CompraSerializer
 
 
-def _bloquear_inventario_producto(sucursal, producto):
-    """Obtiene (creándola si no existe) la fila de inventario de este
-    producto en esta sucursal, y la bloquea con `select_for_update()`
-    dentro de la transacción activa. `get_or_create()` ya maneja
-    internamente el `IntegrityError` de una creación concurrente gracias al
-    `unique_together` de `InventarioSucursalProducto` — no hace falta un
-    `try/except` manual (ver Riesgos de `plan.md`).
-    """
-
-    InventarioSucursalProducto.objects.get_or_create(sucursal=sucursal, producto=producto)
-    return InventarioSucursalProducto.objects.select_for_update().get(sucursal=sucursal, producto=producto)
-
-
-def _bloquear_inventario_materia_prima(sucursal, materia_prima):
-    InventarioSucursalMateriaPrima.objects.get_or_create(sucursal=sucursal, materia_prima=materia_prima)
-    return InventarioSucursalMateriaPrima.objects.select_for_update().get(
-        sucursal=sucursal, materia_prima=materia_prima,
-    )
-
-
-def _registrar_movimiento(*, sucursal, tipo_item, item_id, tipo_movimiento, cantidad, motivo, referencia_id,
-                           stock_resultante, usuario):
-    MovimientoInventario.objects.create(
-        sucursal=sucursal, tipo_item=tipo_item, item_id=item_id, tipo_movimiento=tipo_movimiento,
-        cantidad=cantidad, motivo=motivo, referencia_id=referencia_id, stock_resultante=stock_resultante,
-        usuario=usuario,
-    )
-
-
 def _recibir_linea_producto(compra, detalle, usuario):
-    inventario = _bloquear_inventario_producto(compra.sucursal, detalle.producto)
+    inventario = bloquear_inventario_producto(compra.sucursal, detalle.producto)
     inventario.stock_actual += detalle.cantidad
     inventario.save(update_fields=['stock_actual'])
 
-    _registrar_movimiento(
+    registrar_movimiento_inventario(
         sucursal=compra.sucursal, tipo_item=MovimientoInventario.TIPO_PRODUCTO, item_id=detalle.producto_id,
         tipo_movimiento=MovimientoInventario.ENTRADA, cantidad=detalle.cantidad,
         motivo=MovimientoInventario.MOTIVO_COMPRA, referencia_id=compra.id,
@@ -58,11 +30,11 @@ def _recibir_linea_producto(compra, detalle, usuario):
 
 
 def _recibir_linea_materia_prima(compra, detalle, usuario):
-    inventario = _bloquear_inventario_materia_prima(compra.sucursal, detalle.materia_prima)
+    inventario = bloquear_inventario_materia_prima(compra.sucursal, detalle.materia_prima)
     inventario.stock_actual += detalle.cantidad
     inventario.save(update_fields=['stock_actual'])
 
-    _registrar_movimiento(
+    registrar_movimiento_inventario(
         sucursal=compra.sucursal, tipo_item=MovimientoInventario.TIPO_MATERIA_PRIMA, item_id=detalle.materia_prima_id,
         tipo_movimiento=MovimientoInventario.ENTRADA, cantidad=detalle.cantidad,
         motivo=MovimientoInventario.MOTIVO_COMPRA, referencia_id=compra.id,
@@ -71,7 +43,7 @@ def _recibir_linea_materia_prima(compra, detalle, usuario):
 
 
 def _revertir_linea_producto(compra, detalle, usuario):
-    inventario = _bloquear_inventario_producto(compra.sucursal, detalle.producto)
+    inventario = bloquear_inventario_producto(compra.sucursal, detalle.producto)
     if inventario.stock_actual < detalle.cantidad:
         raise ValidationError({
             'detail': (
@@ -84,7 +56,7 @@ def _revertir_linea_producto(compra, detalle, usuario):
     inventario.stock_actual -= detalle.cantidad
     inventario.save(update_fields=['stock_actual'])
 
-    _registrar_movimiento(
+    registrar_movimiento_inventario(
         sucursal=compra.sucursal, tipo_item=MovimientoInventario.TIPO_PRODUCTO, item_id=detalle.producto_id,
         tipo_movimiento=MovimientoInventario.SALIDA, cantidad=detalle.cantidad,
         motivo=MovimientoInventario.MOTIVO_AJUSTE, referencia_id=compra.id,
@@ -93,7 +65,7 @@ def _revertir_linea_producto(compra, detalle, usuario):
 
 
 def _revertir_linea_materia_prima(compra, detalle, usuario):
-    inventario = _bloquear_inventario_materia_prima(compra.sucursal, detalle.materia_prima)
+    inventario = bloquear_inventario_materia_prima(compra.sucursal, detalle.materia_prima)
     if inventario.stock_actual < detalle.cantidad:
         raise ValidationError({
             'detail': (
@@ -106,7 +78,7 @@ def _revertir_linea_materia_prima(compra, detalle, usuario):
     inventario.stock_actual -= detalle.cantidad
     inventario.save(update_fields=['stock_actual'])
 
-    _registrar_movimiento(
+    registrar_movimiento_inventario(
         sucursal=compra.sucursal, tipo_item=MovimientoInventario.TIPO_MATERIA_PRIMA, item_id=detalle.materia_prima_id,
         tipo_movimiento=MovimientoInventario.SALIDA, cantidad=detalle.cantidad,
         motivo=MovimientoInventario.MOTIVO_AJUSTE, referencia_id=compra.id,
