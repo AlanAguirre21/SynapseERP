@@ -45,17 +45,20 @@ class Producto(models.Model):
 
 
 class MateriaPrima(models.Model):
-    """CRUD completo — feature 007 · Catálogo.
-    `proveedor_principal` (FK → Proveedores) se agrega en la feature
-    008 · Personas mediante un `AddField`, una vez exista ese modelo — una
-    FK no puede declararse hoy apuntando a un modelo que todavía no está en
-    el registro de apps de Django.
+    """CRUD completo — feature 007 · Catálogo. `proveedor_principal` se
+    agregó en la feature 008 · Personas mediante un `AddField` separado,
+    una vez existió el modelo `Proveedor` — una FK no puede declararse
+    apuntando a un modelo que todavía no está en el registro de apps de
+    Django.
     """
 
     nombre_item = models.CharField(max_length=150)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, related_name='materias_primas')
     unidad_medida = models.CharField(max_length=30)
     costo_promedio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    proveedor_principal = models.ForeignKey(
+        'personas.Proveedor', on_delete=models.SET_NULL, null=True, blank=True, related_name='materias_primas',
+    )
     activo = models.BooleanField(default=True)
 
     class Meta:

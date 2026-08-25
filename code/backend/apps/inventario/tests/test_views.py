@@ -5,6 +5,7 @@ from apps.catalogo.models import Categoria, MateriaPrima, Producto
 from apps.inventario.models import (
     InventarioSucursalMateriaPrima,
     InventarioSucursalProducto,
+    MovimientoInventario,
 )
 from apps.sucursales.models import Sucursal
 from apps.usuarios.models import Usuario
@@ -27,6 +28,31 @@ def api_client(usuario):
 @pytest.fixture
 def sucursal(db):
     return Sucursal.objects.create(nombre_sucursal='Matriz')
+
+
+@pytest.fixture
+def otra_sucursal(db):
+    return Sucursal.objects.create(nombre_sucursal='Sucursal Norte')
+
+
+@pytest.fixture
+def categoria(db):
+    return Categoria.objects.create(nombre_categoria='General', tipo='ambos')
+
+
+@pytest.fixture
+def producto(categoria):
+    return Producto.objects.create(
+        nombre_producto='Suero fisiológico', sku='SKU-STOCK-1', unidad_medida='pza',
+        categoria=categoria, precio_venta='10.00',
+    )
+
+
+@pytest.fixture
+def materia_prima(categoria):
+    return MateriaPrima.objects.create(
+        nombre_item='Cloruro de sodio', unidad_medida='kg', categoria=categoria,
+    )
 
 
 @pytest.mark.django_db
@@ -80,3 +106,189 @@ def test_alertas_requiere_autenticacion(sucursal):
     client = APIClient()
     response = client.get('/api/inventario/alertas/')
     assert response.status_code == 401
+
+
+# --- Stock ------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_stock_productos_incluye_item_sin_registro_de_inventario(api_client, sucursal, producto):
+    """`producto` nunca se compró en `sucursal` — no existe fila de
+    `InventarioSucursalProducto` — pero igual debe aparecer con stock 0,
+    no omitirse ni dar error (criterio de aceptación de spec.md).
+    """
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['nombre'] == 'Suero fisiológico'
+    assert response.data[0]['stock_actual'] == '0.00'
+    assert response.data[0]['stock_minimo'] == '0.00'
+    assert response.data[0]['stock_bajo'] is False
+
+
+@pytest.mark.django_db
+def test_stock_productos_marca_stock_bajo(api_client, sucursal, producto):
+    InventarioSucursalProducto.objects.create(
+        sucursal=sucursal, producto=producto, stock_actual='2.00', stock_minimo='10.00',
+    )
+
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+
+    assert response.status_code == 200
+    assert response.data[0]['stock_actual'] == '2.00'
+    assert response.data[0]['stock_bajo'] is True
+
+
+@pytest.mark.django_db
+def test_stock_no_incluye_productos_inactivos(api_client, sucursal, producto):
+    producto.activo = False
+    producto.save(update_fields=['activo'])
+
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+
+    assert response.status_code == 200
+    assert response.data == []
+
+
+@pytest.mark.django_db
+def test_stock_materia_prima(api_client, sucursal, materia_prima):
+    InventarioSucursalMateriaPrima.objects.create(
+        sucursal=sucursal, materia_prima=materia_prima, stock_actual='50.00', stock_minimo='5.00',
+    )
+
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'materia_prima', 'sucursal': sucursal.id})
+
+    assert response.status_code == 200
+    assert response.data[0]['nombre'] == 'Cloruro de sodio'
+    assert response.data[0]['stock_bajo'] is False
+
+
+@pytest.mark.django_db
+def test_stock_requiere_tipo_valido(api_client, sucursal):
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'invalido', 'sucursal': sucursal.id})
+    assert response.status_code == 400
+    assert 'tipo' in response.data
+
+
+@pytest.mark.django_db
+def test_stock_requiere_sucursal(api_client):
+    response = api_client.get('/api/inventario/stock/', {'tipo': 'producto'})
+    assert response.status_code == 400
+    assert 'sucursal' in response.data
+
+
+@pytest.mark.django_db
+def test_stock_requiere_autenticacion(sucursal):
+    client = APIClient()
+    response = client.get('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_stock_no_permite_escritura(api_client, sucursal):
+    response = api_client.post('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+    assert response.status_code == 405
+
+
+# --- Movimientos --------------------------------------------------------
+
+
+@pytest.fixture
+def movimiento_entrada(sucursal, producto, usuario):
+    return MovimientoInventario.objects.create(
+        sucursal=sucursal, tipo_item='producto', item_id=producto.id, tipo_movimiento='entrada',
+        cantidad='20.00', motivo='compra', stock_resultante='20.00', usuario=usuario,
+    )
+
+
+@pytest.fixture
+def movimiento_salida(sucursal, materia_prima, usuario):
+    return MovimientoInventario.objects.create(
+        sucursal=sucursal, tipo_item='materia_prima', item_id=materia_prima.id, tipo_movimiento='salida',
+        cantidad='3.00', motivo='produccion', stock_resultante='7.00', usuario=usuario,
+    )
+
+
+@pytest.mark.django_db
+def test_lista_movimientos_incluye_nombre_de_item_y_usuario(api_client, movimiento_entrada):
+    response = api_client.get('/api/inventario/movimientos/')
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    fila = response.data[0]
+    assert fila['item_nombre'] == 'Suero fisiológico'
+    assert fila['sucursal_nombre'] == 'Matriz'
+    assert fila['usuario_nombre'] == 'operador1'
+    assert fila['tipo_movimiento'] == 'entrada'
+    assert fila['motivo'] == 'compra'
+
+
+@pytest.mark.django_db
+def test_filtra_movimientos_por_sucursal(api_client, movimiento_entrada, movimiento_salida, otra_sucursal, usuario):
+    MovimientoInventario.objects.create(
+        sucursal=otra_sucursal, tipo_item='producto', item_id=movimiento_entrada.item_id,
+        tipo_movimiento='entrada', cantidad='5.00', motivo='compra', stock_resultante='5.00', usuario=usuario,
+    )
+
+    response = api_client.get('/api/inventario/movimientos/', {'sucursal': otra_sucursal.id})
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['sucursal_nombre'] == 'Sucursal Norte'
+
+
+@pytest.mark.django_db
+def test_filtra_movimientos_por_tipo_item(api_client, movimiento_entrada, movimiento_salida):
+    response = api_client.get('/api/inventario/movimientos/', {'tipo_item': 'materia_prima'})
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['tipo_item'] == 'materia_prima'
+
+
+@pytest.mark.django_db
+def test_filtra_movimientos_por_tipo_movimiento(api_client, movimiento_entrada, movimiento_salida):
+    response = api_client.get('/api/inventario/movimientos/', {'tipo_movimiento': 'salida'})
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['tipo_movimiento'] == 'salida'
+
+
+@pytest.mark.django_db
+def test_filtra_movimientos_por_item_id(api_client, movimiento_entrada, movimiento_salida):
+    response = api_client.get('/api/inventario/movimientos/', {'item_id': movimiento_entrada.item_id})
+
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['item_id'] == movimiento_entrada.item_id
+
+
+@pytest.mark.django_db
+def test_movimientos_requiere_autenticacion(movimiento_entrada):
+    client = APIClient()
+    response = client.get('/api/inventario/movimientos/')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_movimientos_no_permite_creacion(api_client, sucursal, producto):
+    response = api_client.post(
+        '/api/inventario/movimientos/',
+        {
+            'sucursal': sucursal.id, 'tipo_item': 'producto', 'item_id': producto.id,
+            'tipo_movimiento': 'entrada', 'cantidad': '10.00', 'motivo': 'ajuste', 'stock_resultante': '10.00',
+        },
+        format='json',
+    )
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_movimientos_no_permite_edicion_ni_borrado(api_client, movimiento_entrada):
+    response_put = api_client.put(f'/api/inventario/movimientos/{movimiento_entrada.id}/', {}, format='json')
+    response_delete = api_client.delete(f'/api/inventario/movimientos/{movimiento_entrada.id}/')
+
+    assert response_put.status_code == 405
+    assert response_delete.status_code == 405

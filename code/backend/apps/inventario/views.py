@@ -1,9 +1,25 @@
+from decimal import Decimal
+
 from django.db.models import F
+from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import InventarioSucursalMateriaPrima, InventarioSucursalProducto
-from .serializers import AlertaStockSerializer
+from apps.catalogo.models import MateriaPrima, Producto
+
+from .models import (
+    InventarioSucursalMateriaPrima,
+    InventarioSucursalProducto,
+    MovimientoInventario,
+)
+from .serializers import (
+    AlertaStockSerializer,
+    MovimientoInventarioSerializer,
+    StockItemSerializer,
+)
 
 
 class AlertasStockView(ListAPIView):
@@ -43,3 +59,95 @@ class AlertasStockView(ListAPIView):
             for item in alertas_materia_prima
         ]
         return alertas
+
+
+def _fila_stock(item_id, nombre, inventario):
+    stock_actual = inventario.stock_actual if inventario else Decimal(0)
+    stock_minimo = inventario.stock_minimo if inventario else Decimal(0)
+    return {
+        'id': item_id,
+        'nombre': nombre,
+        'stock_actual': stock_actual,
+        'stock_minimo': stock_minimo,
+        'stock_bajo': stock_actual < stock_minimo,
+    }
+
+
+class StockView(APIView):
+    """GET /api/inventario/stock/?tipo=producto|materia_prima&sucursal=<id>
+
+    Una fila por cada ítem ACTIVO del catálogo del tipo pedido, con su
+    stock en la sucursal indicada. Un ítem sin `InventarioSucursalProducto`/
+    `MateriaPrima` en esa sucursal (ej. producto nuevo aún no comprado ahí)
+    aparece con stock 0 en vez de omitirse — criterio de aceptación
+    explícito de `spec.md`, por lo que no se implementa como un
+    `ReadOnlyModelViewSet` directo sobre esas tablas (que solo devolvería
+    las filas que ya existen).
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        tipo = request.query_params.get('tipo')
+        sucursal_id = request.query_params.get('sucursal')
+
+        if tipo not in (MovimientoInventario.TIPO_PRODUCTO, MovimientoInventario.TIPO_MATERIA_PRIMA):
+            raise ValidationError({'tipo': 'Debe ser "producto" o "materia_prima".'})
+        if not sucursal_id:
+            raise ValidationError({'sucursal': 'Este parámetro es obligatorio.'})
+        try:
+            sucursal_id = int(sucursal_id)
+        except ValueError as exc:
+            raise ValidationError({'sucursal': 'Debe ser un ID numérico válido.'}) from exc
+
+        if tipo == MovimientoInventario.TIPO_PRODUCTO:
+            items = Producto.objects.filter(activo=True).order_by('nombre_producto')
+            inventarios = {
+                inv.producto_id: inv
+                for inv in InventarioSucursalProducto.objects.filter(sucursal_id=sucursal_id)
+            }
+            filas = [_fila_stock(item.id, item.nombre_producto, inventarios.get(item.id)) for item in items]
+        else:
+            items = MateriaPrima.objects.filter(activo=True).order_by('nombre_item')
+            inventarios = {
+                inv.materia_prima_id: inv
+                for inv in InventarioSucursalMateriaPrima.objects.filter(sucursal_id=sucursal_id)
+            }
+            filas = [_fila_stock(item.id, item.nombre_item, inventarios.get(item.id)) for item in items]
+
+        return Response(StockItemSerializer(filas, many=True).data)
+
+
+class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
+    """Historial de movimientos de inventario, de solo lectura — ningún
+    método de escritura existe en esta ruta a nivel de framework (no solo
+    bloqueado por permisos), ver Decisiones en `plan.md` de esta feature.
+    Filtrable por `sucursal`, `tipo_item`, `item_id` y `tipo_movimiento`
+    vía query params combinables.
+    """
+
+    serializer_class = MovimientoInventarioSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = MovimientoInventario.objects.select_related('sucursal', 'usuario').all()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        params = self.request.query_params
+
+        sucursal_id = params.get('sucursal')
+        if sucursal_id:
+            queryset = queryset.filter(sucursal_id=sucursal_id)
+
+        tipo_item = params.get('tipo_item')
+        if tipo_item:
+            queryset = queryset.filter(tipo_item=tipo_item)
+
+        item_id = params.get('item_id')
+        if item_id:
+            queryset = queryset.filter(item_id=item_id)
+
+        tipo_movimiento = params.get('tipo_movimiento')
+        if tipo_movimiento:
+            queryset = queryset.filter(tipo_movimiento=tipo_movimiento)
+
+        return queryset

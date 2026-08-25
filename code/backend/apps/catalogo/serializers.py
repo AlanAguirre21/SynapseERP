@@ -59,7 +59,10 @@ class MateriaPrimaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MateriaPrima
-        fields = ['id', 'nombre_item', 'categoria', 'unidad_medida', 'costo_promedio', 'activo']
+        fields = [
+            'id', 'nombre_item', 'categoria', 'unidad_medida', 'costo_promedio',
+            'proveedor_principal', 'activo',
+        ]
         read_only_fields = ['id', 'activo']
 
     def validate(self, attrs):

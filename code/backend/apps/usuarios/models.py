@@ -11,13 +11,22 @@ ROLES_USUARIO = [
 
 
 class Usuario(AbstractUser):
-    """Modelo de usuario autenticado. Campos adicionales (empleado, foto,
-    etc. — ver Base de Datos FleboSil.txt) se agregan en la feature 008
-    · Personas, que es dueña del CRUD completo de este modelo.
+    """Modelo de usuario autenticado. El CRUD completo (alta/edición/
+    desactivación por un admin) vive en la feature 008 · Personas, que
+    también agrega la vinculación opcional con `Empleado`.
+
+    Reutiliza `is_active` (heredado de `AbstractUser`) como el campo
+    `activo` de este modelo en vez de agregar uno nuevo — `JWTAuthentication`
+    ya rechaza a un usuario con `is_active=False` en cada petición
+    autenticada (no solo en login), que es exactamente el comportamiento
+    de "desactivación con efecto inmediato" que pide la feature 008.
     """
 
     email = models.EmailField('correo electrónico', unique=True)
     rol_usuario = models.CharField(max_length=20, choices=ROLES_USUARIO, default=ROL_OPERADOR)
+    empleado = models.ForeignKey(
+        'personas.Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

@@ -5,7 +5,7 @@
 }
 
 .encabezado {
-  @apply flex items-center justify-between;
+  @apply flex items-center justify-between mb-4;
 }
 
 .titulo {

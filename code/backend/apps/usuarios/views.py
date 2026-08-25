@@ -1,13 +1,19 @@
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from core.permissions import LecturaParaTodosEscrituraSoloAdmin
+
+from .models import Usuario
 from .serializers import (
     CambiarContrasenaSerializer,
     LoginSerializer,
     SolicitarRecuperacionSerializer,
     UsuarioActualSerializer,
+    UsuarioSerializer,
     VerificarCodigoSerializer,
 )
 from .throttling import ThrottleRecuperarPassword, ThrottleVerificarCodigo
@@ -88,3 +94,30 @@ class CambiarContrasenaView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.guardar())
+
+
+class UsuarioViewSet(viewsets.ModelViewSet):
+    """CRUD de usuarios (feature 008 · Personas). Lectura para cualquier
+    usuario autenticado, escritura (crear/editar/desactivar/reactivar)
+    solo para rol admin.
+    """
+
+    queryset = Usuario.objects.select_related('empleado').all().order_by('username')
+    serializer_class = UsuarioSerializer
+    permission_classes = [LecturaParaTodosEscrituraSoloAdmin]
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save(update_fields=['is_active'])
+
+    @action(detail=True, methods=['post'])
+    def reactivar(self, request, pk=None):
+        usuario = self.get_object()
+
+        if usuario.is_active:
+            return Response({'detail': 'El usuario ya está activo.'}, status=400)
+
+        usuario.is_active = True
+        usuario.save(update_fields=['is_active'])
+
+        return Response(self.get_serializer(usuario).data)
