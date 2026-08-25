@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.caja',
     'apps.ventas',
     'apps.produccion',
+    'apps.reportes',
 ]
 
 MIDDLEWARE = [
@@ -175,7 +176,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# 'America/Mexico_City', no 'UTC' (default sin tocar del scaffold original):
+# 014 · Dashboard calcula límites de "día/semana/mes" con
+# `timezone.localtime()` — con TIME_ZONE=UTC, la medianoche usada para esos
+# cortes no coincidía con la medianoche real del negocio (México), corriendo
+# los datos de un bucket al día equivocado. Los timestamps siguen
+# guardándose en UTC en la base de datos (USE_TZ=True no cambia); esto solo
+# afecta a qué "hoy" local se convierten al mostrarlos/agruparlos.
+TIME_ZONE = 'America/Mexico_City'
 
 USE_I18N = True
 

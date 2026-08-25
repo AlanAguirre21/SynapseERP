@@ -1,0 +1,73 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between flex-wrap gap-4 mb-2;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.accesosDirectos {
+  @apply flex items-center gap-3;
+}
+
+.controles {
+  @apply flex items-center justify-between flex-wrap gap-4;
+}
+
+.pestañas {
+  @apply flex items-center gap-1 border-b border-texto/10;
+}
+
+.pestaña {
+  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+}
+
+.pestaña:hover {
+  @apply text-texto;
+}
+
+.pestañaActiva {
+  @apply text-primario border-primario font-semibold;
+}
+
+.tarjetas {
+  @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+}
+
+.tarjeta {
+  @apply flex flex-col gap-1 px-6 py-5 rounded-xl bg-texto/[0.03] border border-texto/10;
+}
+
+.tarjetaGananciaPositiva {
+  @apply bg-exito text-fondo border-0;
+}
+
+.tarjetaGananciaNegativa {
+  @apply bg-error text-fondo border-0;
+}
+
+.tarjetaEtiqueta {
+  @apply text-[0.85rem] opacity-80;
+}
+
+.tarjetaMonto {
+  @apply text-2xl font-bold;
+}
+
+.graficaContenedor {
+  @apply p-4 rounded-xl border border-texto/10 h-[320px];
+}
+
+.estadoVacio {
+  @apply flex flex-col items-center justify-center gap-2 h-[320px] rounded-xl border border-dashed border-texto/20 text-texto/60 text-center px-6;
+}
+
+.estadoVacioTitulo {
+  @apply text-texto font-semibold;
+}

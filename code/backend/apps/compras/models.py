@@ -24,7 +24,10 @@ class Compra(models.Model):
     proveedor = models.ForeignKey('personas.Proveedor', on_delete=models.PROTECT, related_name='compras')
     sucursal = models.ForeignKey('sucursales.Sucursal', on_delete=models.PROTECT, related_name='compras')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='compras')
-    fecha = models.DateTimeField(auto_now_add=True)
+    # `db_index=True`: 014 · Dashboard filtra/agrega por rango de `fecha`
+    # en cada carga (día/semana/mes) — sin índice, esa consulta escanea
+    # toda la tabla conforme crece.
+    fecha = models.DateTimeField(auto_now_add=True, db_index=True)
     fecha_entrega = models.DateField(null=True, blank=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_PENDIENTE)

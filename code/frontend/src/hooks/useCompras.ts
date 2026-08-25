@@ -34,11 +34,16 @@ export function useCrearCompra() {
 // Recibir/cancelar una compra cambia stock y genera movimientos — invalida
 // también las cachés de la feature 009 · Inventario (`stock`,
 // `movimientos-inventario`) para que se reflejen sin recargar la página.
+// También invalida 014 · Dashboard: a diferencia de Ventas, una compra
+// solo cuenta para "compras totales" al quedar `recibida` (nunca al
+// crearse `pendiente`) — por eso `useCrearCompra` no la invalida, pero
+// `recibir()`/`cancelar()` sí, que son los que cambian ese estado.
 function invalidarComprasEInventario(queryClient: QueryClient, idCompra: number) {
   queryClient.invalidateQueries({ queryKey: ['compras'] })
   queryClient.invalidateQueries({ queryKey: ['compra', idCompra] })
   queryClient.invalidateQueries({ queryKey: ['stock'] })
   queryClient.invalidateQueries({ queryKey: ['movimientos-inventario'] })
+  queryClient.invalidateQueries({ queryKey: ['resumen-dashboard'] })
 }
 
 export function useRecibirCompra() {

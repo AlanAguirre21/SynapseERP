@@ -31,6 +31,15 @@ function invalidarInventario(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ['movimientos-inventario'] })
 }
 
+// Una venta creada/cancelada cambia el total del periodo en 014 ·
+// Dashboard de inmediato (a diferencia de Compras, que solo cuenta al
+// "recibir") — se invalida explícitamente en vez de depender solo del
+// `staleTime` corto del hook, para que el dashboard se refleje sin
+// recarga manual aunque el usuario vuelva en menos de ese tiempo.
+function invalidarResumenDashboard(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ['resumen-dashboard'] })
+}
+
 export function useCrearVenta() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -38,6 +47,7 @@ export function useCrearVenta() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ventas'] })
       invalidarInventario(queryClient)
+      invalidarResumenDashboard(queryClient)
     },
   })
 }
@@ -61,6 +71,7 @@ export function useCancelarVenta() {
       queryClient.invalidateQueries({ queryKey: ['ventas'] })
       queryClient.invalidateQueries({ queryKey: ['venta', venta.id] })
       invalidarInventario(queryClient)
+      invalidarResumenDashboard(queryClient)
     },
   })
 }
