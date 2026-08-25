@@ -5,20 +5,20 @@ from django.db import models
 class MovimientoCaja(models.Model):
     """Movimiento de caja global a la empresa — sin `sucursal`, por
     principio de la constitución (ganancias/caja no se segmentan por
-    sucursal). Modelo mínimo: la feature 013 · Caja agrega el resto (vista
-    de movimientos, registro manual de ingreso/retiro). Aquí solo lo
-    necesario para que `011 · Ventas` genere el ingreso automático al
-    confirmar una venta, y su reverso al cancelarla.
+    sucursal). Creado en `011 · Ventas` para el ingreso automático al
+    confirmar una venta y su reverso al cancelarla; `013 · Caja` agrega el
+    registro manual de ingreso/retiro (motivo `manual`) y la vista de
+    consulta, reutilizando el mismo modelo y migración inicial.
 
     INSERT-only, igual que `MovimientoInventario` — ninguna corrección se
     hace vía `UPDATE`/`DELETE`, siempre con un movimiento inverso.
 
-    `saldo_resultante` se calcula sumando/restando sobre el total de
-    movimientos previos (`services.calcular_saldo_actual`) sin bloqueo
-    adicional a nivel de fila — aceptable para el volumen esperado (5-10
-    usuarios) mientras no existe todavía un mecanismo de saldo global
-    bloqueable; `013 · Caja`, al definir el resto del módulo, debe revisar
-    si hace falta serializar esta lectura bajo concurrencia real.
+    `saldo_resultante` se calcula sobre el saldo del movimiento anterior
+    (`services.registrar_movimiento_caja`), bloqueado con
+    `select_for_update()` — nunca recalculando la suma de toda la tabla —
+    para que dos movimientos concurrentes (ej. una venta y un retiro
+    manual simultáneos) no lean el mismo saldo "seguro" antes de que
+    ninguno se confirme.
     """
 
     INGRESO = 'ingreso'
@@ -29,14 +29,12 @@ class MovimientoCaja(models.Model):
     ]
 
     MOTIVO_VENTA = 'venta'
-    MOTIVO_GASTO = 'gasto'
     MOTIVO_AJUSTE = 'ajuste'
-    MOTIVO_RETIRO = 'retiro'
+    MOTIVO_MANUAL = 'manual'
     MOTIVO_CHOICES = [
         (MOTIVO_VENTA, 'Venta'),
-        (MOTIVO_GASTO, 'Gasto'),
         (MOTIVO_AJUSTE, 'Ajuste'),
-        (MOTIVO_RETIRO, 'Retiro'),
+        (MOTIVO_MANUAL, 'Manual'),
     ]
 
     monto = models.DecimalField(max_digits=12, decimal_places=2)

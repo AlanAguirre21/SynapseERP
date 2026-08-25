@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from xhtml2pdf import pisa
 
 from apps.caja.models import MovimientoCaja
-from apps.caja.services import registrar_movimiento_caja
+from apps.caja.services import SaldoInsuficienteError, registrar_movimiento_caja
 from apps.inventario.models import MovimientoInventario
 from apps.inventario.services import (
     bloquear_inventario_producto,
@@ -153,11 +153,16 @@ class VentaViewSet(viewsets.ModelViewSet):
         for detalle in venta.detalles.select_related('producto').all():
             _revertir_linea_venta(venta, detalle, request.user)
 
-        registrar_movimiento_caja(
-            tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.total, motivo=MovimientoCaja.MOTIVO_AJUSTE,
-            referencia_id=venta.id, usuario=request.user,
-            observacion=f'Reverso por cancelación de venta #{venta.id}',
-        )
+        try:
+            registrar_movimiento_caja(
+                tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.total, motivo=MovimientoCaja.MOTIVO_AJUSTE,
+                referencia_id=venta.id, usuario=request.user,
+                observacion=f'Reverso por cancelación de venta #{venta.id}',
+            )
+        except SaldoInsuficienteError as exc:
+            raise ValidationError({
+                'detail': f'No se puede cancelar la venta: {exc} (¿se registraron retiros de caja después de la venta?)',
+            }) from exc
 
         venta.estado = Venta.ESTADO_CANCELADA
         venta.save(update_fields=['estado'])

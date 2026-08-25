@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { MainLayout } from './components/layout/MainLayout'
 import { AuthProvider } from './context/AuthContext'
+import { Caja } from './pages/Caja/Caja'
 import { CambiarContrasena } from './pages/CambiarContrasena/CambiarContrasena'
 import { Catalogo } from './pages/Catalogo/Catalogo'
 import { Compras } from './pages/Compras/Compras'
@@ -52,6 +53,7 @@ function App() {
               <Route path="/ventas/nueva" element={<NuevaVenta />} />
               <Route path="/ventas/:id" element={<DetalleVenta />} />
               <Route path="/produccion" element={<Produccion />} />
+              <Route path="/caja" element={<Caja />} />
               <Route path="/informacion-usuario" element={<InformacionUsuarioPlaceholder />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
