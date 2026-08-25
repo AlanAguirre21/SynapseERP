@@ -1,0 +1,67 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4 max-w-3xl;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold mb-2;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.filaCampos {
+  @apply flex flex-wrap gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto flex-1 min-w-[180px];
+}
+
+.campo input,
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.seccionLineas {
+  @apply flex flex-col gap-3 p-4 border border-texto/10 rounded-md;
+}
+
+.tituloSeccion {
+  @apply m-0 text-[0.9rem] font-semibold text-texto;
+}
+
+.filaAgregarLinea {
+  @apply flex flex-wrap items-end gap-3;
+}
+
+.tablaLineas {
+  @apply w-full text-left text-[0.85rem];
+}
+
+.tablaLineas th,
+.tablaLineas td {
+  @apply px-2 py-2 border-b border-texto/10;
+}
+
+.enlaceAccionPeligro {
+  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccionPeligro:hover {
+  @apply underline;
+}
+
+.total {
+  @apply flex items-center justify-end gap-2 text-texto text-base font-semibold;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}

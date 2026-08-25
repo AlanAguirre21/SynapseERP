@@ -5,6 +5,9 @@ import { MainLayout } from './components/layout/MainLayout'
 import { AuthProvider } from './context/AuthContext'
 import { CambiarContrasena } from './pages/CambiarContrasena/CambiarContrasena'
 import { Catalogo } from './pages/Catalogo/Catalogo'
+import { Compras } from './pages/Compras/Compras'
+import { DetalleCompra } from './pages/Compras/DetalleCompra'
+import { NuevaCompra } from './pages/Compras/NuevaCompra'
 import { Dashboard } from './pages/Dashboard/Dashboard'
 import { Inventario } from './pages/Inventario/Inventario'
 import { Login } from './pages/Login/Login'
@@ -38,6 +41,9 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/personas" element={<Personas />} />
               <Route path="/inventario" element={<Inventario />} />
+              <Route path="/compras" element={<Compras />} />
+              <Route path="/compras/nueva" element={<NuevaCompra />} />
+              <Route path="/compras/:id" element={<DetalleCompra />} />
               <Route path="/informacion-usuario" element={<InformacionUsuarioPlaceholder />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
