@@ -1,0 +1,132 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-4;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.pestañas {
+  @apply flex items-center gap-1 border-b border-texto/10;
+}
+
+.pestaña {
+  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+}
+
+.pestaña:hover {
+  @apply text-texto;
+}
+
+.pestañaActiva {
+  @apply text-primario border-primario font-semibold;
+}
+
+.filtros {
+  @apply flex flex-wrap items-end gap-4 mb-4;
+}
+
+.campoFiltro {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campoFiltro select,
+.campoFiltro input {
+  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
+}
+
+.estadoActivo {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.estadoInactivo {
+  @apply text-error text-[0.8rem] font-semibold;
+}
+
+.acciones {
+  @apply flex items-center gap-3;
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.enlaceAccionPeligro {
+  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccionPeligro:hover {
+  @apply underline;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input,
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.seccionPrevia {
+  @apply flex flex-col gap-2 p-4 border border-texto/10 rounded-md;
+}
+
+.tituloPrevia {
+  @apply m-0 text-[0.9rem] font-semibold text-texto;
+}
+
+.tablaPrevia {
+  @apply w-full text-left text-[0.85rem];
+}
+
+.tablaPrevia th,
+.tablaPrevia td {
+  @apply px-2 py-1.5 border-b border-texto/10;
+}
+
+.disponibleSuficiente {
+  @apply text-exito font-semibold;
+}
+
+.disponibleInsuficiente {
+  @apply text-error font-semibold;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.aviso {
+  @apply m-0 px-3 py-2 text-advertencia rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-advertencia)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}
+
+.datosGenerales {
+  @apply grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] text-texto p-4 border border-texto/10 rounded-md mb-4;
+}
+
+.etiqueta {
+  @apply text-texto/60;
+}

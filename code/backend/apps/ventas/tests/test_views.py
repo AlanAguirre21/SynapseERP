@@ -183,6 +183,32 @@ def test_crear_venta_sin_lineas_es_rechazada(api_client, sucursal):
     assert response.status_code == 400
 
 
+@pytest.mark.django_db
+def test_crear_venta_con_cantidad_fraccionaria_es_rechazada(api_client, sucursal, producto, stock):
+    """Los productos se venden por unidad completa — nunca medias
+    unidades, a diferencia de la materia prima en Compras.
+    """
+    response = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='2.50'), format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'entero' in str(response.data['detalles'])
+    assert not Venta.objects.exists()
+    stock.refresh_from_db()
+    assert stock.stock_actual == Decimal('100.00')
+
+
+@pytest.mark.django_db
+def test_crear_venta_con_cantidad_entera_representada_con_decimales_es_aceptada(api_client, sucursal, producto, stock):
+    """'10.00' es numéricamente entero aunque venga con dos decimales —
+    debe aceptarse igual que '10'."""
+    response = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00'), format='json',
+    )
+    assert response.status_code == 201
+
+
 # --- Entrega --------------------------------------------------------------
 
 

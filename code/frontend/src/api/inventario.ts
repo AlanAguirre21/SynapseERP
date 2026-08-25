@@ -32,10 +32,22 @@ export async function getStock(tipo: TipoItemInventario, sucursalId: number): Pr
   return data
 }
 
+export interface EditarStockMinimo {
+  tipo: TipoItemInventario
+  sucursal: number
+  item_id: number
+  stock_minimo: number | string
+}
+
+export async function editarStockMinimo(datos: EditarStockMinimo): Promise<StockItem> {
+  const { data } = await apiClient.patch<StockItem>('/inventario/stock/', datos)
+  return data
+}
+
 // --- Movimientos de inventario -------------------------------------------
 
 export type TipoMovimientoInventario = 'entrada' | 'salida'
-export type MotivoMovimientoInventario = 'compra' | 'venta' | 'produccion' | 'ajuste'
+export type MotivoMovimientoInventario = 'compra' | 'venta' | 'produccion_consumo' | 'produccion_entrada' | 'ajuste'
 
 export interface MovimientoInventario {
   id: number

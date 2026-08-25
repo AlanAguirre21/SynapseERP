@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useStock } from '../../hooks/useInventario'
+import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Inventario } from './Inventario'
 
 vi.mock('../../hooks/useSucursales')
@@ -13,10 +14,12 @@ vi.mock('../../hooks/useInventario')
 vi.mock('../../hooks/useMovimientosInventario')
 vi.mock('../../hooks/useProductos')
 vi.mock('../../hooks/useMateriaPrima')
+vi.mock('../../hooks/useUsuarioActual')
 
 const useSucursalesMock = vi.mocked(useSucursales)
 const useStockMock = vi.mocked(useStock)
 const useMovimientosInventarioMock = vi.mocked(useMovimientosInventario)
+const useEditarStockMinimoMock = vi.mocked(useEditarStockMinimo)
 
 const SUCURSALES = [
   { id: 1, nombre_sucursal: 'Matriz', ubicacion_sucursal: '', telefono_sucursal: '', activo: true },
@@ -41,7 +44,7 @@ const MOVIMIENTOS = [
   },
 ]
 
-function mockearHooks() {
+function mockearHooks(rol: 'admin' | 'operador' = 'operador') {
   useSucursalesMock.mockReturnValue({ data: SUCURSALES, isLoading: false } as unknown as ReturnType<typeof useSucursales>)
   useStockMock.mockImplementation(
     (tipo) =>
@@ -58,6 +61,12 @@ function mockearHooks() {
   )
   vi.mocked(useMateriaPrima).mockReturnValue(
     { data: [{ id: 1, nombre_item: 'Cloruro de sodio' }], isLoading: false } as unknown as ReturnType<typeof useMateriaPrima>,
+  )
+  vi.mocked(useUsuarioActual).mockReturnValue(
+    { data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>,
+  )
+  useEditarStockMinimoMock.mockReturnValue(
+    { mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useEditarStockMinimo>,
   )
 }
 
@@ -114,5 +123,32 @@ describe('Inventario', () => {
     render(<Inventario />)
 
     expect(screen.queryByRole('button', { name: /nuevo|crear|editar|eliminar/i })).not.toBeInTheDocument()
+  })
+
+  it('un admin ve un control de edición de stock mínimo y puede guardar un nuevo valor', async () => {
+    mockearHooks('admin')
+    const mutateAsync = vi.fn().mockResolvedValue(undefined)
+    useEditarStockMinimoMock.mockReturnValue(
+      { mutateAsync, isPending: false } as unknown as ReturnType<typeof useEditarStockMinimo>,
+    )
+    render(<Inventario />)
+
+    const input = screen.getByLabelText('Stock mínimo de Suero fisiológico') as HTMLInputElement
+    expect(input).toBeInTheDocument()
+    expect(input.value).toBe('10.00')
+
+    fireEvent.change(input, { target: { value: '15' } })
+    fireEvent.blur(input)
+
+    expect(mutateAsync).toHaveBeenCalledWith({ tipo: 'producto', sucursal: 1, item_id: 1, stock_minimo: '15' })
+  })
+
+  it('un operador no ve ningún control de edición de stock mínimo', () => {
+    mockearHooks('operador')
+    render(<Inventario />)
+
+    expect(screen.queryByLabelText(/Stock mínimo de/)).not.toBeInTheDocument()
+    const tablaStock = within(primero(screen.getAllByRole('table')))
+    expect(tablaStock.getAllByText('10.00')).toHaveLength(2)
   })
 })

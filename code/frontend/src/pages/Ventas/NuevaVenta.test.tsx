@@ -101,4 +101,17 @@ describe('NuevaVenta', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/stock insuficiente/i)
     expect(screen.getByTestId('total-venta')).toHaveTextContent('0.00')
   })
+
+  it('rechaza agregar una línea con cantidad fraccionaria', () => {
+    mockearHooks()
+    renderNuevaVenta()
+    seleccionarSucursal()
+
+    fireEvent.change(screen.getByLabelText('Producto'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Cantidad'), { target: { value: '0.5' } })
+    fireEvent.click(screen.getByRole('button', { name: /agregar línea/i }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/número entero/i)
+    expect(screen.getByTestId('total-venta')).toHaveTextContent('0.00')
+  })
 })

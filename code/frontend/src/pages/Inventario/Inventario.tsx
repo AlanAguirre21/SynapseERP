@@ -11,8 +11,9 @@ import type {
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
-import { useStock } from '../../hooks/useInventario'
+import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import styles from './Inventario.module.css'
 
 const ETIQUETAS_TIPO_ITEM: Record<TipoItemInventario, string> = {
@@ -28,7 +29,8 @@ const ETIQUETAS_TIPO_MOVIMIENTO: Record<TipoMovimientoInventario, string> = {
 const ETIQUETAS_MOTIVO: Record<MotivoMovimientoInventario, string> = {
   compra: 'Compra',
   venta: 'Venta',
-  produccion: 'Producción',
+  produccion_consumo: 'Consumo de producción',
+  produccion_entrada: 'Entrada de producción',
   ajuste: 'Ajuste',
 }
 
@@ -41,9 +43,68 @@ const PESTAÑAS_STOCK: { clave: TipoItemInventario; etiqueta: string }[] = [
   { clave: 'materia_prima', etiqueta: 'Inventario de materia prima' },
 ]
 
+interface ErrorEditarStockMinimo {
+  stock_minimo?: string[]
+  detail?: string
+}
+
+function CeldaStockMinimoEditable({
+  fila,
+  tipo,
+  sucursalId,
+}: {
+  fila: StockItem
+  tipo: TipoItemInventario
+  sucursalId: number
+}) {
+  const [valor, setValor] = useState(fila.stock_minimo)
+  const [error, setError] = useState('')
+  const editar = useEditarStockMinimo()
+
+  async function guardar() {
+    setError('')
+    if (valor === fila.stock_minimo || valor.trim() === '') {
+      setValor(fila.stock_minimo)
+      return
+    }
+
+    try {
+      await editar.mutateAsync({ tipo, sucursal: sucursalId, item_id: fila.id, stock_minimo: valor })
+    } catch (err) {
+      setValor(fila.stock_minimo)
+      const datos =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: ErrorEditarStockMinimo } }).response?.data
+          : undefined
+      setError(datos?.stock_minimo?.[0] ?? datos?.detail ?? 'No se pudo guardar el stock mínimo.')
+    }
+  }
+
+  return (
+    <div className={styles.celdaStockMinimo}>
+      <input
+        type="number"
+        min={0}
+        step={1}
+        className={styles.inputStockMinimo}
+        value={valor}
+        onChange={(e) => setValor(e.target.value)}
+        onBlur={guardar}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur()
+        }}
+        aria-label={`Stock mínimo de ${fila.nombre}`}
+      />
+      {error && <span className={styles.errorStockMinimo}>{error}</span>}
+    </div>
+  )
+}
+
 export function Inventario() {
   const { data: sucursales } = useSucursales()
   const sucursalesActivas = (sucursales ?? []).filter((s) => s.activo)
+  const { data: usuario } = useUsuarioActual()
+  const esAdmin = usuario?.rol === 'admin'
 
   const [tipoStock, setTipoStock] = useState<TipoItemInventario>('producto')
   // `null` mientras el usuario no elige explícitamente: se usa la primera
@@ -57,7 +118,25 @@ export function Inventario() {
   const columnasStock: ColumnaTabla<StockItem>[] = [
     { clave: 'nombre', encabezado: 'Nombre' },
     { clave: 'stock_actual', encabezado: 'Stock actual' },
-    { clave: 'stock_minimo', encabezado: 'Stock mínimo' },
+    {
+      clave: 'stock_minimo',
+      encabezado: 'Stock mínimo',
+      render: (fila) =>
+        esAdmin && sucursalStock !== null ? (
+          // `key` incluye `stock_minimo` para remontar (resetear el input a
+          // su nuevo valor) cuando cambia por otra vía — ej. refetch tras
+          // invalidar la cache en otra pestaña — en vez de un efecto que
+          // sincronice el estado local manualmente.
+          <CeldaStockMinimoEditable
+            key={`${fila.id}-${fila.stock_minimo}`}
+            fila={fila}
+            tipo={tipoStock}
+            sucursalId={sucursalStock}
+          />
+        ) : (
+          fila.stock_minimo
+        ),
+    },
     {
       clave: 'stock_bajo',
       encabezado: 'Estado',

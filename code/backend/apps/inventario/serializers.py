@@ -1,6 +1,10 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
 from apps.catalogo.models import MateriaPrima, Producto
+from apps.sucursales.models import Sucursal
 
 from .models import MovimientoInventario
 
@@ -27,6 +31,31 @@ class StockItemSerializer(serializers.Serializer):
     stock_actual = serializers.DecimalField(max_digits=12, decimal_places=2)
     stock_minimo = serializers.DecimalField(max_digits=12, decimal_places=2)
     stock_bajo = serializers.BooleanField()
+
+
+def validar_stock_minimo_entero(valor):
+    """`stock_minimo` es un umbral de configuración, no una cantidad física
+    fraccionaria — a diferencia de `stock_actual` de materia prima (kg/L),
+    siempre se fija en unidades enteras (ver `spec.md`, ampliación)."""
+
+    if valor != valor.to_integral_value():
+        raise serializers.ValidationError('El stock mínimo debe ser un número entero.')
+
+
+class EditarStockMinimoSerializer(serializers.Serializer):
+    """Valida la edición de `stock_minimo` (solo rol admin, permiso a nivel
+    de vista). No es un `ModelSerializer`: identifica el ítem de forma
+    polimórfica (`tipo` + `item_id`), igual que `StockItemSerializer`."""
+
+    tipo = serializers.ChoiceField(
+        choices=[MovimientoInventario.TIPO_PRODUCTO, MovimientoInventario.TIPO_MATERIA_PRIMA],
+    )
+    sucursal = serializers.PrimaryKeyRelatedField(queryset=Sucursal.objects.filter(activo=True))
+    item_id = serializers.IntegerField()
+    stock_minimo = serializers.DecimalField(
+        max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(Decimal(0)), validar_stock_minimo_entero],
+    )
 
 
 def resolver_nombre_item(tipo_item, item_id):

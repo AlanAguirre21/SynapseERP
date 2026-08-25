@@ -81,6 +81,10 @@ export function NuevaVenta() {
       setErrorFormulario('La cantidad debe ser mayor a 0.')
       return
     }
+    if (!Number.isInteger(Number(cantidadNuevaLinea))) {
+      setErrorFormulario('La cantidad debe ser un número entero — no se venden fracciones de producto.')
+      return
+    }
     if (disponible !== null && Number(cantidadNuevaLinea) > disponible) {
       setErrorFormulario(`Stock insuficiente: solo hay ${disponible} disponible en esta sucursal.`)
       return
@@ -211,8 +215,8 @@ export function NuevaVenta() {
               Cantidad
               <input
                 type="number"
-                step="0.01"
-                min="0.01"
+                step="1"
+                min="1"
                 value={cantidadNuevaLinea}
                 onChange={(e) => setCantidadNuevaLinea(e.target.value)}
                 disabled={!sucursal}

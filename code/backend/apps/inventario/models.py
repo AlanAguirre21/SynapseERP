@@ -70,12 +70,14 @@ class MovimientoInventario(models.Model):
 
     MOTIVO_COMPRA = 'compra'
     MOTIVO_VENTA = 'venta'
-    MOTIVO_PRODUCCION = 'produccion'
+    MOTIVO_PRODUCCION_CONSUMO = 'produccion_consumo'
+    MOTIVO_PRODUCCION_ENTRADA = 'produccion_entrada'
     MOTIVO_AJUSTE = 'ajuste'
     MOTIVO_CHOICES = [
         (MOTIVO_COMPRA, 'Compra'),
         (MOTIVO_VENTA, 'Venta'),
-        (MOTIVO_PRODUCCION, 'Producción'),
+        (MOTIVO_PRODUCCION_CONSUMO, 'Consumo de producción'),
+        (MOTIVO_PRODUCCION_ENTRADA, 'Entrada de producción'),
         (MOTIVO_AJUSTE, 'Ajuste'),
     ]
 

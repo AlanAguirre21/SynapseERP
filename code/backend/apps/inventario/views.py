@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.db import transaction
 from django.db.models import F
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.catalogo.models import MateriaPrima, Producto
+from core.permissions import LecturaParaTodosEscrituraSoloAdmin
 
 from .models import (
     InventarioSucursalMateriaPrima,
@@ -17,9 +19,11 @@ from .models import (
 )
 from .serializers import (
     AlertaStockSerializer,
+    EditarStockMinimoSerializer,
     MovimientoInventarioSerializer,
     StockItemSerializer,
 )
+from .services import bloquear_inventario_materia_prima, bloquear_inventario_producto
 
 
 class AlertasStockView(ListAPIView):
@@ -83,9 +87,16 @@ class StockView(APIView):
     explícito de `spec.md`, por lo que no se implementa como un
     `ReadOnlyModelViewSet` directo sobre esas tablas (que solo devolvería
     las filas que ya existen).
+
+    `PATCH` (misma ruta) edita únicamente `stock_minimo` — restringido a
+    admin por `LecturaParaTodosEscrituraSoloAdmin`, que ya deja `GET`
+    abierto a cualquier autenticado al ser un método seguro. Nunca toca
+    `stock_actual` ni genera `MovimientoInventario`: es un umbral de
+    configuración, no un movimiento de inventario (ver `spec.md`,
+    ampliación).
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [LecturaParaTodosEscrituraSoloAdmin]
 
     def get(self, request):
         tipo = request.query_params.get('tipo')
@@ -116,6 +127,33 @@ class StockView(APIView):
             filas = [_fila_stock(item.id, item.nombre_item, inventarios.get(item.id)) for item in items]
 
         return Response(StockItemSerializer(filas, many=True).data)
+
+    @transaction.atomic
+    def patch(self, request):
+        serializer = EditarStockMinimoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tipo = serializer.validated_data['tipo']
+        sucursal = serializer.validated_data['sucursal']
+        item_id = serializer.validated_data['item_id']
+        stock_minimo = serializer.validated_data['stock_minimo']
+
+        if tipo == MovimientoInventario.TIPO_PRODUCTO:
+            producto = Producto.objects.filter(pk=item_id, activo=True).first()
+            if producto is None:
+                raise ValidationError({'item_id': 'Producto no encontrado o inactivo.'})
+            inventario = bloquear_inventario_producto(sucursal, producto)
+            nombre = producto.nombre_producto
+        else:
+            materia_prima = MateriaPrima.objects.filter(pk=item_id, activo=True).first()
+            if materia_prima is None:
+                raise ValidationError({'item_id': 'Materia prima no encontrada o inactiva.'})
+            inventario = bloquear_inventario_materia_prima(sucursal, materia_prima)
+            nombre = materia_prima.nombre_item
+
+        inventario.stock_minimo = stock_minimo
+        inventario.save(update_fields=['stock_minimo'])
+
+        return Response(StockItemSerializer(_fila_stock(item_id, nombre, inventario)).data)
 
 
 class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):

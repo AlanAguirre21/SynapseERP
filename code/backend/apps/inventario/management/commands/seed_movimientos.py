@@ -72,7 +72,7 @@ class Command(BaseCommand):
             ),
             (
                 MovimientoInventario.TIPO_MATERIA_PRIMA, materia_prima.id, MovimientoInventario.SALIDA,
-                Decimal('9.00'), MovimientoInventario.MOTIVO_PRODUCCION, Decimal('1.00'),
+                Decimal('9.00'), MovimientoInventario.MOTIVO_PRODUCCION_CONSUMO, Decimal('1.00'),
             ),
         ]
 

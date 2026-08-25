@@ -51,3 +51,15 @@
 .estadoAlerta {
   @apply text-advertencia text-[0.8rem] font-semibold;
 }
+
+.celdaStockMinimo {
+  @apply flex flex-col gap-1;
+}
+
+.inputStockMinimo {
+  @apply px-2 py-1 text-[0.9rem] border border-texto/20 rounded-md w-20;
+}
+
+.errorStockMinimo {
+  @apply text-error text-[0.75rem];
+}

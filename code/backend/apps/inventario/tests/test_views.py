@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -22,6 +24,20 @@ def usuario(db):
 def api_client(usuario):
     client = APIClient()
     client.force_authenticate(user=usuario)
+    return client
+
+
+@pytest.fixture
+def admin(db):
+    return Usuario.objects.create_user(
+        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+    )
+
+
+@pytest.fixture
+def admin_client(admin):
+    client = APIClient()
+    client.force_authenticate(user=admin)
     return client
 
 
@@ -186,9 +202,129 @@ def test_stock_requiere_autenticacion(sucursal):
 
 
 @pytest.mark.django_db
-def test_stock_no_permite_escritura(api_client, sucursal):
+def test_stock_operador_no_puede_escribir(api_client, sucursal):
+    """Un operador ni siquiera llega a "método no permitido": el permiso de
+    escritura (solo admin) se evalúa antes de resolver el verbo HTTP."""
     response = api_client.post('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_stock_admin_no_tiene_verbo_post(admin_client, sucursal):
+    """Un admin sí tiene permiso de escritura, pero `POST` no existe como
+    acción en este endpoint — solo `GET` y `PATCH` (edición de
+    `stock_minimo`)."""
+    response = admin_client.post('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
     assert response.status_code == 405
+
+
+# --- Edición de stock_minimo (admin) ------------------------------------
+
+
+@pytest.mark.django_db
+def test_admin_edita_stock_minimo_con_registro_existente(admin_client, sucursal, producto):
+    InventarioSucursalProducto.objects.create(
+        sucursal=sucursal, producto=producto, stock_actual='5.00', stock_minimo='1.00',
+    )
+
+    response = admin_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'producto', 'sucursal': sucursal.id, 'item_id': producto.id, 'stock_minimo': '8'},
+        format='json',
+    )
+
+    assert response.status_code == 200
+    assert response.data['stock_minimo'] == '8.00'
+    inventario = InventarioSucursalProducto.objects.get(sucursal=sucursal, producto=producto)
+    assert inventario.stock_minimo == Decimal('8.00')
+    assert inventario.stock_actual == Decimal('5.00')
+
+
+@pytest.mark.django_db
+def test_admin_edita_stock_minimo_sin_registro_previo(admin_client, sucursal, materia_prima):
+    """La sucursal aún no compró esta materia prima — no existe fila de
+    inventario — pero el admin puede fijar `stock_minimo` igual: se crea el
+    registro con `stock_actual=0` en vez de fallar."""
+    assert not InventarioSucursalMateriaPrima.objects.filter(sucursal=sucursal, materia_prima=materia_prima).exists()
+
+    response = admin_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'materia_prima', 'sucursal': sucursal.id, 'item_id': materia_prima.id, 'stock_minimo': '3'},
+        format='json',
+    )
+
+    assert response.status_code == 200
+    assert response.data['stock_minimo'] == '3.00'
+    assert response.data['stock_actual'] == '0.00'
+    inventario = InventarioSucursalMateriaPrima.objects.get(sucursal=sucursal, materia_prima=materia_prima)
+    assert inventario.stock_minimo == Decimal('3.00')
+    assert inventario.stock_actual == Decimal('0.00')
+
+
+@pytest.mark.django_db
+def test_operador_no_puede_editar_stock_minimo(api_client, sucursal, producto):
+    InventarioSucursalProducto.objects.create(
+        sucursal=sucursal, producto=producto, stock_actual='5.00', stock_minimo='1.00',
+    )
+
+    response = api_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'producto', 'sucursal': sucursal.id, 'item_id': producto.id, 'stock_minimo': '8'},
+        format='json',
+    )
+
+    assert response.status_code == 403
+    inventario = InventarioSucursalProducto.objects.get(sucursal=sucursal, producto=producto)
+    assert inventario.stock_minimo == Decimal('1.00')
+
+
+@pytest.mark.django_db
+def test_editar_stock_minimo_rechaza_valor_negativo(admin_client, sucursal, producto):
+    response = admin_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'producto', 'sucursal': sucursal.id, 'item_id': producto.id, 'stock_minimo': '-1'},
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'stock_minimo' in response.data
+
+
+@pytest.mark.django_db
+def test_editar_stock_minimo_rechaza_valor_no_entero(admin_client, sucursal, producto):
+    response = admin_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'producto', 'sucursal': sucursal.id, 'item_id': producto.id, 'stock_minimo': '2.50'},
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'stock_minimo' in response.data
+
+
+@pytest.mark.django_db
+def test_editar_stock_minimo_no_genera_movimiento_ni_toca_stock_actual(admin_client, sucursal, producto):
+    InventarioSucursalProducto.objects.create(
+        sucursal=sucursal, producto=producto, stock_actual='12.00', stock_minimo='1.00',
+    )
+
+    response = admin_client.patch(
+        '/api/inventario/stock/',
+        {'tipo': 'producto', 'sucursal': sucursal.id, 'item_id': producto.id, 'stock_minimo': '4'},
+        format='json',
+    )
+
+    assert response.status_code == 200
+    assert not MovimientoInventario.objects.exists()
+    inventario = InventarioSucursalProducto.objects.get(sucursal=sucursal, producto=producto)
+    assert inventario.stock_actual == Decimal('12.00')
+
+
+@pytest.mark.django_db
+def test_admin_tambien_puede_consultar_stock(admin_client, sucursal, producto):
+    """`GET` sigue abierto a cualquier autenticado, no solo a admin."""
+    response = admin_client.get('/api/inventario/stock/', {'tipo': 'producto', 'sucursal': sucursal.id})
+    assert response.status_code == 200
 
 
 # --- Movimientos --------------------------------------------------------

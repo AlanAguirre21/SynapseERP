@@ -9,7 +9,18 @@ from apps.sucursales.models import Sucursal
 
 from .models import DetalleVenta, Venta
 
-CANTIDAD_MINIMA = Decimal('0.01')
+CANTIDAD_MINIMA = Decimal(1)
+
+
+def validar_cantidad_entera(valor):
+    """Los productos se venden por unidad completa — nunca fracciones
+    (a diferencia de la materia prima en Compras, que sí se compra en
+    cantidades fraccionarias como kg/L)."""
+
+    if valor != valor.to_integral_value():
+        raise serializers.ValidationError(
+            'La cantidad debe ser un número entero — no se venden fracciones de producto.',
+        )
 
 
 def calcular_subtotal(cantidad, precio_unitario):
@@ -31,7 +42,8 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
 
     producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.filter(activo=True))
     cantidad = serializers.DecimalField(
-        max_digits=12, decimal_places=2, validators=[MinValueValidator(CANTIDAD_MINIMA)],
+        max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(CANTIDAD_MINIMA), validar_cantidad_entera],
     )
 
     class Meta:
