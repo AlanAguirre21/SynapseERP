@@ -1,0 +1,88 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-4;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.saldo {
+  @apply flex flex-col gap-1 px-6 py-5 bg-primario text-fondo rounded-xl mb-2;
+}
+
+.saldoEtiqueta {
+  @apply text-[0.85rem] opacity-80;
+}
+
+.saldoMonto {
+  @apply text-3xl font-bold;
+}
+
+.filtros {
+  @apply flex flex-wrap items-end gap-4 mb-4;
+}
+
+.campoFiltro {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campoFiltro select,
+.campoFiltro input {
+  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
+}
+
+.badgeIngreso {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.badgeRetiro {
+  @apply text-error text-[0.8rem] font-semibold;
+}
+
+.badgeMotivo {
+  @apply inline-block px-2 py-0.5 rounded-full text-[0.75rem] font-semibold bg-texto/[0.06] text-texto/80;
+}
+
+.enlaceReferencia {
+  @apply block mt-1 text-primario text-[0.8rem] no-underline;
+}
+
+.enlaceReferencia:hover {
+  @apply underline;
+}
+
+.saldoResultante {
+  @apply font-semibold text-texto;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md font-sans;
+}
+
+.campo textarea {
+  @apply resize-y min-h-[72px];
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}
