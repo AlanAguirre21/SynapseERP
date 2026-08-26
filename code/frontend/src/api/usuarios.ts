@@ -7,13 +7,30 @@ export interface ModuloMenu {
 }
 
 export interface Usuario {
+  id: number
+  username: string
+  email: string
   nombre: string
   rol: 'admin' | 'operador'
   modulos: ModuloMenu[]
 }
 
+export interface InformacionUsuarioFormulario {
+  username: string
+  email: string
+}
+
 export async function getUsuarioActual(): Promise<Usuario> {
   const { data } = await apiClient.get<Usuario>('/usuarios/me/')
+  return data
+}
+
+// --- Autogestión de la propia cuenta (feature 015 · Información de Usuario) —
+// distinto del CRUD administrativo de más abajo, que gestiona cuentas de
+// terceros y es exclusivo de admin.
+
+export async function actualizarMiInformacion(datos: InformacionUsuarioFormulario): Promise<Usuario> {
+  const { data } = await apiClient.patch<Usuario>('/usuarios/me/', datos)
   return data
 }
 

@@ -1,0 +1,41 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4 max-w-md;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.valorSoloLectura {
+  @apply m-0 px-3 py-[10px] text-base text-texto/70;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.exito {
+  @apply m-0 px-3 py-2 text-exito rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-exito)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}

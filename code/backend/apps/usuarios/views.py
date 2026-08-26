@@ -13,6 +13,7 @@ from .serializers import (
     LoginSerializer,
     SolicitarRecuperacionSerializer,
     UsuarioActualSerializer,
+    UsuarioPropioSerializer,
     UsuarioSerializer,
     VerificarCodigoSerializer,
 )
@@ -20,11 +21,28 @@ from .throttling import ThrottleRecuperarPassword, ThrottleVerificarCodigo
 
 
 class MeView(RetrieveAPIView):
+    """GET/PATCH /api/usuarios/me/ — datos del usuario autenticado.
+
+    GET ya se usaba desde la feature 001 (Header). PATCH es de la feature
+    015 · Información de Usuario: usa `UsuarioPropioSerializer`, que solo
+    permite tocar `username`/`email`. El objeto editado es siempre
+    `request.user` — nunca se lee un `id` del cuerpo de la petición — por
+    lo que un usuario no puede editar la información de otro usuario desde
+    este endpoint.
+    """
+
     serializer_class = UsuarioActualSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+    def patch(self, request, *args, **kwargs):
+        usuario = self.get_object()
+        serializer = UsuarioPropioSerializer(usuario, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UsuarioActualSerializer(usuario).data)
 
 
 class LoginView(GenericAPIView):

@@ -10,6 +10,7 @@ import { Compras } from './pages/Compras/Compras'
 import { DetalleCompra } from './pages/Compras/DetalleCompra'
 import { NuevaCompra } from './pages/Compras/NuevaCompra'
 import { Dashboard } from './pages/Dashboard/Dashboard'
+import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 import { Inventario } from './pages/Inventario/Inventario'
 import { Login } from './pages/Login/Login'
 import { Personas } from './pages/Personas/Personas'
@@ -21,15 +22,6 @@ import { NuevaVenta } from './pages/Ventas/NuevaVenta'
 import { Ventas } from './pages/Ventas/Ventas'
 
 const queryClient = new QueryClient()
-
-function InformacionUsuarioPlaceholder() {
-  return (
-    <div>
-      <h1>Información de Usuario</h1>
-      <p>Próximamente — feature 015 · Información de Usuario.</p>
-    </div>
-  )
-}
 
 function App() {
   return (
@@ -54,7 +46,7 @@ function App() {
               <Route path="/ventas/:id" element={<DetalleVenta />} />
               <Route path="/produccion" element={<Produccion />} />
               <Route path="/caja" element={<Caja />} />
-              <Route path="/informacion-usuario" element={<InformacionUsuarioPlaceholder />} />
+              <Route path="/informacion-usuario" element={<InformacionUsuario />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>

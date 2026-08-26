@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from core.modules import modulos_para_rol
@@ -71,6 +72,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
 class UsuarioActualSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    username = serializers.CharField()
+    email = serializers.EmailField()
     nombre = serializers.SerializerMethodField()
     rol = serializers.CharField(source='rol_usuario')
     modulos = serializers.SerializerMethodField()
@@ -80,6 +83,36 @@ class UsuarioActualSerializer(serializers.Serializer):
 
     def get_modulos(self, usuario):
         return modulos_para_rol(usuario.rol_usuario)
+
+
+class UsuarioPropioSerializer(serializers.ModelSerializer):
+    """Edición de la propia cuenta (feature 015 · Información de Usuario).
+
+    Distinto de `UsuarioSerializer` (CRUD administrativo de `008`): solo
+    expone `username`/`email` como campos editables. `rol_usuario` y
+    `activo` (is_active) ni siquiera son parte de este serializer, así que
+    no hay forma de que se filtren por error futuro de mantenimiento,
+    aunque lleguen en el payload de la petición. La vista (`MeView`)
+    siempre pasa `request.user` como instancia — nunca un usuario elegido
+    por un `id` del cuerpo de la petición — por lo que la validación de
+    unicidad de `username`/`email` que agrega `ModelSerializer`
+    automáticamente ya excluye al propio usuario de la comparación.
+    """
+
+    username = serializers.CharField(
+        validators=[UniqueValidator(
+            queryset=Usuario.objects.all(), message='Ya existe un usuario con ese nombre de usuario.',
+        )],
+    )
+    email = serializers.EmailField(
+        validators=[UniqueValidator(
+            queryset=Usuario.objects.all(), message='Ya existe un usuario con ese correo electrónico.',
+        )],
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ['username', 'email']
 
 
 class LoginSerializer(serializers.Serializer):
