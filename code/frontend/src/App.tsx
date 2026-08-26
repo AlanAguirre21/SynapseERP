@@ -9,6 +9,7 @@ import { Catalogo } from './pages/Catalogo/Catalogo'
 import { Compras } from './pages/Compras/Compras'
 import { DetalleCompra } from './pages/Compras/DetalleCompra'
 import { NuevaCompra } from './pages/Compras/NuevaCompra'
+import { ConfiguracionFiscal } from './pages/ConfiguracionFiscal/ConfiguracionFiscal'
 import { Dashboard } from './pages/Dashboard/Dashboard'
 import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 import { Inventario } from './pages/Inventario/Inventario'
@@ -46,6 +47,7 @@ function App() {
               <Route path="/ventas/:id" element={<DetalleVenta />} />
               <Route path="/produccion" element={<Produccion />} />
               <Route path="/caja" element={<Caja />} />
+              <Route path="/configuracion-fiscal" element={<ConfiguracionFiscal />} />
               <Route path="/informacion-usuario" element={<InformacionUsuario />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

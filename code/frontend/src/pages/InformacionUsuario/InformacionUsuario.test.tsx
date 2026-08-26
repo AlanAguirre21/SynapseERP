@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { useActualizarMiInformacion, useUsuarioActual } from '../../hooks/useUsuarioActual'
@@ -27,11 +28,19 @@ function mockearHooks(actualizarMock: ReturnType<typeof vi.fn> = vi.fn()) {
   )
 }
 
+function renderPagina() {
+  return render(
+    <MemoryRouter>
+      <InformacionUsuario />
+    </MemoryRouter>,
+  )
+}
+
 describe('InformacionUsuario', () => {
   it('precarga el formulario con los datos actuales y muestra el rol de solo lectura', () => {
     mockearHooks()
 
-    render(<InformacionUsuario />)
+    renderPagina()
 
     expect(screen.getByDisplayValue('juanp')).toBeInTheDocument()
     expect(screen.getByDisplayValue('juanp@flebosil.test')).toBeInTheDocument()
@@ -43,7 +52,7 @@ describe('InformacionUsuario', () => {
     const actualizarMock = vi.fn().mockResolvedValue(undefined)
     mockearHooks(actualizarMock)
 
-    render(<InformacionUsuario />)
+    renderPagina()
     fireEvent.click(screen.getByRole('button', { name: /guardar cambios/i }))
 
     expect(screen.getByRole('dialog', { name: /¿estás seguro\?/i })).toBeInTheDocument()
@@ -53,7 +62,7 @@ describe('InformacionUsuario', () => {
   it('cancelar en el modal no guarda y conserva los valores editados', () => {
     mockearHooks()
 
-    render(<InformacionUsuario />)
+    renderPagina()
     fireEvent.change(screen.getByDisplayValue('juanp'), { target: { value: 'juan_editado' } })
     fireEvent.click(screen.getByRole('button', { name: /guardar cambios/i }))
     fireEvent.click(screen.getByRole('button', { name: /^cancelar$/i }))
@@ -66,7 +75,7 @@ describe('InformacionUsuario', () => {
     const actualizarMock = vi.fn().mockResolvedValue(undefined)
     mockearHooks(actualizarMock)
 
-    render(<InformacionUsuario />)
+    renderPagina()
     fireEvent.change(screen.getByDisplayValue('juanp'), { target: { value: 'juan_editado' } })
     fireEvent.click(screen.getByRole('button', { name: /guardar cambios/i }))
     fireEvent.click(screen.getByRole('button', { name: /^confirmar$/i }))
@@ -83,12 +92,26 @@ describe('InformacionUsuario', () => {
     })
     mockearHooks(actualizarMock)
 
-    render(<InformacionUsuario />)
+    renderPagina()
     fireEvent.click(screen.getByRole('button', { name: /guardar cambios/i }))
     fireEvent.click(screen.getByRole('button', { name: /^confirmar$/i }))
 
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent('Ya existe un usuario con este correo.'),
     )
+  })
+
+  it('el enlace "Cambiar contraseña" apunta a /recuperar-contrasena y está debajo del correo electrónico', () => {
+    mockearHooks()
+
+    renderPagina()
+
+    const campoCorreo = screen.getByLabelText(/correo electrónico/i)
+    const enlace = screen.getByRole('link', { name: /cambiar contraseña/i })
+
+    expect(enlace).toHaveAttribute('href', '/recuperar-contrasena')
+    expect(
+      campoCorreo.compareDocumentPosition(enlace) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 })

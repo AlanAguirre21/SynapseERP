@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
@@ -107,6 +108,10 @@ export function InformacionUsuario() {
               required
             />
           </label>
+
+          <Link to="/recuperar-contrasena" className={styles.enlace}>
+            Cambiar contraseña
+          </Link>
 
           <div className={styles.campo}>
             Rol

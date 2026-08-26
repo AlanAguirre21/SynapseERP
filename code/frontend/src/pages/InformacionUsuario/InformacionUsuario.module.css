@@ -36,6 +36,14 @@
   @apply text-texto text-[0.9rem] mb-4;
 }
 
+.enlace {
+  @apply self-start -mt-2 text-[0.85rem] text-primario no-underline;
+}
+
+.enlace:hover {
+  @apply underline;
+}
+
 .accionesFormulario {
   @apply flex items-center justify-end gap-3;
 }
