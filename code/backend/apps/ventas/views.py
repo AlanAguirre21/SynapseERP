@@ -13,6 +13,10 @@ from xhtml2pdf import pisa
 
 from apps.caja.models import MovimientoCaja
 from apps.caja.services import SaldoInsuficienteError, registrar_movimiento_caja
+from apps.contabilidad.services.generador_asientos import (
+    generar_asiento_venta,
+    reversar_asiento_venta,
+)
 from apps.inventario.models import MovimientoInventario
 from apps.inventario.services import (
     bloquear_inventario_producto,
@@ -121,6 +125,9 @@ class VentaViewSet(viewsets.ModelViewSet):
             tipo_movimiento=MovimientoCaja.INGRESO, monto=venta.total, motivo=MovimientoCaja.MOTIVO_VENTA,
             referencia_id=venta.id, usuario=request.user, observacion=f'Venta #{venta.id}',
         )
+        # Costo de venta / salida de inventario — el lado de Caja/Ventas ya
+        # lo generó `registrar_movimiento_caja()` (018 · Contabilidad).
+        generar_asiento_venta(venta)
 
         headers = self.get_success_headers(serializer.data)
         return Response(self.get_serializer(venta).data, status=201, headers=headers)
@@ -163,6 +170,8 @@ class VentaViewSet(viewsets.ModelViewSet):
             raise ValidationError({
                 'detail': f'No se puede cancelar la venta: {exc} (¿se registraron retiros de caja después de la venta?)',
             }) from exc
+
+        reversar_asiento_venta(venta)
 
         venta.estado = Venta.ESTADO_CANCELADA
         venta.save(update_fields=['estado'])

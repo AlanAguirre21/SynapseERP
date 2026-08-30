@@ -1,0 +1,148 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-4;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.pestañas {
+  @apply flex items-center gap-1 border-b border-texto/10;
+}
+
+.pestaña {
+  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+}
+
+.pestaña:hover {
+  @apply text-texto;
+}
+
+.pestañaActiva {
+  @apply text-primario border-primario font-semibold;
+}
+
+.seccion {
+  @apply flex flex-col gap-4 pt-4;
+}
+
+.subtitulo {
+  @apply m-0 text-texto text-base font-semibold;
+}
+
+.encabezadoSeccion {
+  @apply flex items-center justify-between;
+}
+
+.filtros {
+  @apply flex flex-wrap items-end gap-4 mb-2;
+}
+
+.campoFiltro {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campoFiltro select,
+.campoFiltro input {
+  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
+}
+
+.acciones {
+  @apply flex items-center gap-3;
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.enlaceAccionPeligro {
+  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccionPeligro:hover {
+  @apply underline;
+}
+
+.estadoActivo {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.estadoInactivo {
+  @apply text-error text-[0.8rem] font-semibold;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input,
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}
+
+.mensajeVacio {
+  @apply text-texto/60 text-[0.9rem];
+}
+
+.listaAsientos {
+  @apply flex flex-col gap-2;
+}
+
+.asiento {
+  @apply border border-texto/10 rounded-md overflow-hidden;
+}
+
+.asientoEncabezado {
+  @apply w-full grid grid-cols-[1.5rem_12rem_1fr_8rem] items-center gap-3 bg-transparent border-0 px-3 py-2 text-left text-[0.85rem] text-texto cursor-pointer;
+}
+
+.asientoEncabezado:hover {
+  @apply bg-[color-mix(in_srgb,var(--color-texto)_4%,transparent)];
+}
+
+.origenAsiento {
+  @apply text-texto/60 text-right;
+}
+
+.tablaMovimientos {
+  @apply w-full text-left text-[0.85rem] border-t border-texto/10;
+}
+
+.tablaMovimientos th,
+.tablaMovimientos td {
+  @apply px-3 py-2 border-b border-texto/10;
+}
+
+.saldoDeudor {
+  @apply text-texto;
+}
+
+.saldoAcreedor {
+  @apply text-texto/70;
+}
