@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.produccion',
     'apps.reportes',
     'apps.configuracion_fiscal',
+    'apps.facturacion',
 ]
 
 MIDDLEWARE = [
@@ -201,3 +202,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+# Archivos generados por 017 · Facturación (XML/PDF de cada CFDI timbrado).
+# Sin URL pública servida por Django (`MEDIA_URL` no se conecta en
+# `config/urls.py`) — la descarga siempre pasa por las acciones
+# autenticadas de `FacturaViewSet`, nunca por un archivo estático abierto.
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
