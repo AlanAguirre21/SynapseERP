@@ -28,6 +28,12 @@ load_dotenv(BASE_DIR / '.env')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-x@b^(7!!cu52#!+1l)m1@rf3hkc$*#8f-039x&d(tyhs$niav)')
 
+# Clave simétrica (Fernet) para cifrar `ConfiguracionPAC.api_key_cifrada`
+# (feature 016 · Configuración Fiscal). Mismo criterio que SECRET_KEY: valor
+# de desarrollo aquí como fallback, se espera que producción la sobreescriba
+# vía variable de entorno (`.env`, ya excluido del repositorio).
+FISCAL_ENCRYPTION_KEY = os.environ.get('FISCAL_ENCRYPTION_KEY', '8Sfb_pSwAbrOdD5b0P7O15cl7cSLCb1i4TR4y2A-n6c=')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
@@ -56,6 +62,9 @@ INSTALLED_APPS = [
     'apps.ventas',
     'apps.produccion',
     'apps.reportes',
+    'apps.configuracion_fiscal',
+    'apps.facturacion',
+    'apps.contabilidad',
 ]
 
 MIDDLEWARE = [
@@ -194,3 +203,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+# Archivos generados por 017 · Facturación (XML/PDF de cada CFDI timbrado).
+# Sin URL pública servida por Django (`MEDIA_URL` no se conecta en
+# `config/urls.py`) — la descarga siempre pasa por las acciones
+# autenticadas de `FacturaViewSet`, nunca por un archivo estático abierto.
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'

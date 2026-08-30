@@ -60,3 +60,15 @@
 .accionesFormulario {
   @apply flex items-center justify-end gap-3;
 }
+
+.formularioFactura {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}

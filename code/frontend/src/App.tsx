@@ -9,7 +9,12 @@ import { Catalogo } from './pages/Catalogo/Catalogo'
 import { Compras } from './pages/Compras/Compras'
 import { DetalleCompra } from './pages/Compras/DetalleCompra'
 import { NuevaCompra } from './pages/Compras/NuevaCompra'
+import { ConfiguracionFiscal } from './pages/ConfiguracionFiscal/ConfiguracionFiscal'
+import { Contabilidad } from './pages/Contabilidad/Contabilidad'
 import { Dashboard } from './pages/Dashboard/Dashboard'
+import { DetalleFactura } from './pages/Facturacion/DetalleFactura'
+import { Facturacion } from './pages/Facturacion/Facturacion'
+import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 import { Inventario } from './pages/Inventario/Inventario'
 import { Login } from './pages/Login/Login'
 import { Personas } from './pages/Personas/Personas'
@@ -21,15 +26,6 @@ import { NuevaVenta } from './pages/Ventas/NuevaVenta'
 import { Ventas } from './pages/Ventas/Ventas'
 
 const queryClient = new QueryClient()
-
-function InformacionUsuarioPlaceholder() {
-  return (
-    <div>
-      <h1>Información de Usuario</h1>
-      <p>Próximamente — feature 015 · Información de Usuario.</p>
-    </div>
-  )
-}
 
 function App() {
   return (
@@ -53,8 +49,12 @@ function App() {
               <Route path="/ventas/nueva" element={<NuevaVenta />} />
               <Route path="/ventas/:id" element={<DetalleVenta />} />
               <Route path="/produccion" element={<Produccion />} />
+              <Route path="/facturacion" element={<Facturacion />} />
+              <Route path="/facturacion/:id" element={<DetalleFactura />} />
               <Route path="/caja" element={<Caja />} />
-              <Route path="/informacion-usuario" element={<InformacionUsuarioPlaceholder />} />
+              <Route path="/configuracion-fiscal" element={<ConfiguracionFiscal />} />
+              <Route path="/contabilidad" element={<Contabilidad />} />
+              <Route path="/informacion-usuario" element={<InformacionUsuario />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>

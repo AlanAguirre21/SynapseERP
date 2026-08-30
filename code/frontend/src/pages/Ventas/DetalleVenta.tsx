@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { ETIQUETAS_ESTADO_FACTURA, FORMAS_PAGO, METODOS_PAGO, USOS_CFDI, type MetodoPago } from '../../api/facturacion'
 import { obtenerTicketVenta, type EstadoVenta } from '../../api/ventas'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { useClientes } from '../../hooks/useClientes'
+import { useFacturaDeVenta, useGenerarFactura } from '../../hooks/useFacturas'
 import { useProductos } from '../../hooks/useProductos'
 import { useCancelarVenta, useEntregarVenta, useVenta } from '../../hooks/useVentas'
 import styles from './DetalleVenta.module.css'
@@ -41,11 +43,19 @@ export function DetalleVenta() {
   const { data: clientes } = useClientes()
   const entregar = useEntregarVenta()
   const cancelar = useCancelarVenta()
+  const { data: factura } = useFacturaDeVenta(idVenta)
+  const generarFactura = useGenerarFactura()
 
   const [confirmarEntregar, setConfirmarEntregar] = useState(false)
   const [confirmarCancelar, setConfirmarCancelar] = useState(false)
   const [errorAccion, setErrorAccion] = useState('')
   const [generandoTicket, setGenerandoTicket] = useState(false)
+
+  const [modalFacturaAbierto, setModalFacturaAbierto] = useState(false)
+  const [usoCfdi, setUsoCfdi] = useState('')
+  const [formaPago, setFormaPago] = useState('03')
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>('PUE')
+  const [errorFactura, setErrorFactura] = useState('')
 
   const nombreProducto = (id: number) =>
     (productos ?? []).find((p) => p.id === id)?.nombre_producto ?? `Producto #${id}`
@@ -55,6 +65,33 @@ export function DetalleVenta() {
   const tieneFiscalesCompletos = Boolean(
     datosFiscales?.rfc && datosFiscales.razon_social && datosFiscales.codigo_postal_fiscal && datosFiscales.regimen_fiscal,
   )
+
+  // Una factura "vigente" (cualquier estado salvo `error`) bloquea un
+  // nuevo intento — un intento con `error` sí se puede reintentar,
+  // reutilizando la misma fila en el backend (ver `FacturaViewSet.create`).
+  const facturaVigente = factura && factura.estado !== 'error' ? factura : undefined
+  const puedeGenerarFactura = tieneFiscalesCompletos && venta?.estado !== 'cancelada' && !facturaVigente
+
+  function abrirModalFactura() {
+    setErrorFactura('')
+    setUsoCfdi(datosFiscales?.uso_cfdi_default || USOS_CFDI[0]!.valor)
+    setFormaPago('03')
+    setMetodoPago('PUE')
+    setModalFacturaAbierto(true)
+  }
+
+  async function confirmarGenerarFactura() {
+    setErrorFactura('')
+    try {
+      const nueva = await generarFactura.mutateAsync({
+        venta: idVenta, uso_cfdi: usoCfdi, forma_pago: formaPago, metodo_pago: metodoPago,
+      })
+      setModalFacturaAbierto(false)
+      navigate(`/facturacion/${nueva.id}`)
+    } catch (err) {
+      setErrorFactura(extraerMensajeError(err, 'No se pudo generar la factura.'))
+    }
+  }
 
   async function confirmarAccionEntregar() {
     setErrorAccion('')
@@ -162,11 +199,17 @@ export function DetalleVenta() {
           {generandoTicket ? 'Generando…' : 'Imprimir / descargar ticket'}
         </BotonPrimario>
 
-        <span title={tieneFiscalesCompletos ? 'Disponible en 017 · Facturación' : 'El cliente no tiene datos fiscales completos'}>
-          <BotonPrimario variante="secundario" disabled>
-            Generar factura
+        {facturaVigente ? (
+          <BotonPrimario variante="secundario" onClick={() => navigate(`/facturacion/${facturaVigente.id}`)}>
+            Ver factura ({ETIQUETAS_ESTADO_FACTURA[facturaVigente.estado]})
           </BotonPrimario>
-        </span>
+        ) : (
+          <span title={puedeGenerarFactura ? undefined : 'El cliente no tiene datos fiscales completos'}>
+            <BotonPrimario variante="secundario" onClick={abrirModalFactura} disabled={!puedeGenerarFactura}>
+              {factura?.estado === 'error' ? 'Reintentar factura' : 'Generar factura'}
+            </BotonPrimario>
+          </span>
+        )}
 
         {venta.estado === 'pendiente' && (
           <BotonPrimario onClick={() => setConfirmarEntregar(true)}>Marcar como entregada</BotonPrimario>
@@ -205,6 +248,62 @@ export function DetalleVenta() {
           <BotonPrimario variante="peligro" onClick={confirmarAccionCancelar} disabled={cancelar.isPending}>
             {cancelar.isPending ? 'Cancelando…' : 'Confirmar cancelación'}
           </BotonPrimario>
+        </div>
+      </Modal>
+
+      <Modal
+        titulo={factura?.estado === 'error' ? 'Reintentar factura' : 'Generar factura'}
+        abierto={modalFacturaAbierto}
+        onCerrar={() => setModalFacturaAbierto(false)}
+      >
+        <div className={styles.formularioFactura}>
+          <label className={styles.campo}>
+            Uso de CFDI
+            <select value={usoCfdi} onChange={(e) => setUsoCfdi(e.target.value)}>
+              {USOS_CFDI.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={styles.campo}>
+            Forma de pago
+            <select value={formaPago} onChange={(e) => setFormaPago(e.target.value)}>
+              {FORMAS_PAGO.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={styles.campo}>
+            Método de pago
+            <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value as MetodoPago)}>
+              {METODOS_PAGO.map((opcion) => (
+                <option key={opcion.valor} value={opcion.valor}>
+                  {opcion.etiqueta}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {errorFactura && (
+            <p className={styles.error} role="alert">
+              {errorFactura}
+            </p>
+          )}
+
+          <div className={styles.accionesFormulario}>
+            <BotonPrimario variante="secundario" onClick={() => setModalFacturaAbierto(false)}>
+              Cancelar
+            </BotonPrimario>
+            <BotonPrimario onClick={confirmarGenerarFactura} disabled={generarFactura.isPending}>
+              {generarFactura.isPending ? 'Generando…' : 'Generar factura'}
+            </BotonPrimario>
+          </div>
         </div>
       </Modal>
     </div>

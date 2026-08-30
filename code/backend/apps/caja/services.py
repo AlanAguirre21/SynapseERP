@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+from apps.contabilidad.services.generador_asientos import generar_asiento_caja
+
 from .models import MovimientoCaja
 
 
@@ -44,7 +46,16 @@ def registrar_movimiento_caja(*, tipo_movimiento, monto, motivo, referencia_id, 
                 f'Este retiro dejaría el saldo de caja en {nuevo_saldo} — el saldo nunca puede ser negativo.',
             )
 
-    return MovimientoCaja.objects.create(
+    movimiento = MovimientoCaja.objects.create(
         monto=monto, tipo_movimiento=tipo_movimiento, motivo=motivo, referencia_id=referencia_id,
         saldo_resultante=nuevo_saldo, observacion=observacion, usuario=usuario,
     )
+
+    # Único punto de entrada de `MovimientoCaja` (ver docstring de esta
+    # función) — generar aquí el asiento contable del lado de Caja cubre
+    # por igual el ingreso automático de una venta, su reverso al
+    # cancelarse, y el registro manual de `013 · Caja`, sin duplicar la
+    # regla contable en cada llamador (`018 · Contabilidad`).
+    generar_asiento_caja(movimiento)
+
+    return movimiento

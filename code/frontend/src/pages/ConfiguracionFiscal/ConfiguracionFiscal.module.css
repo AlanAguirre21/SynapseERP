@@ -1,0 +1,90 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-6;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.aviso {
+  @apply m-0 px-3 py-2 text-[0.9rem] rounded-md bg-[color-mix(in_srgb,var(--color-advertencia)_18%,transparent)];
+  color: color-mix(in srgb, var(--color-advertencia) 55%, black);
+}
+
+.seccion {
+  @apply flex flex-col gap-4 pb-6 border-b border-texto/10;
+}
+
+.seccion:last-child {
+  @apply border-b-0 pb-0;
+}
+
+.subtitulo {
+  @apply m-0 text-texto text-base font-semibold;
+}
+
+.encabezadoSeccion {
+  @apply flex items-center justify-between;
+}
+
+.formulario {
+  @apply flex flex-col gap-4 max-w-md;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.campoCheckbox {
+  @apply flex items-center gap-2 text-[0.85rem] text-texto;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.exito {
+  @apply m-0 px-3 py-2 text-exito rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-exito)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}
+
+.estadoActivo {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.estadoInactivo {
+  @apply text-error text-[0.8rem] font-semibold;
+}
+
+.acciones {
+  @apply flex items-center gap-3;
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.enlaceAccionPeligro {
+  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccionPeligro:hover {
+  @apply underline;
+}

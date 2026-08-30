@@ -5,6 +5,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.contabilidad.services.generador_asientos import (
+    generar_asiento_compra,
+    reversar_asiento_compra,
+)
 from apps.inventario.models import MovimientoInventario
 from apps.inventario.services import (
     bloquear_inventario_materia_prima,
@@ -143,6 +147,8 @@ class CompraViewSet(viewsets.ModelViewSet):
         for detalle in compra.detalles_materia_prima.select_related('materia_prima').all():
             _recibir_linea_materia_prima(compra, detalle, request.user)
 
+        generar_asiento_compra(compra)
+
         compra.estado = Compra.ESTADO_RECIBIDA
         compra.save(update_fields=['estado'])
 
@@ -165,6 +171,8 @@ class CompraViewSet(viewsets.ModelViewSet):
                 _revertir_linea_producto(compra, detalle, request.user)
             for detalle in compra.detalles_materia_prima.select_related('materia_prima').all():
                 _revertir_linea_materia_prima(compra, detalle, request.user)
+
+            reversar_asiento_compra(compra)
 
         compra.estado = Compra.ESTADO_CANCELADA
         compra.save(update_fields=['estado'])
