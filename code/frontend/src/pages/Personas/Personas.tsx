@@ -1068,7 +1068,7 @@ function PestañaUsuarios({ esAdmin }: { esAdmin: boolean }) {
       >
         <form className={styles.formulario} onSubmit={alGuardar} noValidate>
           <label className={styles.campo}>
-            Nombre
+            Nombre(s)
             <input
               type="text"
               value={valores.first_name}
@@ -1077,7 +1077,7 @@ function PestañaUsuarios({ esAdmin }: { esAdmin: boolean }) {
           </label>
 
           <label className={styles.campo}>
-            Apellido
+            Apellidos
             <input
               type="text"
               value={valores.last_name}

@@ -22,6 +22,7 @@ from apps.inventario.services import (
     bloquear_inventario_producto,
     registrar_movimiento_inventario,
 )
+from core.pdf import resolver_ruta_estatica
 
 from .models import Venta
 from .serializers import VentaSerializer
@@ -185,11 +186,13 @@ class VentaViewSet(viewsets.ModelViewSet):
             'venta': venta,
             'detalles': venta.detalles.select_related('producto').all(),
             'cliente_nombre': venta.cliente.nombre_cliente if venta.cliente else 'Sin cliente',
-            'usuario_nombre': venta.usuario.nombre_mostrado(),
+            # Nunca cae al username: si el usuario no tiene nombre/apellido
+            # cargados, se usa el correo antes que exponer ese dato interno.
+            'usuario_nombre': venta.usuario.get_full_name() or venta.usuario.email,
         })
 
         buffer = io.BytesIO()
-        resultado = pisa.CreatePDF(html, dest=buffer)
+        resultado = pisa.CreatePDF(html, dest=buffer, link_callback=resolver_ruta_estatica)
         if resultado.err:
             return Response({'detail': 'No se pudo generar el ticket en PDF.'}, status=500)
 

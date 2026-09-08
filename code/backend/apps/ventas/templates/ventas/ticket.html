@@ -1,11 +1,16 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-  body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #222; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #222; }
   h1 { font-size: 16px; margin-bottom: 0; }
-  .subtitulo { color: #666; margin-top: 2px; margin-bottom: 16px; }
+  .subtitulo { color: #666; margin-top: 2px; margin-bottom: 0; }
+  /* xhtml2pdf no soporta flexbox: la cabecera se maqueta con una tabla. */
+  .encabezado { width: 100%; border-collapse: collapse; margin: 0 auto 16px; }
+  .encabezado td { border-bottom: none; padding: 0; vertical-align: top; }
+  .encabezado .logo { width: 100%; text-align: center; }
+  .encabezado .logo img { width: 400px; }
   table { width: 100%; border-collapse: collapse; margin-top: 12px; }
   th, td { padding: 4px 6px; border-bottom: 1px solid #ccc; text-align: left; }
   th { background-color: #f2f2f2; }
@@ -14,8 +19,19 @@
 </style>
 </head>
 <body>
-  <h1>FleboSil &mdash; Ticket de venta</h1>
-  <p class="subtitulo">Venta #{{ venta.id }} &mdash; {{ venta.get_estado_display }}</p>
+  <table class="encabezado">
+    <tr>
+      <td class="logo">
+        <img src="{% static 'ventas/img/logo_flebosil.jpg' %}" alt="FleboSil">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h1>Ticket de venta</h1>
+        <p class="subtitulo">Venta #{{ venta.id }} &mdash; {{ venta.get_estado_display }}</p>
+      </td>
+    </tr>
+  </table>
 
   <p class="datos"><strong>Fecha:</strong> {{ venta.fecha|date:"d/m/Y H:i" }}</p>
   <p class="datos"><strong>Cliente:</strong> {{ cliente_nombre }}</p>
@@ -25,8 +41,8 @@
   <table>
     <thead>
       <tr>
-        <th>Producto</th>
         <th>Cantidad</th>
+        <th>Producto</th>
         <th>Precio unitario</th>
         <th>Subtotal</th>
       </tr>
@@ -34,8 +50,8 @@
     <tbody>
       {% for detalle in detalles %}
       <tr>
-        <td>{{ detalle.producto.nombre_producto }}</td>
         <td>{{ detalle.cantidad }}</td>
+        <td>{{ detalle.producto.nombre_producto }}</td>
         <td>{{ detalle.precio_unitario }}</td>
         <td>{{ detalle.subtotal }}</td>
       </tr>
