@@ -22,6 +22,7 @@ export interface Venta {
   fecha_entrega: string | null
   fecha_entrega_real: string | null
   total: string
+  gasto_envio: string
   estado: EstadoVenta
   detalles: DetalleVenta[]
 }
@@ -35,6 +36,7 @@ export interface VentaFormulario {
   cliente: number | null
   sucursal: number
   fecha_entrega: string | null
+  gasto_envio?: string
   detalles: LineaVentaFormulario[]
 }
 

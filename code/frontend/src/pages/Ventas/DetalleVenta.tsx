@@ -60,6 +60,8 @@ export function DetalleVenta() {
   const nombreProducto = (id: number) =>
     (productos ?? []).find((p) => p.id === id)?.nombre_producto ?? `Producto #${id}`
 
+  const subtotalProductos = (venta?.detalles ?? []).reduce((acumulado, linea) => acumulado + Number(linea.subtotal), 0)
+
   const clienteDeLaVenta = venta?.cliente ? (clientes ?? []).find((c) => c.id === venta.cliente) : undefined
   const datosFiscales = clienteDeLaVenta?.datos_fiscales
   const tieneFiscalesCompletos = Boolean(
@@ -182,6 +184,16 @@ export function DetalleVenta() {
           ))}
         </tbody>
       </table>
+
+      <div className={styles.total}>
+        <span>Subtotal:</span>
+        <span data-testid="subtotal-venta">{subtotalProductos.toFixed(2)}</span>
+      </div>
+
+      <div className={styles.total}>
+        <span>Gastos de envío:</span>
+        <span data-testid="gasto-envio-venta">{venta.gasto_envio}</span>
+      </div>
 
       <div className={styles.total}>
         <span>Total:</span>

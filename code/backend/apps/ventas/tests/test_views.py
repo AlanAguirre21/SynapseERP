@@ -56,7 +56,7 @@ def stock(sucursal, producto):
     )
 
 
-def _payload_venta(sucursal, producto, cantidad='10.00', cliente=None, fecha_entrega=None):
+def _payload_venta(sucursal, producto, cantidad='10.00', cliente=None, fecha_entrega=None, gasto_envio=None):
     payload = {
         'sucursal': sucursal.id,
         'detalles': [{'producto': producto.id, 'cantidad': cantidad}],
@@ -65,6 +65,8 @@ def _payload_venta(sucursal, producto, cantidad='10.00', cliente=None, fecha_ent
         payload['cliente'] = cliente.id
     if fecha_entrega is not None:
         payload['fecha_entrega'] = fecha_entrega
+    if gasto_envio is not None:
+        payload['gasto_envio'] = gasto_envio
     return payload
 
 
@@ -207,6 +209,55 @@ def test_crear_venta_con_cantidad_entera_representada_con_decimales_es_aceptada(
         '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00'), format='json',
     )
     assert response.status_code == 201
+
+
+# --- Gasto de envío --------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_crear_venta_sin_gasto_envio_equivale_a_cero(api_client, sucursal, producto, stock):
+    response = api_client.post('/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00'), format='json')
+
+    assert response.status_code == 201
+    assert response.data['gasto_envio'] == '0.00'
+    assert response.data['total'] == '450.00'
+
+
+@pytest.mark.django_db
+def test_crear_venta_con_gasto_envio_lo_suma_al_total_y_a_caja(api_client, sucursal, producto, stock):
+    response = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00', gasto_envio='50.00'), format='json',
+    )
+
+    assert response.status_code == 201
+    assert response.data['gasto_envio'] == '50.00'
+    assert response.data['total'] == '500.00'
+
+    movimiento_caja = MovimientoCaja.objects.get(referencia_id=response.data['id'])
+    assert movimiento_caja.monto == Decimal('500.00')
+
+
+@pytest.mark.django_db
+def test_crear_venta_con_gasto_envio_negativo_es_rechazada(api_client, sucursal, producto, stock):
+    response = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00', gasto_envio='-10.00'), format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'gasto_envio' in response.data
+    assert not Venta.objects.exists()
+
+
+@pytest.mark.django_db
+def test_crear_venta_con_gasto_envio_no_numerico_es_rechazada(api_client, sucursal, producto, stock):
+    response = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00', gasto_envio='no-es-un-numero'),
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'gasto_envio' in response.data
+    assert not Venta.objects.exists()
 
 
 # --- Entrega --------------------------------------------------------------

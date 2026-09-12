@@ -33,6 +33,7 @@ class Venta(models.Model):
     fecha_entrega = models.DateField(null=True, blank=True)
     fecha_entrega_real = models.DateTimeField(null=True, blank=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    gasto_envio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_ENTREGADA)
 
     class Meta:

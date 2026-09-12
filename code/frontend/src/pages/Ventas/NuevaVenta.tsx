@@ -53,6 +53,7 @@ export function NuevaVenta() {
   const [sucursal, setSucursal] = useState<number | ''>('')
   const [fechaEntrega, setFechaEntrega] = useState('')
   const [lineas, setLineas] = useState<LineaLocal[]>([])
+  const [gastoEnvio, setGastoEnvio] = useState('')
   const [errorFormulario, setErrorFormulario] = useState('')
 
   const [productoNuevaLinea, setProductoNuevaLinea] = useState<number | ''>('')
@@ -112,7 +113,10 @@ export function NuevaVenta() {
     setLineas((actual) => actual.filter((l) => l.clave !== clave))
   }
 
-  const total = lineas.reduce((acumulado, linea) => acumulado + subtotalDe(linea), 0)
+  const gastoEnvioNumero = Number(gastoEnvio)
+  const gastoEnvioEnTotal = gastoEnvio !== '' && Number.isFinite(gastoEnvioNumero) ? gastoEnvioNumero : 0
+  const subtotalProductos = lineas.reduce((acumulado, linea) => acumulado + subtotalDe(linea), 0)
+  const total = subtotalProductos + gastoEnvioEnTotal
 
   const alGuardar = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault()
@@ -126,11 +130,16 @@ export function NuevaVenta() {
       setErrorFormulario('Agrega al menos una línea de producto.')
       return
     }
+    if (gastoEnvio !== '' && (!Number.isFinite(gastoEnvioNumero) || gastoEnvioNumero < 0)) {
+      setErrorFormulario('El gasto de envío debe ser un monto decimal válido y no puede ser negativo.')
+      return
+    }
 
     const datos: VentaFormulario = {
       cliente: cliente || null,
       sucursal,
       fecha_entrega: fechaEntrega || null,
+      gasto_envio: gastoEnvio === '' ? '0' : gastoEnvio,
       detalles: lineas.map((l) => ({ producto: l.productoId, cantidad: l.cantidad })),
     }
 
@@ -187,7 +196,7 @@ export function NuevaVenta() {
         </div>
 
         <div className={styles.seccionLineas}>
-          <h2 className={styles.tituloSeccion}>Líneas de la venta</h2>
+          <h2 className={styles.tituloSeccion}>Productos de la venta</h2>
 
           <div className={styles.filaAgregarLinea}>
             <label className={styles.campo}>
@@ -264,9 +273,30 @@ export function NuevaVenta() {
           )}
 
           <div className={styles.total}>
-            <span>Total:</span>
-            <span data-testid="total-venta">{total.toFixed(2)}</span>
+            <span>Subtotal:</span>
+            <span data-testid="subtotal-venta">{subtotalProductos.toFixed(2)}</span>
           </div>
+        </div>
+
+        <div className={styles.seccionGastoEnvio}>
+          <h2 className={styles.tituloSeccion}>Gastos de envío</h2>
+
+          <label className={styles.campo}>
+            Monto de envío (opcional)
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={gastoEnvio}
+              onChange={(e) => setGastoEnvio(e.target.value)}
+              data-testid="gasto-envio"
+            />
+          </label>
+        </div>
+
+        <div className={styles.total}>
+          <span>Total:</span>
+          <span data-testid="total-venta">{total.toFixed(2)}</span>
         </div>
 
         {errorFormulario && (

@@ -114,4 +114,43 @@ describe('NuevaVenta', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/número entero/i)
     expect(screen.getByTestId('total-venta')).toHaveTextContent('0.00')
   })
+
+  it('muestra el subtotal de productos por separado del total con envío', () => {
+    mockearHooks()
+    renderNuevaVenta()
+    seleccionarSucursal()
+
+    fireEvent.change(screen.getByLabelText('Producto'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Cantidad'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: /agregar línea/i }))
+    expect(screen.getByTestId('subtotal-venta')).toHaveTextContent('90.00')
+    expect(screen.getByTestId('total-venta')).toHaveTextContent('90.00')
+
+    fireEvent.change(screen.getByTestId('gasto-envio'), { target: { value: '15.50' } })
+
+    // El subtotal de productos no cambia con el envío — solo el total lo incluye.
+    expect(screen.getByTestId('subtotal-venta')).toHaveTextContent('90.00')
+    expect(screen.getByTestId('total-venta')).toHaveTextContent('105.50')
+  })
+
+  it('bloquea el guardado con un gasto de envío negativo', async () => {
+    mockearHooks()
+    renderNuevaVenta()
+    seleccionarSucursal()
+
+    fireEvent.change(screen.getByLabelText('Producto'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Cantidad'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: /agregar línea/i }))
+    fireEvent.change(screen.getByTestId('gasto-envio'), { target: { value: '-5' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /guardar venta/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/gasto de envío/i)
+  })
+
+  // No hay un test de "texto no numérico" a este nivel: un <input type="number">
+  // sanea cualquier valor no numérico a cadena vacía a nivel del propio DOM
+  // (verificado también en jsdom), así que nunca llega texto inválido al estado
+  // de React desde este campo — la validación de `gasto_envio` no numérico
+  // vive y se prueba en el backend (`apps/ventas/tests/test_views.py`).
 })
