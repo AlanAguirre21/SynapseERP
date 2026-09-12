@@ -27,6 +27,29 @@ def operador_client(operador):
     return client
 
 
+@pytest.fixture
+def admin(db):
+    return Usuario.objects.create_user(
+        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        rol_usuario='admin',
+    )
+
+
+@pytest.fixture
+def otro_admin(db):
+    return Usuario.objects.create_user(
+        username='admin2', email='admin2@flebosil.test', password='clave-segura-123',
+        rol_usuario='admin',
+    )
+
+
+@pytest.fixture
+def admin_client(admin):
+    client = APIClient()
+    client.force_authenticate(user=admin)
+    return client
+
+
 @pytest.mark.django_db
 def test_usuario_edita_su_propio_username_y_email(operador_client, operador):
     response = operador_client.patch(
@@ -98,3 +121,56 @@ def test_usuario_no_autenticado_no_puede_editar_me(db):
     client = APIClient()
     response = client.patch('/api/usuarios/me/', {'username': 'x'}, format='json')
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_usuario_edita_su_nombre_y_apellidos(operador_client, operador):
+    response = operador_client.patch(
+        '/api/usuarios/me/', {'first_name': 'Ana María', 'last_name': 'García López'}, format='json',
+    )
+    assert response.status_code == 200
+    assert response.data['first_name'] == 'Ana María'
+    assert response.data['last_name'] == 'García López'
+
+    operador.refresh_from_db()
+    assert operador.first_name == 'Ana María'
+    assert operador.last_name == 'García López'
+
+
+# --- Cambio de rol propio (solo admin) --------------------------------
+
+
+@pytest.mark.django_db
+def test_admin_puede_cambiar_su_propio_rol_a_operador(admin_client, admin, otro_admin):
+    response = admin_client.patch('/api/usuarios/me/', {'rol_usuario': 'operador'}, format='json')
+    assert response.status_code == 200
+    assert response.data['rol'] == 'operador'
+
+    admin.refresh_from_db()
+    assert admin.rol_usuario == 'operador'
+
+
+@pytest.mark.django_db
+def test_ultimo_admin_no_puede_autodegradarse(admin_client, admin):
+    response = admin_client.patch('/api/usuarios/me/', {'rol_usuario': 'operador'}, format='json')
+    assert response.status_code == 400
+    assert 'único administrador' in str(response.data)
+
+    admin.refresh_from_db()
+    assert admin.rol_usuario == 'admin'
+
+
+@pytest.mark.django_db
+def test_ultimo_admin_puede_guardar_otros_campos_sin_tocar_su_rol(admin_client, admin):
+    response = admin_client.patch('/api/usuarios/me/', {'rol_usuario': 'admin'}, format='json')
+    assert response.status_code == 200
+    assert response.data['rol'] == 'admin'
+
+
+@pytest.mark.django_db
+def test_operador_no_puede_cambiar_su_rol_aunque_lo_envie_manipulado(operador_client, operador):
+    response = operador_client.patch('/api/usuarios/me/', {'rol_usuario': 'admin'}, format='json')
+    assert response.status_code == 200
+
+    operador.refresh_from_db()
+    assert operador.rol_usuario == 'operador'

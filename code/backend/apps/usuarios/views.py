@@ -39,7 +39,9 @@ class MeView(RetrieveAPIView):
 
     def patch(self, request, *args, **kwargs):
         usuario = self.get_object()
-        serializer = UsuarioPropioSerializer(usuario, data=request.data, partial=True)
+        serializer = UsuarioPropioSerializer(
+            usuario, data=request.data, partial=True, context={'request': request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(UsuarioActualSerializer(usuario).data)

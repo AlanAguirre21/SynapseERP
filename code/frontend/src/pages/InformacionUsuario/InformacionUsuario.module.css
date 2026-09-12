@@ -1,7 +1,7 @@
 @reference "../../index.css";
 
 .pagina {
-  @apply flex flex-col gap-4 max-w-md;
+  @apply flex flex-col gap-4 max-w-md mx-auto border border-texto/10 rounded-lg p-6;
 }
 
 .titulo {
@@ -16,7 +16,8 @@
   @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
 }
 
-.campo input {
+.campo input,
+.campo select {
   @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
 }
 

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
+import type { Usuario } from '../../api/usuarios'
 import { useActualizarMiInformacion, useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { InformacionUsuario } from './InformacionUsuario'
 
@@ -10,18 +11,22 @@ vi.mock('../../hooks/useUsuarioActual')
 const useUsuarioActualMock = vi.mocked(useUsuarioActual)
 const useActualizarMiInformacionMock = vi.mocked(useActualizarMiInformacion)
 
-const USUARIO = {
+const USUARIO: Usuario = {
   id: 1,
   username: 'juanp',
   email: 'juanp@flebosil.test',
-  nombre: 'Juan Pérez',
-  rol: 'operador' as const,
+  first_name: 'Juan',
+  last_name: 'Pérez López',
+  nombre: 'Juan Pérez López',
+  rol: 'operador',
   modulos: [],
 }
 
-function mockearHooks(actualizarMock: ReturnType<typeof vi.fn> = vi.fn()) {
+const USUARIO_ADMIN: Usuario = { ...USUARIO, id: 2, username: 'admin1', rol: 'admin' }
+
+function mockearHooks(actualizarMock: ReturnType<typeof vi.fn> = vi.fn(), usuario: Usuario = USUARIO) {
   useUsuarioActualMock.mockReturnValue(
-    { data: USUARIO, isLoading: false } as unknown as ReturnType<typeof useUsuarioActual>,
+    { data: usuario, isLoading: false } as unknown as ReturnType<typeof useUsuarioActual>,
   )
   useActualizarMiInformacionMock.mockReturnValue(
     { mutateAsync: actualizarMock, isPending: false } as unknown as ReturnType<typeof useActualizarMiInformacion>,
@@ -81,7 +86,9 @@ describe('InformacionUsuario', () => {
     fireEvent.click(screen.getByRole('button', { name: /^confirmar$/i }))
 
     await waitFor(() =>
-      expect(actualizarMock).toHaveBeenCalledWith({ username: 'juan_editado', email: 'juanp@flebosil.test' }),
+      expect(actualizarMock).toHaveBeenCalledWith({
+        username: 'juan_editado', email: 'juanp@flebosil.test', first_name: 'Juan', last_name: 'Pérez López',
+      }),
     )
     expect(await screen.findByRole('status')).toHaveTextContent('se actualizó correctamente')
   })
@@ -113,5 +120,33 @@ describe('InformacionUsuario', () => {
     expect(
       campoCorreo.compareDocumentPosition(enlace) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+  })
+
+  it('un operador no ve un selector de rol', () => {
+    mockearHooks(vi.fn(), USUARIO)
+
+    renderPagina()
+
+    expect(screen.queryByLabelText(/^rol$/i)).not.toBeInTheDocument()
+    expect(screen.getByText('Operador')).toBeInTheDocument()
+  })
+
+  it('un admin ve un selector de rol y puede cambiarlo, pasando por el mismo modal de confirmación', async () => {
+    const actualizarMock = vi.fn().mockResolvedValue(undefined)
+    mockearHooks(actualizarMock, USUARIO_ADMIN)
+
+    renderPagina()
+    fireEvent.change(screen.getByLabelText(/^rol$/i), { target: { value: 'operador' } })
+    fireEvent.click(screen.getByRole('button', { name: /guardar cambios/i }))
+
+    expect(screen.getByRole('dialog', { name: /¿estás seguro\?/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /^confirmar$/i }))
+
+    await waitFor(() =>
+      expect(actualizarMock).toHaveBeenCalledWith(
+        expect.objectContaining({ rol_usuario: 'operador' }),
+      ),
+    )
   })
 })

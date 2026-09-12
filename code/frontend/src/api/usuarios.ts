@@ -10,6 +10,8 @@ export interface Usuario {
   id: number
   username: string
   email: string
+  first_name: string
+  last_name: string
   nombre: string
   rol: 'admin' | 'operador'
   modulos: ModuloMenu[]
@@ -18,6 +20,9 @@ export interface Usuario {
 export interface InformacionUsuarioFormulario {
   username: string
   email: string
+  first_name: string
+  last_name: string
+  rol_usuario?: 'admin' | 'operador'
 }
 
 export async function getUsuarioActual(): Promise<Usuario> {

@@ -11,6 +11,9 @@ interface ErrorGuardarInformacion {
   detail?: string
   username?: string[]
   email?: string[]
+  first_name?: string[]
+  last_name?: string[]
+  rol_usuario?: string[]
 }
 
 function extraerMensajeError(err: unknown): string {
@@ -22,6 +25,9 @@ function extraerMensajeError(err: unknown): string {
     datos?.detail ??
     datos?.username?.[0] ??
     datos?.email?.[0] ??
+    datos?.first_name?.[0] ??
+    datos?.last_name?.[0] ??
+    datos?.rol_usuario?.[0] ??
     'No se pudo guardar la información. Intenta de nuevo.'
   )
 }
@@ -30,12 +36,16 @@ export function InformacionUsuario() {
   const { data: usuario, isLoading } = useUsuarioActual()
   const actualizar = useActualizarMiInformacion()
 
-  const [valores, setValores] = useState<InformacionUsuarioFormulario>({ username: '', email: '' })
+  const [valores, setValores] = useState<InformacionUsuarioFormulario>({
+    username: '', email: '', first_name: '', last_name: '',
+  })
   const [usuarioIdCargado, setUsuarioIdCargado] = useState<number | null>(null)
   const [errorFormulario, setErrorFormulario] = useState('')
   const [confirmando, setConfirmando] = useState(false)
   const [errorConfirmacion, setErrorConfirmacion] = useState('')
   const [exito, setExito] = useState(false)
+
+  const esAdmin = usuario?.rol === 'admin'
 
   // Precarga el formulario una sola vez, cuando `usuario` llega por primera
   // vez — ajustar estado durante el render (en vez de en un `useEffect`)
@@ -43,7 +53,13 @@ export function InformacionUsuario() {
   // ediciones en curso ante un refetch posterior en segundo plano.
   if (usuario && usuario.id !== usuarioIdCargado) {
     setUsuarioIdCargado(usuario.id)
-    setValores({ username: usuario.username, email: usuario.email })
+    setValores({
+      username: usuario.username,
+      email: usuario.email,
+      first_name: usuario.first_name,
+      last_name: usuario.last_name,
+      ...(usuario.rol === 'admin' ? { rol_usuario: usuario.rol } : {}),
+    })
   }
 
   function actualizarCampo(campo: keyof InformacionUsuarioFormulario, valor: string) {
@@ -55,8 +71,8 @@ export function InformacionUsuario() {
     evento.preventDefault()
     setErrorFormulario('')
 
-    if (!valores.username.trim() || !valores.email.trim()) {
-      setErrorFormulario('Completa nombre de usuario y correo electrónico.')
+    if (!valores.username.trim() || !valores.email.trim() || !valores.first_name.trim() || !valores.last_name.trim()) {
+      setErrorFormulario('Completa nombre de usuario, correo electrónico, nombre(s) y apellidos.')
       return
     }
 
@@ -113,10 +129,44 @@ export function InformacionUsuario() {
             Cambiar contraseña
           </Link>
 
-          <div className={styles.campo}>
-            Rol
-            <p className={styles.valorSoloLectura}>{rolTexto}</p>
-          </div>
+          <label className={styles.campo}>
+            Nombre(s)
+            <input
+              type="text"
+              value={valores.first_name}
+              onChange={(evento) => actualizarCampo('first_name', evento.target.value)}
+              required
+            />
+          </label>
+
+          <label className={styles.campo}>
+            Apellidos
+            <input
+              type="text"
+              value={valores.last_name}
+              onChange={(evento) => actualizarCampo('last_name', evento.target.value)}
+              placeholder="Paterno y materno"
+              required
+            />
+          </label>
+
+          {esAdmin ? (
+            <label className={styles.campo}>
+              Rol
+              <select
+                value={valores.rol_usuario}
+                onChange={(evento) => actualizarCampo('rol_usuario', evento.target.value)}
+              >
+                <option value="admin">Administrador</option>
+                <option value="operador">Operador</option>
+              </select>
+            </label>
+          ) : (
+            <div className={styles.campo}>
+              Rol
+              <p className={styles.valorSoloLectura}>{rolTexto}</p>
+            </div>
+          )}
 
           {errorFormulario && (
             <p className={styles.error} role="alert">
