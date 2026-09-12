@@ -68,12 +68,16 @@ class VentaSerializer(serializers.ModelSerializer):
     sucursal_nombre = serializers.CharField(source='sucursal.nombre_sucursal', read_only=True)
     usuario_nombre = serializers.SerializerMethodField()
     detalles = DetalleVentaSerializer(many=True)
+    gasto_envio = serializers.DecimalField(
+        max_digits=12, decimal_places=2, required=False, default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+    )
 
     class Meta:
         model = Venta
         fields = [
             'id', 'cliente', 'cliente_nombre', 'sucursal', 'sucursal_nombre', 'usuario', 'usuario_nombre',
-            'fecha', 'fecha_entrega', 'fecha_entrega_real', 'total', 'estado', 'detalles',
+            'fecha', 'fecha_entrega', 'fecha_entrega_real', 'total', 'gasto_envio', 'estado', 'detalles',
         ]
         read_only_fields = ['id', 'usuario', 'fecha', 'fecha_entrega_real', 'total', 'estado']
 
@@ -110,6 +114,6 @@ class VentaSerializer(serializers.ModelSerializer):
             )
             total += subtotal
 
-        venta.total = total
+        venta.total = total + venta.gasto_envio
         venta.save(update_fields=['total'])
         return venta

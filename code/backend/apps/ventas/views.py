@@ -185,10 +185,12 @@ class VentaViewSet(viewsets.ModelViewSet):
         html = render_to_string('ventas/ticket.html', {
             'venta': venta,
             'detalles': venta.detalles.select_related('producto').all(),
-            'cliente_nombre': venta.cliente.nombre_cliente if venta.cliente else 'Sin cliente',
-            # Nunca cae al username: si el usuario no tiene nombre/apellido
-            # cargados, se usa el correo antes que exponer ese dato interno.
-            'usuario_nombre': venta.usuario.get_full_name() or venta.usuario.email,
+            'cliente': venta.cliente,
+            'usuario': venta.usuario,
+            # `total` se construye como subtotal + gasto_envio (ver
+            # `VentaSerializer.create()`), así que restar reproduce el
+            # subtotal sin volver a sumar `detalles`.
+            'subtotal_productos': venta.total - venta.gasto_envio,
         })
 
         buffer = io.BytesIO()

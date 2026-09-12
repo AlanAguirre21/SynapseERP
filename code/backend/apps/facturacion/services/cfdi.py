@@ -10,6 +10,26 @@ def armar_datos_cfdi(venta, factura, serie_folio):
     empresa = DatosFiscalesEmpresa.cargar()
     datos_fiscales_cliente = venta.cliente.datos_fiscales
 
+    conceptos = [
+        {
+            'descripcion': detalle.producto.nombre_producto,
+            'cantidad': str(detalle.cantidad),
+            'valor_unitario': str(detalle.precio_unitario),
+            'importe': str(detalle.subtotal),
+        }
+        for detalle in venta.detalles.select_related('producto').all()
+    ]
+    # Sin esto, el total del CFDI no reconciliaría con la suma de sus
+    # propios conceptos cuando la venta tiene gasto de envío — un PAC real
+    # rechazaría ese timbrado (ver spec.md de 011 · Ventas, "Gasto de envío").
+    if venta.gasto_envio:
+        conceptos.append({
+            'descripcion': 'Gastos de envío',
+            'cantidad': '1.00',
+            'valor_unitario': str(venta.gasto_envio),
+            'importe': str(venta.gasto_envio),
+        })
+
     return {
         'emisor': {
             'rfc': empresa.rfc,
@@ -28,14 +48,6 @@ def armar_datos_cfdi(venta, factura, serie_folio):
         'fecha': venta.fecha.isoformat(),
         'forma_pago': factura.forma_pago,
         'metodo_pago': factura.metodo_pago,
-        'conceptos': [
-            {
-                'descripcion': detalle.producto.nombre_producto,
-                'cantidad': str(detalle.cantidad),
-                'valor_unitario': str(detalle.precio_unitario),
-                'importe': str(detalle.subtotal),
-            }
-            for detalle in venta.detalles.select_related('producto').all()
-        ],
+        'conceptos': conceptos,
         'total': str(venta.total),
     }

@@ -1,5 +1,6 @@
 import base64
 from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -83,10 +84,12 @@ def serie_folio(db):
     return SerieFolio.objects.create(serie='A', folio_actual=0, activo=True)
 
 
-def _crear_venta(api_client, sucursal, producto, cliente=None, cantidad='2.00'):
+def _crear_venta(api_client, sucursal, producto, cliente=None, cantidad='2.00', gasto_envio=None):
     payload = {'sucursal': sucursal.id, 'detalles': [{'producto': producto.id, 'cantidad': cantidad}]}
     if cliente is not None:
         payload['cliente'] = cliente.id
+    if gasto_envio is not None:
+        payload['gasto_envio'] = gasto_envio
     response = api_client.post('/api/ventas/', payload, format='json')
     assert response.status_code == 201, response.data
     return Venta.objects.get(id=response.data['id'])
@@ -133,6 +136,26 @@ def test_generar_factura_exitosa_queda_timbrada(api_client, sucursal, producto, 
 
     serie_folio.refresh_from_db()
     assert serie_folio.folio_actual == 1
+
+
+@pytest.mark.django_db
+def test_generar_factura_de_venta_con_gasto_envio_agrega_concepto_y_reconcilia_total(
+    api_client, sucursal, producto, stock, cliente_con_fiscales, serie_folio,
+):
+    venta = _crear_venta(api_client, sucursal, producto, cliente=cliente_con_fiscales, gasto_envio='50.00')
+    parche, cliente_falso = _mock_pac()
+
+    with parche:
+        response = api_client.post('/api/facturacion/', _payload_factura(venta), format='json')
+
+    assert response.status_code == 201, response.data
+
+    datos_cfdi = cliente_falso.timbrar.call_args[0][0]
+    descripciones = [c['descripcion'] for c in datos_cfdi['conceptos']]
+    assert 'Gastos de envío' in descripciones
+
+    suma_conceptos = sum(Decimal(c['importe']) for c in datos_cfdi['conceptos'])
+    assert suma_conceptos == Decimal(datos_cfdi['total']) == venta.total
 
 
 @pytest.mark.django_db

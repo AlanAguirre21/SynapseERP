@@ -34,6 +34,7 @@ function ventaBase(estado: Venta['estado']): Venta {
     fecha_entrega: null,
     fecha_entrega_real: null,
     total: '90.00',
+    gasto_envio: '0.00',
     estado,
     detalles: [{ id: 1, producto: 1, cantidad: '2.00', precio_unitario: '45.00', subtotal: '90.00' }],
   }
