@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 import { cambiarContrasena } from '../../api/auth'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { Icono } from '../../components/common/Icono'
 import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
 import styles from './CambiarContrasena.module.css'
@@ -32,6 +33,8 @@ export function CambiarContrasena() {
   const [confirmacion, setConfirmacion] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
+  const [mostrarPassword, setMostrarPassword] = useState(false)
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false)
 
   if (!email) {
     return (
@@ -79,25 +82,49 @@ export function CambiarContrasena() {
       <form className={styles.formulario} onSubmit={alEnviar} noValidate>
         <label className={styles.campo}>
           Nueva contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(evento) => setPassword(evento.target.value)}
-            autoComplete="new-password"
-            required
-          />
+          <div className={styles.campoConIcono}>
+            <input
+              type={mostrarPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(evento) => setPassword(evento.target.value)}
+              autoComplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              className={styles.botonOjo}
+              onClick={() => setMostrarPassword((valor) => !valor)}
+              aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              <Icono nombre={mostrarPassword ? 'ojoCerrado' : 'ojo'} tamano={18} />
+            </button>
+          </div>
         </label>
 
         <label className={styles.campo}>
           Confirmar nueva contraseña
-          <input
-            type="password"
-            value={confirmacion}
-            onChange={(evento) => setConfirmacion(evento.target.value)}
-            autoComplete="new-password"
-            required
-          />
+          <div className={styles.campoConIcono}>
+            <input
+              type={mostrarConfirmacion ? 'text' : 'password'}
+              value={confirmacion}
+              onChange={(evento) => setConfirmacion(evento.target.value)}
+              autoComplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              className={styles.botonOjo}
+              onClick={() => setMostrarConfirmacion((valor) => !valor)}
+              aria-label={mostrarConfirmacion ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              <Icono nombre={mostrarConfirmacion ? 'ojoCerrado' : 'ojo'} tamano={18} />
+            </button>
+          </div>
         </label>
+
+        <Link to="/login" className={styles.enlace}>
+          Volver a la página de inicio
+        </Link>
 
         {error && (
           <p className={styles.error} role="alert">

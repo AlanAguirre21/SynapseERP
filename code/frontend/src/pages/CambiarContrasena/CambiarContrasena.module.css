@@ -9,11 +9,35 @@
 }
 
 .campo input {
-  @apply px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+  @apply w-full px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
 }
 
 .campo input:focus {
   @apply border-primario shadow-[0_0_0_3px_var(--color-primario-suave)];
+}
+
+.campoConIcono {
+  @apply relative;
+}
+
+.campoConIcono input {
+  @apply pr-11;
+}
+
+.botonOjo {
+  @apply absolute top-1/2 right-1 -translate-y-1/2 flex items-center justify-center w-9 h-9 bg-transparent border-0 text-texto/50 cursor-pointer rounded-control transition-colors;
+}
+
+.botonOjo:hover {
+  @apply text-primario bg-primario-suave;
+}
+
+.enlace {
+  @apply text-center text-[0.85rem] text-primario no-underline;
+}
+
+.enlace:hover {
+  @apply underline;
 }
 
 .error {
