@@ -146,12 +146,16 @@ CORS_ALLOWED_ORIGINS = [
 
 
 # Correo saliente (feature 004 · Recuperar contraseña)
-# En desarrollo (DEBUG=True) los correos se imprimen en la consola del
+# El backend a usar depende de si hay credenciales SMTP configuradas
+# (EMAIL_HOST en .env), no de DEBUG — así se puede probar el envío real
+# también en desarrollo sin forzar DEBUG=False (que activa otro
+# comportamiento no relacionado, como páginas de error genéricas). Sin
+# EMAIL_HOST configurado, los correos se imprimen en la consola del
 # runserver en vez de enviarse de verdad, para no requerir credenciales SMTP
-# reales en el entorno local.
+# reales solo para levantar el entorno local.
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+    'django.core.mail.backends.smtp.EmailBackend' if os.environ.get('EMAIL_HOST') else 'django.core.mail.backends.console.EmailBackend',
 )
 EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))

@@ -1,11 +1,27 @@
 @reference "../../index.css";
 
 .pagina {
-  @apply flex flex-col gap-4 max-w-md mx-auto border border-texto/10 rounded-lg p-6;
+  @apply flex flex-col gap-6 max-w-md mx-auto bg-superficie shadow-marcada rounded-tarjeta p-7;
 }
 
 .titulo {
-  @apply m-0 text-texto text-xl font-semibold;
+  @apply m-0 text-texto text-xl font-titulo font-semibold;
+}
+
+.identidad {
+  @apply flex items-center gap-4 pb-6 border-b border-borde;
+}
+
+.avatar {
+  @apply flex items-center justify-center w-14 h-14 shrink-0 rounded-full bg-primario-suave text-primario font-titulo font-semibold text-lg;
+}
+
+.nombreCompleto {
+  @apply m-0 text-texto font-titulo font-semibold text-base;
+}
+
+.usernameEtiqueta {
+  @apply m-0 text-texto/55 text-[0.8rem];
 }
 
 .formulario {
@@ -18,11 +34,16 @@
 
 .campo input,
 .campo select {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+  @apply px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+}
+
+.campo input:focus,
+.campo select:focus {
+  @apply border-primario shadow-[0_0_0_3px_var(--color-primario-suave)];
 }
 
 .valorSoloLectura {
-  @apply m-0 px-3 py-[10px] text-base text-texto/70;
+  @apply inline-block m-0 mt-0.5 px-3 py-1 text-[0.85rem] font-medium text-secundario-texto bg-secundario-suave rounded-full w-fit;
 }
 
 .error {
@@ -38,7 +59,7 @@
 }
 
 .enlace {
-  @apply self-start -mt-2 text-[0.85rem] text-primario no-underline;
+  @apply self-start -mt-2 flex items-center gap-1.5 text-[0.85rem] text-primario no-underline;
 }
 
 .enlace:hover {

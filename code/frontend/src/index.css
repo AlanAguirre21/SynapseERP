@@ -1,11 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
 @import "tailwindcss";
 
 @theme {
   /* Paleta de marca */
   --color-primario: #a6295f;
+  --color-primario-suave: #f3dce6;
   --color-secundario: #8bc98c;
-  --color-fondo: #ffffff;
-  --color-texto: #1a1a1a;
+  --color-secundario-suave: #e3f2e2;
+  --color-secundario-texto: #3d6b40;
+  --color-fondo: #fbf8f6;
+  --color-superficie: #ffffff;
+  --color-texto: #241f26;
+  --color-borde: #ebe2e6;
 
   /* Colores de estado (independientes de la paleta de marca) */
   --color-exito: #2e7d32;
@@ -14,6 +20,16 @@
 
   /* Tipografía */
   --font-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-titulo: 'Fraunces', Georgia, serif;
+
+  /* Radios (tokens propios: no pisan la escala rounded-* por defecto de Tailwind,
+     para no re-teñir componentes que aún no adoptan el nuevo sistema visual) */
+  --radius-control: 10px;
+  --radius-tarjeta: 20px;
+
+  /* Sombras (mismo criterio que los radios: tokens propios, no la escala shadow-* nativa) */
+  --shadow-suave: 0 1px 3px rgba(166, 41, 95, 0.06);
+  --shadow-marcada: 0 10px 28px rgba(166, 41, 95, 0.12);
 
   /* Breakpoints */
   --breakpoint-sm: 480px;

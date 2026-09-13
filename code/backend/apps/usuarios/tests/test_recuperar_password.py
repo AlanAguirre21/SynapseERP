@@ -56,6 +56,28 @@ def test_recuperar_mensaje_identico_exista_o_no_el_correo(usuario_activo):
 
 
 @pytest.mark.django_db
+def test_recuperar_correo_incluye_version_html_con_marca_y_codigo(usuario_activo):
+    cache.clear()
+    client = APIClient()
+    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+
+    registro = CodigoRecuperacion.objects.get(usuario=usuario_activo, usado=False)
+    mensaje = mail.outbox[0]
+
+    assert registro.codigo in mensaje.body
+
+    tipos_alternativas = [tipo for _contenido, tipo in mensaje.alternatives]
+    assert 'text/html' in tipos_alternativas
+
+    html = next(contenido for contenido, tipo in mensaje.alternatives if tipo == 'text/html')
+    assert registro.codigo in html
+    assert 'cid:logo_flebosil' in html
+
+    assert len(mensaje.attachments) == 1
+    assert mensaje.attachments[0].get('Content-ID') == '<logo_flebosil>'
+
+
+@pytest.mark.django_db
 def test_reenviar_codigo_invalida_el_anterior(usuario_activo):
     cache.clear()
     client = APIClient()

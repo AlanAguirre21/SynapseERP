@@ -24,6 +24,7 @@ import { Sucursales } from './pages/Sucursales/Sucursales'
 import { DetalleVenta } from './pages/Ventas/DetalleVenta'
 import { NuevaVenta } from './pages/Ventas/NuevaVenta'
 import { Ventas } from './pages/Ventas/Ventas'
+import { PreviewDiseno } from './PreviewDiseno'
 
 const queryClient = new QueryClient()
 
@@ -33,6 +34,11 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/preview-diseno" element={<PreviewDiseno />} />
+            <Route
+              path="/preview-cambiar-contrasena"
+              element={<Navigate to="/cambiar-contrasena" state={{ email: 'preview@flebosil.test' }} replace />}
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
             <Route path="/cambiar-contrasena" element={<CambiarContrasena />} />

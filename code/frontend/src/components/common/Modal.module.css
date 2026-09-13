@@ -5,15 +5,15 @@
 }
 
 .contenido {
-  @apply w-full max-w-[480px] max-h-[90vh] overflow-y-auto bg-fondo rounded-xl shadow-[0_8px_24px_color-mix(in_srgb,var(--color-texto)_25%,transparent)];
+  @apply w-full max-w-[480px] max-h-[90vh] overflow-y-auto bg-superficie rounded-tarjeta shadow-marcada;
 }
 
 .encabezado {
-  @apply flex items-center justify-between px-6 py-4 border-b border-texto/10;
+  @apply flex items-center justify-between px-6 py-4 border-b border-borde;
 }
 
 .titulo {
-  @apply m-0 text-texto text-lg font-semibold;
+  @apply m-0 text-texto text-lg font-titulo font-semibold;
 }
 
 .botonCerrar {

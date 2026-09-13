@@ -2,9 +2,11 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { Icono } from '../../components/common/Icono'
 import { Modal } from '../../components/common/Modal'
 import type { InformacionUsuarioFormulario } from '../../api/usuarios'
 import { useActualizarMiInformacion, useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { obtenerIniciales } from '../../utils/texto'
 import styles from './InformacionUsuario.module.css'
 
 interface ErrorGuardarInformacion {
@@ -104,86 +106,99 @@ export function InformacionUsuario() {
       {isLoading ? (
         <p>Cargando información…</p>
       ) : (
-        <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-          <label className={styles.campo}>
-            Nombre de usuario
-            <input
-              type="text"
-              value={valores.username}
-              onChange={(evento) => actualizarCampo('username', evento.target.value)}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Correo electrónico
-            <input
-              type="email"
-              value={valores.email}
-              onChange={(evento) => actualizarCampo('email', evento.target.value)}
-              required
-            />
-          </label>
-
-          <Link to="/recuperar-contrasena" className={styles.enlace}>
-            Cambiar contraseña
-          </Link>
-
-          <label className={styles.campo}>
-            Nombre(s)
-            <input
-              type="text"
-              value={valores.first_name}
-              onChange={(evento) => actualizarCampo('first_name', evento.target.value)}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Apellidos
-            <input
-              type="text"
-              value={valores.last_name}
-              onChange={(evento) => actualizarCampo('last_name', evento.target.value)}
-              placeholder="Paterno y materno"
-              required
-            />
-          </label>
-
-          {esAdmin ? (
-            <label className={styles.campo}>
-              Rol
-              <select
-                value={valores.rol_usuario}
-                onChange={(evento) => actualizarCampo('rol_usuario', evento.target.value)}
-              >
-                <option value="admin">Administrador</option>
-                <option value="operador">Operador</option>
-              </select>
-            </label>
-          ) : (
-            <div className={styles.campo}>
-              Rol
-              <p className={styles.valorSoloLectura}>{rolTexto}</p>
+        <>
+          <div className={styles.identidad}>
+            <span className={styles.avatar} aria-hidden="true">
+              {obtenerIniciales(usuario?.nombre)}
+            </span>
+            <div>
+              <p className={styles.nombreCompleto}>{usuario?.nombre}</p>
+              <p className={styles.usernameEtiqueta}>@{usuario?.username}</p>
             </div>
-          )}
-
-          {errorFormulario && (
-            <p className={styles.error} role="alert">
-              {errorFormulario}
-            </p>
-          )}
-
-          {exito && (
-            <p className={styles.exito} role="status">
-              Tu información se actualizó correctamente.
-            </p>
-          )}
-
-          <div className={styles.accionesFormulario}>
-            <BotonPrimario type="submit">Guardar cambios</BotonPrimario>
           </div>
-        </form>
+
+          <form className={styles.formulario} onSubmit={alEnviar} noValidate>
+            <label className={styles.campo}>
+              Nombre de usuario
+              <input
+                type="text"
+                value={valores.username}
+                onChange={(evento) => actualizarCampo('username', evento.target.value)}
+                required
+              />
+            </label>
+
+            <label className={styles.campo}>
+              Correo electrónico
+              <input
+                type="email"
+                value={valores.email}
+                onChange={(evento) => actualizarCampo('email', evento.target.value)}
+                required
+              />
+            </label>
+
+            <Link to="/recuperar-contrasena" className={styles.enlace}>
+              <Icono nombre="candado" tamano={14} />
+              Cambiar contraseña
+            </Link>
+
+            <label className={styles.campo}>
+              Nombre(s)
+              <input
+                type="text"
+                value={valores.first_name}
+                onChange={(evento) => actualizarCampo('first_name', evento.target.value)}
+                required
+              />
+            </label>
+
+            <label className={styles.campo}>
+              Apellidos
+              <input
+                type="text"
+                value={valores.last_name}
+                onChange={(evento) => actualizarCampo('last_name', evento.target.value)}
+                placeholder="Paterno y materno"
+                required
+              />
+            </label>
+
+            {esAdmin ? (
+              <label className={styles.campo}>
+                Rol
+                <select
+                  value={valores.rol_usuario}
+                  onChange={(evento) => actualizarCampo('rol_usuario', evento.target.value)}
+                >
+                  <option value="admin">Administrador</option>
+                  <option value="operador">Operador</option>
+                </select>
+              </label>
+            ) : (
+              <div className={styles.campo}>
+                Rol
+                <p className={styles.valorSoloLectura}>{rolTexto}</p>
+              </div>
+            )}
+
+            {errorFormulario && (
+              <p className={styles.error} role="alert">
+                {errorFormulario}
+              </p>
+            )}
+
+            {exito && (
+              <p className={styles.exito} role="status">
+                Tu información se actualizó correctamente.
+              </p>
+            )}
+
+            <div className={styles.accionesFormulario}>
+              <BotonPrimario type="submit">Guardar cambios</BotonPrimario>
+            </div>
+          </form>
+        </>
       )}
 
       <Modal titulo="¿Estás seguro?" abierto={confirmando} onCerrar={cancelarConfirmacion}>

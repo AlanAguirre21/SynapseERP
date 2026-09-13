@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
 import styles from './Login.module.css'
 
@@ -49,13 +51,8 @@ export function Login() {
   }
 
   return (
-    <div className={styles.pagina}>
+    <PaginaAuth titulo="Bienvenido" subtitulo="Ingresa a tu cuenta para continuar">
       <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-        <div className={styles.encabezado}>
-          <h1 className={styles.logoTexto}>FleboSil</h1>
-          <p className={styles.subtitulo}>Enterprise Manager</p>
-        </div>
-
         <label className={styles.campo}>
           Correo electrónico
           <input
@@ -84,14 +81,14 @@ export function Login() {
           </p>
         )}
 
-        <button type="submit" className={styles.boton} disabled={cargando}>
+        <BotonPrimario type="submit" disabled={cargando}>
           {cargando ? 'Ingresando…' : 'Ingresar'}
-        </button>
+        </BotonPrimario>
 
         <Link to="/recuperar-contrasena" className={styles.enlace}>
           ¿Olvidaste tu contraseña?
         </Link>
       </form>
-    </div>
+    </PaginaAuth>
   )
 }

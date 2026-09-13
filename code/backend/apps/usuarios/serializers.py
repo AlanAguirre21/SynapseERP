@@ -1,12 +1,15 @@
 import secrets
 from datetime import timedelta
+from email.message import MIMEPart
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
@@ -21,6 +24,46 @@ from .models import CodigoRecuperacion
 Usuario = get_user_model()
 
 VIGENCIA_CODIGO_MINUTOS = 10
+
+RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_flebosil.png'
+
+
+def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
+    """Arma el correo de recuperación con parte texto plano + HTML con marca.
+
+    El logo va embebido como adjunto con Content-ID (`cid:logo_flebosil`) en
+    vez de referenciarse por URL pública — el backend todavía no está
+    desplegado en un dominio accesible, y varios clientes de correo bloquean
+    por defecto imágenes cargadas desde URLs externas.
+    """
+    texto_plano = (
+        f'Tu código de recuperación es: {codigo}\n'
+        f'Vence en {VIGENCIA_CODIGO_MINUTOS} minutos. '
+        'Si no solicitaste este código, ignora este correo.'
+    )
+    html = render_to_string('usuarios/email_recuperacion.html', {
+        'codigo': codigo,
+        'vigencia_minutos': VIGENCIA_CODIGO_MINUTOS,
+    })
+
+    mensaje = EmailMultiAlternatives(
+        subject='Código de recuperación de contraseña — FleboSil',
+        body=texto_plano,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[email],
+    )
+    mensaje.attach_alternative(html, 'text/html')
+
+    with open(RUTA_LOGO_CORREO, 'rb') as archivo_logo:
+        datos_logo = archivo_logo.read()
+    logo = MIMEPart()
+    logo.set_content(
+        datos_logo, maintype='image', subtype='png',
+        disposition='inline', filename='logo_flebosil.png', cid='<logo_flebosil>',
+    )
+    mensaje.attach(logo)
+
+    return mensaje
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -198,16 +241,7 @@ class SolicitarRecuperacionSerializer(serializers.Serializer):
             expira_en=timezone.now() + timedelta(minutes=VIGENCIA_CODIGO_MINUTOS),
         )
 
-        send_mail(
-            subject='Código de recuperación de contraseña — FleboSil',
-            message=(
-                f'Tu código de recuperación es: {codigo}\n'
-                f'Vence en {VIGENCIA_CODIGO_MINUTOS} minutos. '
-                'Si no solicitaste este código, ignora este correo.'
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-        )
+        _mensaje_recuperacion(email, codigo).send()
 
 
 class VerificarCodigoSerializer(serializers.Serializer):

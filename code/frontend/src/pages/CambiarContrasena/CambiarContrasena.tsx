@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 import { cambiarContrasena } from '../../api/auth'
+import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
 import styles from './CambiarContrasena.module.css'
 
@@ -73,13 +75,8 @@ export function CambiarContrasena() {
   }
 
   return (
-    <div className={styles.pagina}>
+    <PaginaAuth titulo="Nueva contraseña" subtitulo="Elige una contraseña nueva para tu cuenta">
       <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-        <div className={styles.encabezado}>
-          <h1 className={styles.logoTexto}>FleboSil</h1>
-          <p className={styles.subtitulo}>Nueva contraseña</p>
-        </div>
-
         <label className={styles.campo}>
           Nueva contraseña
           <input
@@ -108,10 +105,10 @@ export function CambiarContrasena() {
           </p>
         )}
 
-        <button type="submit" className={styles.boton} disabled={cargando}>
+        <BotonPrimario type="submit" disabled={cargando}>
           {cargando ? 'Guardando…' : 'Guardar nueva contraseña'}
-        </button>
+        </BotonPrimario>
       </form>
-    </div>
+    </PaginaAuth>
   )
 }
