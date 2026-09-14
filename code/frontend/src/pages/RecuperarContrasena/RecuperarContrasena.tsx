@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { solicitarRecuperacion, verificarCodigo } from '../../api/auth'
+import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { PaginaAuth } from '../../components/common/PaginaAuth'
 import styles from './RecuperarContrasena.module.css'
 
 const MENSAJE_ENVIO_GENERICO = 'Si el correo está registrado, te enviamos un código de verificación.'
@@ -82,90 +84,76 @@ export function RecuperarContrasena() {
     }
   }
 
-  return (
-    <div className={styles.pagina}>
-      {paso === 'correo' ? (
-        <form className={styles.formulario} onSubmit={alEnviarCorreo} noValidate>
-          <div className={styles.encabezado}>
-            <h1 className={styles.logoTexto}>FleboSil</h1>
-            <p className={styles.subtitulo}>Recuperar contraseña</p>
-          </div>
+  return paso === 'correo' ? (
+    <PaginaAuth titulo="Recuperar contraseña" subtitulo="Te enviaremos un código de verificación por correo">
+      <form className={styles.formulario} onSubmit={alEnviarCorreo} noValidate>
+        <label className={styles.campo}>
+          Correo electrónico
+          <input
+            type="email"
+            value={email}
+            onChange={(evento) => setEmail(evento.target.value)}
+            autoComplete="username"
+            required
+          />
+        </label>
 
-          <label className={styles.campo}>
-            Correo electrónico
-            <input
-              type="email"
-              value={email}
-              onChange={(evento) => setEmail(evento.target.value)}
-              autoComplete="username"
-              required
-            />
-          </label>
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
 
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
+        <BotonPrimario type="submit" disabled={cargando}>
+          {cargando ? 'Enviando…' : 'Enviar código'}
+        </BotonPrimario>
 
-          <button type="submit" className={styles.boton} disabled={cargando}>
-            {cargando ? 'Enviando…' : 'Enviar código'}
-          </button>
+        <Link to="/login" className={styles.enlace}>
+          Volver a iniciar sesión
+        </Link>
+      </form>
+    </PaginaAuth>
+  ) : (
+    <PaginaAuth titulo="Verifica tu código" subtitulo={`Enviamos un código de 6 dígitos a ${email}`}>
+      <form className={styles.formulario} onSubmit={alVerificarCodigo} noValidate>
+        {mensaje && <p className={styles.mensaje}>{mensaje}</p>}
 
-          <Link to="/login" className={styles.enlace}>
-            Volver a iniciar sesión
-          </Link>
-        </form>
-      ) : (
-        <form className={styles.formulario} onSubmit={alVerificarCodigo} noValidate>
-          <div className={styles.encabezado}>
-            <h1 className={styles.logoTexto}>FleboSil</h1>
-            <p className={styles.subtitulo}>Verifica tu código</p>
-          </div>
+        <label className={styles.campo}>
+          Código de 6 dígitos
+          <input
+            type="text"
+            inputMode="numeric"
+            className={styles.inputCodigo}
+            maxLength={6}
+            value={codigo}
+            onChange={(evento) => setCodigo(evento.target.value.replace(/\D/g, ''))}
+            required
+          />
+        </label>
 
-          {mensaje && <p className={styles.mensaje}>{mensaje}</p>}
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
 
-          <label className={styles.campo}>
-            Código de 6 dígitos
-            <input
-              type="text"
-              inputMode="numeric"
-              className={styles.inputCodigo}
-              maxLength={6}
-              value={codigo}
-              onChange={(evento) => setCodigo(evento.target.value.replace(/\D/g, ''))}
-              required
-            />
-          </label>
+        <BotonPrimario type="submit" disabled={cargando || codigo.length !== 6}>
+          {cargando ? 'Verificando…' : 'Verificar código'}
+        </BotonPrimario>
 
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
+        <button
+          type="button"
+          className={styles.enlaceBoton}
+          onClick={alReenviar}
+          disabled={cargando}
+        >
+          Reenviar código
+        </button>
 
-          <button
-            type="submit"
-            className={styles.boton}
-            disabled={cargando || codigo.length !== 6}
-          >
-            {cargando ? 'Verificando…' : 'Verificar código'}
-          </button>
-
-          <button
-            type="button"
-            className={styles.enlaceBoton}
-            onClick={alReenviar}
-            disabled={cargando}
-          >
-            Reenviar código
-          </button>
-
-          <Link to="/login" className={styles.enlace}>
-            Volver a iniciar sesión
-          </Link>
-        </form>
-      )}
-    </div>
+        <Link to="/login" className={styles.enlace}>
+          Volver a iniciar sesión
+        </Link>
+      </form>
+    </PaginaAuth>
   )
 }

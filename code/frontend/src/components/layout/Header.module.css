@@ -1,7 +1,7 @@
 @reference "../../index.css";
 
 .header {
-  @apply flex items-center justify-between h-16 px-4 bg-primario text-fondo;
+  @apply flex items-center justify-between h-16 px-4 bg-fondo text-texto border-b border-borde;
 }
 
 .izquierda {
@@ -9,23 +9,23 @@
 }
 
 .botonSidebar {
-  @apply bg-transparent border-0 text-inherit text-xl cursor-pointer p-2 min-w-[44px] min-h-[44px];
+  @apply bg-transparent border-0 text-texto/70 cursor-pointer p-2 min-w-[44px] min-h-[44px] rounded-control transition-colors;
+}
+
+.botonSidebar:hover {
+  @apply bg-primario-suave text-primario;
 }
 
 .logo {
-  @apply flex flex-col leading-[1.1] no-underline text-inherit;
+  @apply flex items-center no-underline text-inherit;
 }
 
-.logoTexto {
-  @apply font-bold text-[1.1rem];
-}
-
-.subtitulo {
-  @apply text-[0.7rem] opacity-[0.85];
+.logoImg {
+  @apply h-10 w-auto block;
 }
 
 .derecha {
-  @apply flex items-center gap-4;
+  @apply flex items-center gap-2;
 }
 
 .notificaciones,
@@ -35,11 +35,31 @@
 
 .botonNotificaciones,
 .botonUsuario {
-  @apply bg-transparent border-0 text-inherit cursor-pointer min-w-[44px] min-h-[44px] flex items-center gap-2 relative;
+  @apply bg-transparent border-0 text-texto cursor-pointer min-h-[44px] flex items-center gap-2 relative px-2 rounded-control transition-colors;
+}
+
+.botonNotificaciones {
+  @apply min-w-[44px] justify-center;
+}
+
+.botonNotificaciones:hover {
+  @apply bg-primario-suave text-primario;
+}
+
+.botonUsuario:hover {
+  @apply bg-texto/5;
 }
 
 .contador {
-  @apply absolute top-[2px] right-[2px] bg-error text-fondo rounded-full text-[0.65rem] min-w-[16px] h-4 flex items-center justify-center px-1;
+  @apply absolute top-0 right-0 bg-error text-fondo rounded-full text-[0.65rem] min-w-[16px] h-4 flex items-center justify-center px-1;
+}
+
+.avatar {
+  @apply flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primario-suave text-primario font-titulo font-semibold text-[0.8rem];
+}
+
+.datosUsuario {
+  @apply flex flex-col items-start leading-tight;
 }
 
 .nombreUsuario {
@@ -47,11 +67,11 @@
 }
 
 .rolUsuario {
-  @apply text-[0.7rem] opacity-[0.85] capitalize;
+  @apply text-[0.7rem] text-texto/60 capitalize;
 }
 
 .dropdown {
-  @apply absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-fondo text-texto rounded-lg shadow-[0_4px_16px_color-mix(in_srgb,var(--color-texto)_20%,transparent)] overflow-hidden z-10;
+  @apply absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-superficie text-texto rounded-control shadow-marcada border border-borde overflow-hidden z-10;
 }
 
 .dropdownVacio {
@@ -75,5 +95,5 @@
 }
 
 .itemMenu:hover {
-  @apply bg-texto/5;
+  @apply bg-primario-suave/50;
 }

@@ -1,12 +1,15 @@
 import secrets
 from datetime import timedelta
+from email.message import MIMEPart
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
@@ -14,12 +17,53 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from core.modules import modulos_para_rol
+from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
 from .models import CodigoRecuperacion
 
 Usuario = get_user_model()
 
 VIGENCIA_CODIGO_MINUTOS = 10
+
+RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_flebosil.png'
+
+
+def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
+    """Arma el correo de recuperación con parte texto plano + HTML con marca.
+
+    El logo va embebido como adjunto con Content-ID (`cid:logo_flebosil`) en
+    vez de referenciarse por URL pública — el backend todavía no está
+    desplegado en un dominio accesible, y varios clientes de correo bloquean
+    por defecto imágenes cargadas desde URLs externas.
+    """
+    texto_plano = (
+        f'Tu código de recuperación es: {codigo}\n'
+        f'Vence en {VIGENCIA_CODIGO_MINUTOS} minutos. '
+        'Si no solicitaste este código, ignora este correo.'
+    )
+    html = render_to_string('usuarios/email_recuperacion.html', {
+        'codigo': codigo,
+        'vigencia_minutos': VIGENCIA_CODIGO_MINUTOS,
+    })
+
+    mensaje = EmailMultiAlternatives(
+        subject='Código de recuperación de contraseña — FleboSil',
+        body=texto_plano,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[email],
+    )
+    mensaje.attach_alternative(html, 'text/html')
+
+    with open(RUTA_LOGO_CORREO, 'rb') as archivo_logo:
+        datos_logo = archivo_logo.read()
+    logo = MIMEPart()
+    logo.set_content(
+        datos_logo, maintype='image', subtype='png',
+        disposition='inline', filename='logo_flebosil.png', cid='<logo_flebosil>',
+    )
+    mensaje.attach(logo)
+
+    return mensaje
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -74,6 +118,8 @@ class UsuarioActualSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     username = serializers.CharField()
     email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
     nombre = serializers.SerializerMethodField()
     rol = serializers.CharField(source='rol_usuario')
     modulos = serializers.SerializerMethodField()
@@ -88,11 +134,15 @@ class UsuarioActualSerializer(serializers.Serializer):
 class UsuarioPropioSerializer(serializers.ModelSerializer):
     """Edición de la propia cuenta (feature 015 · Información de Usuario).
 
-    Distinto de `UsuarioSerializer` (CRUD administrativo de `008`): solo
-    expone `username`/`email` como campos editables. `rol_usuario` y
-    `activo` (is_active) ni siquiera son parte de este serializer, así que
-    no hay forma de que se filtren por error futuro de mantenimiento,
-    aunque lleguen en el payload de la petición. La vista (`MeView`)
+    Distinto de `UsuarioSerializer` (CRUD administrativo de `008`): expone
+    `username`/`email`/`first_name`/`last_name` como campos editables.
+    `activo` (is_active) ni siquiera es parte de este serializer, así que
+    no hay forma de que se filtre por error futuro de mantenimiento, aunque
+    llegue en el payload de la petición. `rol_usuario` solo se agrega como
+    campo editable en `__init__` cuando quien edita ya es `admin` — ver
+    "Actualización: nombre completo y cambio de rol propio" en `spec.md`;
+    un `operador` que lo envíe manipulando la petición no tiene ese campo
+    en el serializer, así que se ignora igual que antes. La vista (`MeView`)
     siempre pasa `request.user` como instancia — nunca un usuario elegido
     por un `id` del cuerpo de la petición — por lo que la validación de
     unicidad de `username`/`email` que agrega `ModelSerializer`
@@ -109,10 +159,34 @@ class UsuarioPropioSerializer(serializers.ModelSerializer):
             queryset=Usuario.objects.all(), message='Ya existe un usuario con ese correo electrónico.',
         )],
     )
+    first_name = serializers.CharField(required=True, allow_blank=False)
+    last_name = serializers.CharField(required=True, allow_blank=False)
+    rol_usuario = serializers.ChoiceField(choices=[(ROL_ADMIN, 'Administrador'), (ROL_OPERADOR, 'Operador')])
 
     class Meta:
         model = Usuario
-        fields = ['username', 'email']
+        fields = ['username', 'email', 'first_name', 'last_name', 'rol_usuario']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if not (request and request.user.rol_usuario == ROL_ADMIN):
+            self.fields.pop('rol_usuario', None)
+
+    def validate_rol_usuario(self, value):
+        # Solo importa el caso admin -> operador: es el único que puede
+        # dejar al sistema sin ningún admin activo.
+        if self.instance.rol_usuario == ROL_ADMIN and value == ROL_OPERADOR:
+            hay_otro_admin = (
+                Usuario.objects.filter(rol_usuario=ROL_ADMIN, is_active=True)
+                .exclude(pk=self.instance.pk)
+                .exists()
+            )
+            if not hay_otro_admin:
+                raise serializers.ValidationError(
+                    'No puedes cambiar tu rol a operador: eres el único administrador activo del sistema.',
+                )
+        return value
 
 
 class LoginSerializer(serializers.Serializer):
@@ -167,16 +241,7 @@ class SolicitarRecuperacionSerializer(serializers.Serializer):
             expira_en=timezone.now() + timedelta(minutes=VIGENCIA_CODIGO_MINUTOS),
         )
 
-        send_mail(
-            subject='Código de recuperación de contraseña — FleboSil',
-            message=(
-                f'Tu código de recuperación es: {codigo}\n'
-                f'Vence en {VIGENCIA_CODIGO_MINUTOS} minutos. '
-                'Si no solicitaste este código, ignora este correo.'
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-        )
+        _mensaje_recuperacion(email, codigo).send()
 
 
 class VerificarCodigoSerializer(serializers.Serializer):

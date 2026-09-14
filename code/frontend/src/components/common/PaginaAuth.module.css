@@ -1,0 +1,45 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply min-h-screen flex bg-superficie font-base;
+}
+
+.panelMarca {
+  @apply hidden md:flex relative flex-1 items-center justify-center overflow-hidden;
+  background: linear-gradient(160deg, var(--color-fondo), var(--color-primario-suave));
+}
+
+.marcaAgua {
+  @apply absolute top-1/2 left-1/2 pointer-events-none select-none;
+  width: 640px;
+  opacity: 0.14;
+  transform: translate(-50%, -50%) rotate(-6deg);
+}
+
+.logoGrande {
+  @apply relative w-full max-w-[300px] px-8;
+}
+
+.panelFormulario {
+  @apply flex-1 flex items-center justify-center px-6 py-12 md:border-l md:border-borde;
+}
+
+.contenedor {
+  @apply w-full max-w-[360px] flex flex-col gap-5;
+}
+
+.logoPequeno {
+  @apply h-11 w-auto mx-auto;
+}
+
+.encabezado {
+  @apply text-center;
+}
+
+.titulo {
+  @apply m-0 text-texto text-2xl font-titulo font-semibold;
+}
+
+.subtitulo {
+  @apply mt-1.5 mb-0 text-texto/60 text-[0.9rem];
+}

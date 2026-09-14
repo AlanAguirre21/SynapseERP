@@ -1,7 +1,7 @@
 @reference "../../index.css";
 
 .sidebar {
-  @apply w-[220px] shrink-0 bg-fondo border-r border-texto/10 overflow-hidden transition-[width,transform] duration-200 ease-in-out;
+  @apply w-[220px] shrink-0 bg-fondo border-r border-borde overflow-hidden transition-[width,transform] duration-200 ease-in-out;
 }
 
 .sidebar.colapsado {
@@ -9,24 +9,32 @@
 }
 
 .lista {
-  @apply list-none m-0 py-2 whitespace-nowrap;
+  @apply list-none m-0 p-2 flex flex-col gap-1 whitespace-nowrap;
 }
 
 .enlace {
-  @apply block px-5 py-3 text-texto no-underline text-[0.9rem];
+  @apply flex items-center gap-3 px-3 py-2.5 text-texto/80 no-underline text-[0.9rem] rounded-control transition-colors;
 }
 
 .enlace:hover {
-  @apply bg-texto/5;
+  @apply bg-primario-suave/60 text-texto;
+}
+
+.icono {
+  @apply shrink-0 text-texto/50;
 }
 
 .activo {
-  @apply text-primario font-semibold border-l-[3px] border-primario;
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+.activo .icono {
+  @apply text-primario;
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    @apply absolute top-0 left-0 bottom-0 z-20 shadow-[2px_0_8px_color-mix(in_srgb,var(--color-texto)_15%,transparent)];
+    @apply absolute top-0 left-0 bottom-0 z-20 shadow-marcada;
   }
 
   .sidebar.colapsado {

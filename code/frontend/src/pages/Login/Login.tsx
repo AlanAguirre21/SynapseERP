@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { Icono } from '../../components/common/Icono'
+import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
 import styles from './Login.module.css'
 
@@ -12,6 +15,7 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
+  const [mostrarPassword, setMostrarPassword] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -49,13 +53,8 @@ export function Login() {
   }
 
   return (
-    <div className={styles.pagina}>
+    <PaginaAuth titulo="Bienvenido" subtitulo="Ingresa a tu cuenta para continuar">
       <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-        <div className={styles.encabezado}>
-          <h1 className={styles.logoTexto}>FleboSil</h1>
-          <p className={styles.subtitulo}>Enterprise Manager</p>
-        </div>
-
         <label className={styles.campo}>
           Correo electrónico
           <input
@@ -69,13 +68,23 @@ export function Login() {
 
         <label className={styles.campo}>
           Contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(evento) => setPassword(evento.target.value)}
-            autoComplete="current-password"
-            required
-          />
+          <div className={styles.campoConIcono}>
+            <input
+              type={mostrarPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(evento) => setPassword(evento.target.value)}
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className={styles.botonOjo}
+              onClick={() => setMostrarPassword((valor) => !valor)}
+              aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              <Icono nombre={mostrarPassword ? 'ojoCerrado' : 'ojo'} tamano={18} />
+            </button>
+          </div>
         </label>
 
         {error && (
@@ -84,14 +93,14 @@ export function Login() {
           </p>
         )}
 
-        <button type="submit" className={styles.boton} disabled={cargando}>
+        <BotonPrimario type="submit" disabled={cargando}>
           {cargando ? 'Ingresando…' : 'Ingresar'}
-        </button>
+        </BotonPrimario>
 
         <Link to="/recuperar-contrasena" className={styles.enlace}>
           ¿Olvidaste tu contraseña?
         </Link>
       </form>
-    </div>
+    </PaginaAuth>
   )
 }

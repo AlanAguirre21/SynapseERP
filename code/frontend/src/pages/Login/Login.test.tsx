@@ -40,7 +40,7 @@ describe('Login', () => {
     renderLogin()
 
     expect(screen.getByLabelText(/correo electrónico/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^contraseña$/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /ingresar/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /olvidaste tu contraseña/i })).toHaveAttribute(
       'href',
@@ -74,7 +74,7 @@ describe('Login', () => {
     fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
       target: { value: 'ana@flebosil.test' },
     })
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+    fireEvent.change(screen.getByLabelText(/^contraseña$/i), {
       target: { value: 'clave-super-123' },
     })
     fireEvent.click(screen.getByRole('button', { name: /ingresar/i }))
@@ -83,6 +83,22 @@ describe('Login', () => {
       expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true }),
     )
     expect(loginMock).toHaveBeenCalledWith('ana@flebosil.test', 'clave-super-123')
+  })
+
+  it('alterna la visibilidad de la contraseña al hacer clic en el botón de ojo', () => {
+    mockAuth({ login: vi.fn() })
+
+    renderLogin()
+    const input = screen.getByLabelText(/^contraseña$/i)
+    fireEvent.change(input, { target: { value: 'clave-super-123' } })
+    expect(input).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: /mostrar contraseña/i }))
+    expect(input).toHaveAttribute('type', 'text')
+    expect(input).toHaveValue('clave-super-123')
+
+    fireEvent.click(screen.getByRole('button', { name: /ocultar contraseña/i }))
+    expect(input).toHaveAttribute('type', 'password')
   })
 
   it('muestra el mensaje de error genérico devuelto por el backend ante credenciales inválidas', async () => {
@@ -95,7 +111,7 @@ describe('Login', () => {
     fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
       target: { value: 'ana@flebosil.test' },
     })
-    fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'mal' } })
+    fireEvent.change(screen.getByLabelText(/^contraseña$/i), { target: { value: 'mal' } })
     fireEvent.click(screen.getByRole('button', { name: /ingresar/i }))
 
     await waitFor(() =>

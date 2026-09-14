@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { obtenerIniciales } from '../../utils/texto'
+import { Icono } from '../common/Icono'
 import styles from './Header.module.css'
 
 interface HeaderProps {
@@ -34,11 +37,10 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           onClick={onToggleSidebar}
           aria-label="Mostrar u ocultar barra lateral"
         >
-          ☰
+          <Icono nombre="menu" tamano={22} />
         </button>
         <Link to="/dashboard" className={styles.logo}>
-          <span className={styles.logoTexto}>FleboSil</span>
-          <span className={styles.subtitulo}>Enterprise Manager</span>
+          <img src={logoFlebosil} alt="FleboSil" className={styles.logoImg} />
         </Link>
       </div>
 
@@ -50,7 +52,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             onClick={() => setNotificacionesAbiertas((abierto) => !abierto)}
             aria-label="Alertas de stock"
           >
-            🔔
+            <Icono nombre="campana" tamano={20} />
             {totalAlertas > 0 && (
               <span className={styles.contador}>{totalAlertas}</span>
             )}
@@ -83,8 +85,13 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             className={styles.botonUsuario}
             onClick={() => setMenuAbierto((abierto) => !abierto)}
           >
-            <span className={styles.nombreUsuario}>{usuario?.nombre ?? '…'}</span>
-            <span className={styles.rolUsuario}>{usuario?.rol ?? ''}</span>
+            <span className={styles.avatar} aria-hidden="true">
+              {obtenerIniciales(usuario?.nombre)}
+            </span>
+            <span className={styles.datosUsuario}>
+              <span className={styles.nombreUsuario}>{usuario?.nombre ?? '…'}</span>
+              <span className={styles.rolUsuario}>{usuario?.rol ?? ''}</span>
+            </span>
           </button>
           {menuAbierto && (
             <div className={styles.dropdown} role="menu">

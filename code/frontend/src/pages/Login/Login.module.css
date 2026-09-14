@@ -1,23 +1,7 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex items-center justify-center min-h-screen p-4 bg-primario font-base;
-}
-
 .formulario {
-  @apply flex flex-col gap-4 w-full max-w-[360px] px-7 py-8 bg-fondo rounded-xl shadow-[0_8px_24px_color-mix(in_srgb,var(--color-texto)_20%,transparent)];
-}
-
-.encabezado {
-  @apply text-center mb-2;
-}
-
-.logoTexto {
-  @apply m-0 text-primario text-2xl;
-}
-
-.subtitulo {
-  @apply mt-1 mb-0 text-texto opacity-70 text-[0.85rem];
+  @apply flex flex-col gap-4;
 }
 
 .campo {
@@ -25,19 +9,31 @@
 }
 
 .campo input {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+  @apply px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+}
+
+.campo input:focus {
+  @apply border-primario shadow-[0_0_0_3px_var(--color-primario-suave)];
+}
+
+.campoConIcono {
+  @apply relative;
+}
+
+.campoConIcono input {
+  @apply w-full pr-11;
+}
+
+.botonOjo {
+  @apply absolute top-1/2 right-1 -translate-y-1/2 flex items-center justify-center w-9 h-9 bg-transparent border-0 text-texto/50 cursor-pointer rounded-control transition-colors;
+}
+
+.botonOjo:hover {
+  @apply text-primario bg-primario-suave;
 }
 
 .error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.boton {
-  @apply p-3 text-base font-semibold text-fondo bg-primario border-0 rounded-md cursor-pointer;
-}
-
-.boton:disabled {
-  @apply opacity-60 cursor-not-allowed;
+  @apply m-0 px-3 py-2 text-error rounded-control text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
 }
 
 .enlace {
@@ -46,10 +42,4 @@
 
 .enlace:hover {
   @apply underline;
-}
-
-@media (max-width: 480px) {
-  .formulario {
-    @apply px-5 py-6;
-  }
 }
