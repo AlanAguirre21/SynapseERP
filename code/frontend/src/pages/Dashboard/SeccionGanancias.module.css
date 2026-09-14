@@ -1,0 +1,109 @@
+@reference "../../index.css";
+
+.seccion {
+  @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
+}
+
+.tituloSeccion {
+  @apply m-0 text-lg font-semibold text-texto;
+}
+
+.tarjetaGanancia {
+  @apply flex flex-col gap-1 px-6 py-5 rounded-xl bg-texto/[0.03] border border-texto/10;
+}
+
+.gananciaEtiqueta {
+  @apply text-[0.85rem] opacity-80;
+}
+
+.gananciaMonto {
+  @apply text-2xl font-bold;
+}
+
+.gananciaPositiva {
+  @apply bg-exito text-fondo border-0;
+}
+
+.gananciaNegativa {
+  @apply bg-error text-fondo border-0;
+}
+
+.estadoVacio {
+  @apply flex flex-col items-center justify-center gap-2 h-[220px] rounded-xl border border-dashed border-texto/20 text-texto/60 text-center px-6;
+}
+
+.estadoVacioTitulo {
+  @apply text-texto font-semibold;
+}
+
+.movimientos {
+  @apply flex flex-col gap-2;
+}
+
+.movimientosEncabezado {
+  @apply flex items-center justify-between flex-wrap gap-3;
+}
+
+.movimientosTitulo {
+  @apply m-0 text-[0.95rem] font-semibold text-texto;
+}
+
+.selectorLimite {
+  @apply flex items-center gap-1 rounded-control border border-borde p-1;
+}
+
+.opcionLimite {
+  @apply px-3 py-1 text-[0.8rem] bg-transparent border-0 rounded-control text-texto/70 cursor-pointer transition-colors;
+}
+
+.opcionLimite:hover {
+  @apply text-texto;
+}
+
+.opcionLimiteActiva {
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+/* `direction: rtl` en el contenedor + `direction: ltr` en el contenido
+   desplaza la barra de scroll nativa al lado izquierdo sin invertir el
+   orden de lectura del contenido — pedido explícito del diseño. */
+.listaContenedor {
+  @apply max-h-[220px] overflow-y-auto rounded-control border border-texto/10;
+  direction: rtl;
+}
+
+.listaContenido {
+  direction: ltr;
+}
+
+.listaMensaje {
+  @apply p-4 text-[0.85rem] text-texto/60;
+}
+
+.lista {
+  @apply list-none m-0 p-0;
+}
+
+.movimientoFila {
+  @apply grid grid-cols-[auto_auto_1fr] items-baseline gap-3 px-4 py-2.5 text-[0.85rem] border-b border-texto/10;
+}
+
+.movimientoFila:last-child {
+  @apply border-b-0;
+}
+
+.movimientoFecha {
+  @apply text-texto/60 whitespace-nowrap;
+}
+
+.movimientoTipoIngreso {
+  @apply text-exito font-semibold whitespace-nowrap;
+}
+
+.movimientoTipoRetiro {
+  @apply text-error font-semibold whitespace-nowrap;
+}
+
+.movimientoDescripcion {
+  @apply text-texto;
+}

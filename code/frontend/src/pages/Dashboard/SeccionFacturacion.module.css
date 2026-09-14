@@ -1,0 +1,17 @@
+@reference "../../index.css";
+
+.seccion {
+  @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
+}
+
+.tituloSeccion {
+  @apply m-0 text-lg font-semibold text-texto;
+}
+
+.placeholder {
+  @apply flex flex-col items-center justify-center gap-2 h-[140px] rounded-xl border border-dashed border-texto/20 text-texto/60 text-center px-6;
+}
+
+.placeholderTitulo {
+  @apply text-texto font-semibold;
+}

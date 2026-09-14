@@ -65,7 +65,7 @@ def test_cualquier_usuario_autenticado_puede_ver_el_resumen(api_client):
 
 @pytest.mark.django_db
 def test_periodo_invalido_es_rechazado(api_client):
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'año'})
+    response = api_client.get('/api/reportes/resumen/', {'periodo': 'trimestre'})
     assert response.status_code == 400
     assert 'periodo' in response.data
 
