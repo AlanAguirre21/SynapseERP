@@ -6,6 +6,7 @@ export type NombreIcono =
   | 'candado'
   | 'ojo'
   | 'ojoCerrado'
+  | 'casa'
   | 'ventas'
   | 'compras'
   | 'produccion'
@@ -51,6 +52,13 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M14.1 5.4C13.4 5.1 12.7 5 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3.1 4" />
       <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
       <path d="M3 3l18 18" />
+    </>
+  ),
+  casa: (
+    <>
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+      <path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20" />
     </>
   ),
   ventas: (

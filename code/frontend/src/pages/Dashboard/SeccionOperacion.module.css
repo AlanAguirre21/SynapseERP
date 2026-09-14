@@ -1,0 +1,21 @@
+@reference "../../index.css";
+
+.seccion {
+  @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
+}
+
+.encabezadoSeccion {
+  @apply flex items-center justify-between flex-wrap gap-3;
+}
+
+.tituloSeccion {
+  @apply m-0 text-lg font-semibold text-texto;
+}
+
+.filaTresGraficas {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-4;
+}
+
+.filaUnaGrafica {
+  @apply grid grid-cols-1 gap-4;
+}

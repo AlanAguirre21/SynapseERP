@@ -28,6 +28,19 @@ export function Sidebar({ modulos, colapsado }: SidebarProps) {
   return (
     <aside className={`${styles.sidebar} ${colapsado ? styles.colapsado : ''}`}>
       <nav>
+        <ul className={styles.listaInicio}>
+          <li>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                isActive ? `${styles.enlaceInicio} ${styles.activoInicio}` : styles.enlaceInicio
+              }
+            >
+              <Icono nombre="casa" tamano={19} className={styles.iconoInicio} />
+              <span>Inicio</span>
+            </NavLink>
+          </li>
+        </ul>
         <ul className={styles.lista}>
           {modulos.map((modulo) => {
             const icono = ICONO_POR_SLUG[modulo.slug]

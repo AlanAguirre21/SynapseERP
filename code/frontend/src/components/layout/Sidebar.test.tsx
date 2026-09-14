@@ -47,4 +47,16 @@ describe('Sidebar', () => {
     expect(screen.getByText('Contabilidad')).toBeInTheDocument()
     expect(screen.getByText('Configuración Fiscal')).toBeInTheDocument()
   })
+
+  it('siempre muestra el ítem fijo "Inicio" enlazado al Dashboard, sin importar el rol', () => {
+    renderSidebar(MODULOS_OPERADOR)
+
+    expect(screen.getByRole('link', { name: /inicio/i })).toHaveAttribute('href', '/dashboard')
+  })
+
+  it('muestra "Inicio" incluso cuando no hay módulos disponibles (aún cargando o rol sin módulos)', () => {
+    renderSidebar([])
+
+    expect(screen.getByRole('link', { name: /inicio/i })).toHaveAttribute('href', '/dashboard')
+  })
 })
