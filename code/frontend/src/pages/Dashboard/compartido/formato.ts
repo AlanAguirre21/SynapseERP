@@ -1,4 +1,4 @@
-import type { PeriodoDashboard } from '../../api/reportes'
+import type { PeriodoDashboard } from '../../../api/reportes'
 
 export function formatearMoneda(valor: string | number) {
   return `$${Number(valor).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

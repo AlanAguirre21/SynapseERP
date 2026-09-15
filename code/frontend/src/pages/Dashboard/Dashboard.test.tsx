@@ -185,6 +185,17 @@ describe('Dashboard', () => {
     expect(screen.getByRole('heading', { name: 'Resumen facturación' })).toBeInTheDocument()
   })
 
+  it('muestra "Ganancia de ventas" y "Gasto en compras" junto a sus botones respectivos', () => {
+    mockearTodo()
+    renderDashboard()
+
+    expect(screen.getByText('Ganancia de ventas')).toBeInTheDocument()
+    expect(screen.getByText('$500.00')).toBeInTheDocument()
+
+    expect(screen.getByText('Gasto en compras')).toBeInTheDocument()
+    expect(screen.getByText('$200.00')).toBeInTheDocument()
+  })
+
   it('"Nueva venta" vive en Resumen de ventas y navega al formulario de Ventas', () => {
     mockearTodo()
     renderDashboard()

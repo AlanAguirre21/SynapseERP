@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import type { LimiteMovimientos, PeriodoDashboard } from '../../api/reportes'
-import { formatearEtiquetaFecha, formatearFechaMovimiento, formatearMoneda } from './formato'
-import { GraficaLinea } from './GraficaLinea'
-import { useMovimientosCajaDashboard } from '../../hooks/useMovimientosCajaDashboard'
-import { useResumenDashboard } from '../../hooks/useResumenDashboard'
+import type { LimiteMovimientos, PeriodoDashboard } from '../../../../api/reportes'
+import { formatearEtiquetaFecha, formatearFechaMovimiento, formatearMoneda } from '../../compartido/formato'
+import { GraficaLinea } from '../../compartido/GraficaLinea'
+import { useMovimientosCajaDashboard } from '../../../../hooks/useMovimientosCajaDashboard'
+import { useResumenDashboard } from '../../../../hooks/useResumenDashboard'
 import styles from './SeccionGanancias.module.css'
 
 interface SeccionGananciasProps {

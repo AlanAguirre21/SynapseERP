@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 
-import type { PeriodoDashboard, PuntoMonto } from '../../api/reportes'
-import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { formatearEtiquetaFecha } from './formato'
-import { GraficaBarras } from './GraficaBarras'
-import { GraficaLinea } from './GraficaLinea'
-import { useResumenVentas } from '../../hooks/useResumenVentas'
-import styles from './SeccionOperacion.module.css'
+import type { PeriodoDashboard, PuntoMonto } from '../../../../api/reportes'
+import { BotonPrimario } from '../../../../components/common/BotonPrimario'
+import { formatearEtiquetaFecha, formatearMoneda } from '../../compartido/formato'
+import { GraficaBarras } from '../../compartido/GraficaBarras'
+import { GraficaLinea } from '../../compartido/GraficaLinea'
+import { useResumenDashboard } from '../../../../hooks/useResumenDashboard'
+import { useResumenVentas } from '../../../../hooks/useResumenVentas'
+import styles from '../../compartido/SeccionOperacion.module.css'
 
 interface SeccionVentasProps {
   periodo: PeriodoDashboard
@@ -15,6 +16,7 @@ interface SeccionVentasProps {
 export function SeccionVentas({ periodo }: SeccionVentasProps) {
   const navigate = useNavigate()
   const { data: resumen, isLoading } = useResumenVentas(periodo)
+  const { data: resumenGeneral } = useResumenDashboard(periodo)
 
   const mapear = (puntos: PuntoMonto[] = []) =>
     puntos.map((punto) => ({ etiqueta: formatearEtiquetaFecha(punto.fecha, periodo), valor: Number(punto.monto) }))
@@ -25,7 +27,15 @@ export function SeccionVentas({ periodo }: SeccionVentasProps) {
     <section className={styles.seccion}>
       <div className={styles.encabezadoSeccion}>
         <h2 className={styles.tituloSeccion}>Resumen de ventas</h2>
-        <BotonPrimario onClick={() => navigate('/ventas/nueva')}>Nueva venta</BotonPrimario>
+        <div className={styles.accionesSeccion}>
+          <span className={styles.indicadorSeccion}>
+            <span className={styles.indicadorEtiqueta}>Ganancia de ventas</span>
+            <span className={styles.indicadorMonto}>
+              {resumenGeneral ? formatearMoneda(resumenGeneral.ventas_total) : '…'}
+            </span>
+          </span>
+          <BotonPrimario onClick={() => navigate('/ventas/nueva')}>Nueva venta</BotonPrimario>
+        </div>
       </div>
 
       {isLoading || !resumen ? (

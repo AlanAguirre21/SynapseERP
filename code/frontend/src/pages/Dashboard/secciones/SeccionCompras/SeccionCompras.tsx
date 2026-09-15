@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 
-import type { PeriodoDashboard, PuntoMonto } from '../../api/reportes'
-import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { formatearEtiquetaFecha } from './formato'
-import { GraficaBarras } from './GraficaBarras'
-import { GraficaLinea } from './GraficaLinea'
-import { useResumenCompras } from '../../hooks/useResumenCompras'
-import styles from './SeccionOperacion.module.css'
+import type { PeriodoDashboard, PuntoMonto } from '../../../../api/reportes'
+import { BotonPrimario } from '../../../../components/common/BotonPrimario'
+import { formatearEtiquetaFecha, formatearMoneda } from '../../compartido/formato'
+import { GraficaBarras } from '../../compartido/GraficaBarras'
+import { GraficaLinea } from '../../compartido/GraficaLinea'
+import { useResumenCompras } from '../../../../hooks/useResumenCompras'
+import { useResumenDashboard } from '../../../../hooks/useResumenDashboard'
+import styles from '../../compartido/SeccionOperacion.module.css'
 
 interface SeccionComprasProps {
   periodo: PeriodoDashboard
@@ -15,6 +16,7 @@ interface SeccionComprasProps {
 export function SeccionCompras({ periodo }: SeccionComprasProps) {
   const navigate = useNavigate()
   const { data: resumen, isLoading } = useResumenCompras(periodo)
+  const { data: resumenGeneral } = useResumenDashboard(periodo)
 
   const mapear = (puntos: PuntoMonto[] = []) =>
     puntos.map((punto) => ({ etiqueta: formatearEtiquetaFecha(punto.fecha, periodo), valor: Number(punto.monto) }))
@@ -25,9 +27,17 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
     <section className={styles.seccion}>
       <div className={styles.encabezadoSeccion}>
         <h2 className={styles.tituloSeccion}>Resumen de compras</h2>
-        <BotonPrimario variante="secundario" onClick={() => navigate('/compras/nueva')}>
-          Nueva compra
-        </BotonPrimario>
+        <div className={styles.accionesSeccion}>
+          <span className={styles.indicadorSeccion}>
+            <span className={styles.indicadorEtiqueta}>Gasto en compras</span>
+            <span className={styles.indicadorMonto}>
+              {resumenGeneral ? formatearMoneda(resumenGeneral.compras_total) : '…'}
+            </span>
+          </span>
+          <BotonPrimario variante="secundario" onClick={() => navigate('/compras/nueva')}>
+            Nueva compra
+          </BotonPrimario>
+        </div>
       </div>
 
       {isLoading || !resumen ? (
