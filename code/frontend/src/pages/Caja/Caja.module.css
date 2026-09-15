@@ -29,7 +29,15 @@
 }
 
 .saldoTotal {
-  @apply bg-primario text-fondo shadow-lg shadow-primario/20;
+  @apply bg-primario text-fondo shadow-lg shadow-primario/20 flex-[2.5] min-w-[340px] px-8 py-7;
+}
+
+.saldoTotal .saldoEtiqueta {
+  @apply text-base;
+}
+
+.saldoTotal .saldoMonto {
+  @apply text-4xl;
 }
 
 .operador {
