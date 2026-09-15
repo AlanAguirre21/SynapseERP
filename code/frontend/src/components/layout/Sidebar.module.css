@@ -1,7 +1,7 @@
 @reference "../../index.css";
 
 .sidebar {
-  @apply w-[220px] shrink-0 bg-fondo border-r border-borde overflow-hidden transition-[width,transform] duration-200 ease-in-out;
+  @apply w-[220px] shrink-0 bg-fondo border-r border-borde overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ease-in-out;
 }
 
 .sidebar.colapsado {
