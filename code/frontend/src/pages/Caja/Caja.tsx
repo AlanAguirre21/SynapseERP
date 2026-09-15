@@ -39,6 +39,8 @@ const ETIQUETAS_MOTIVO: Record<MotivoMovimientoCaja, string> = {
   venta: 'Venta',
   ajuste: 'Ajuste',
   manual: 'Manual',
+  compra: 'Compra',
+  envio: 'Envío',
 }
 
 function formatearMoneda(valor: string) {
@@ -103,6 +105,11 @@ function CajaContenido() {
               Ver venta #{fila.referencia_id}
             </Link>
           )}
+          {fila.motivo === 'compra' && fila.referencia_id && (
+            <Link to={`/compras/${fila.referencia_id}`} className={styles.enlaceReferencia}>
+              Ver compra #{fila.referencia_id}
+            </Link>
+          )}
         </div>
       ),
     },
@@ -122,9 +129,31 @@ function CajaContenido() {
         <BotonPrimario onClick={() => setFormularioAbierto(true)}>Registrar movimiento</BotonPrimario>
       </div>
 
-      <div className={styles.saldo}>
-        <span className={styles.saldoEtiqueta}>Saldo actual de caja</span>
-        <span className={styles.saldoMonto}>{saldoCargando || saldo === undefined ? '…' : formatearMoneda(saldo)}</span>
+      <div className={styles.saldosFila}>
+        <div className={`${styles.tarjetaSaldo} ${styles.saldoActual}`}>
+          <span className={styles.saldoEtiqueta}>Saldo actual de la caja</span>
+          <span className={styles.saldoMonto}>
+            {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_actual)}
+          </span>
+        </div>
+
+        <span className={styles.operador} aria-hidden="true">+</span>
+
+        <div className={`${styles.tarjetaSaldo} ${styles.saldoAdicional}`}>
+          <span className={styles.saldoEtiqueta}>Saldo adicional (Costo de envíos)</span>
+          <span className={styles.saldoMonto}>
+            {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_adicional)}
+          </span>
+        </div>
+
+        <span className={styles.operador} aria-hidden="true">=</span>
+
+        <div className={`${styles.tarjetaSaldo} ${styles.saldoTotal}`}>
+          <span className={styles.saldoEtiqueta}>Saldo de la caja</span>
+          <span className={styles.saldoMonto}>
+            {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_total)}
+          </span>
+        </div>
       </div>
 
       <div className={styles.filtros}>

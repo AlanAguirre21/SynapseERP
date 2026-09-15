@@ -3,6 +3,8 @@ from decimal import Decimal
 import pytest
 from rest_framework.test import APIClient
 
+from apps.caja.models import MovimientoCaja
+from apps.caja.services import registrar_movimiento_caja
 from apps.catalogo.models import Categoria, MateriaPrima, Producto
 from apps.contabilidad.constants import (
     CODIGO_CAJA,
@@ -40,6 +42,13 @@ def usuario_admin(db):
 
 @pytest.fixture
 def api_client(usuario):
+    # Fondea caja para que crear una compra (retiro automático al crearla,
+    # ver ajuste "compras en caja" de `013 · Caja`) no sea rechazado por
+    # saldo insuficiente en estos tests de contabilidad.
+    registrar_movimiento_caja(
+        tipo_movimiento=MovimientoCaja.INGRESO, monto=Decimal('1000000.00'), motivo=MovimientoCaja.MOTIVO_MANUAL,
+        referencia_id=None, usuario=usuario, observacion='Fondeo inicial para tests',
+    )
     client = APIClient()
     client.force_authenticate(user=usuario)
     return client
@@ -128,7 +137,9 @@ def test_cancelar_venta_revierte_ambos_asientos(api_client, sucursal, producto, 
     assert movimientos[(CODIGO_INVENTARIO, MovimientoContable.CARGO)] == Decimal('40.00')
     assert movimientos[(CODIGO_COSTO_VENTAS, MovimientoContable.ABONO)] == Decimal('40.00')
 
-    asientos_caja = AsientoContable.objects.filter(tipo_origen=AsientoContable.ORIGEN_CAJA).order_by('id')
+    asientos_caja = AsientoContable.objects.filter(
+        tipo_origen=AsientoContable.ORIGEN_CAJA, referencia_id=id_venta,
+    ).order_by('id')
     assert asientos_caja.count() == 2
     _, reverso_caja = asientos_caja
     movimientos_caja = _movimientos(reverso_caja)
@@ -174,8 +185,31 @@ def test_recibir_compra_genera_asiento_de_inventario_y_proveedores(api_client, s
     assert movimientos[(CODIGO_INVENTARIO, MovimientoContable.CARGO)] == Decimal('50.00')
     assert movimientos[(CODIGO_PROVEEDORES, MovimientoContable.ABONO)] == Decimal('50.00')
 
-    # Compras nunca toca caja — no debe existir ningún asiento de origen caja.
-    assert not AsientoContable.objects.filter(tipo_origen=AsientoContable.ORIGEN_CAJA).exists()
+
+@pytest.mark.django_db
+def test_crear_compra_genera_asiento_de_caja_contra_proveedores(api_client, sucursal, producto, proveedor):
+    # El retiro de caja ahora ocurre al crear la compra, no al recibirla
+    # (ajuste "compras en caja" de `013 · Caja`) — la contraparte contable
+    # es Proveedores, no Ventas, a diferencia de los demás motivos de caja.
+    response = api_client.post(
+        '/api/compras/',
+        {
+            'proveedor': proveedor.id, 'sucursal': sucursal.id,
+            'detalles_producto': [{'producto': producto.id, 'cantidad': '5.00', 'costo_unitario': '10.00'}],
+        },
+        format='json',
+    )
+    assert response.status_code == 201
+    id_compra = response.data['id']
+
+    asiento_caja = AsientoContable.objects.get(tipo_origen=AsientoContable.ORIGEN_CAJA, referencia_id=id_compra)
+    movimientos = _movimientos(asiento_caja)
+    assert movimientos[(CODIGO_PROVEEDORES, MovimientoContable.CARGO)] == Decimal('50.00')
+    assert movimientos[(CODIGO_CAJA, MovimientoContable.ABONO)] == Decimal('50.00')
+
+    # Todavía no se recibió: el asiento de Inventario/Proveedores de
+    # `recibir()` no debe existir aún.
+    assert not AsientoContable.objects.filter(tipo_origen=AsientoContable.ORIGEN_COMPRA).exists()
 
 
 @pytest.mark.django_db

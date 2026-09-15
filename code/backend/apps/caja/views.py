@@ -8,7 +8,7 @@ from core.permissions import EsAdmin
 
 from .models import MovimientoCaja
 from .serializers import MovimientoCajaSerializer
-from .services import SaldoInsuficienteError, calcular_saldo_actual, registrar_movimiento_caja
+from .services import SaldoInsuficienteError, calcular_saldos, registrar_movimiento_caja
 
 
 class MovimientoCajaViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
@@ -78,4 +78,5 @@ class MovimientoCajaViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mi
     @action(detail=False, methods=['get'])
     def saldo(self, request):
         campo_decimal = serializers.DecimalField(max_digits=12, decimal_places=2)
-        return Response({'saldo_actual': campo_decimal.to_representation(calcular_saldo_actual())})
+        saldos = calcular_saldos()
+        return Response({clave: campo_decimal.to_representation(valor) for clave, valor in saldos.items()})

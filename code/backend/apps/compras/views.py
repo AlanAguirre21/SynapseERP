@@ -5,6 +5,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.caja.models import MovimientoCaja
+from apps.caja.services import SaldoInsuficienteError, registrar_movimiento_caja
 from apps.contabilidad.services.generador_asientos import (
     generar_asiento_compra,
     reversar_asiento_compra,
@@ -132,7 +134,24 @@ class CompraViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        compra = serializer.save()
+
+        # El retiro de una compra ocurre al crearla, no al recibirla — si el
+        # saldo global no alcanza, la compra completa se aborta (la
+        # transacción atómica revierte también la cabecera/líneas ya
+        # insertadas por el serializer).
+        try:
+            registrar_movimiento_caja(
+                tipo_movimiento=MovimientoCaja.RETIRO, monto=compra.total, motivo=MovimientoCaja.MOTIVO_COMPRA,
+                referencia_id=compra.id, usuario=request.user, observacion=f'Compra #{compra.id}',
+            )
+        except SaldoInsuficienteError as exc:
+            raise ValidationError({'detail': f'No se puede registrar la compra: {exc}'}) from exc
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(self.get_serializer(compra).data, status=201, headers=headers)
 
     @action(detail=True, methods=['post'])
     @transaction.atomic
@@ -173,6 +192,16 @@ class CompraViewSet(viewsets.ModelViewSet):
                 _revertir_linea_materia_prima(compra, detalle, request.user)
 
             reversar_asiento_compra(compra)
+
+        # El reverso de caja se registra siempre, sin importar si la compra
+        # estaba pendiente o recibida al cancelarse — el retiro ya ocurrió
+        # al crearla en ambos casos (a diferencia de la reversión de
+        # inventario/asiento de arriba, que sigue condicionada a `recibida`).
+        registrar_movimiento_caja(
+            tipo_movimiento=MovimientoCaja.INGRESO, monto=compra.total, motivo=MovimientoCaja.MOTIVO_AJUSTE,
+            referencia_id=compra.id, usuario=request.user,
+            observacion=f'Reverso por cancelación de compra #{compra.id}',
+        )
 
         compra.estado = Compra.ESTADO_CANCELADA
         compra.save(update_fields=['estado'])

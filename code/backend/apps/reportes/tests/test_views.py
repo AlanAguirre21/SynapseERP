@@ -116,12 +116,12 @@ def test_venta_pendiente_si_cuenta(api_client, sucursal, usuario):
 
 
 @pytest.mark.django_db
-def test_compra_pendiente_no_cuenta_solo_recibida(api_client, sucursal, proveedor, usuario):
+def test_compra_pendiente_cuenta_igual_que_recibida(api_client, sucursal, proveedor, usuario):
     _crear_compra(sucursal, proveedor, usuario, Decimal('80.00'), estado=Compra.ESTADO_PENDIENTE)
     _crear_compra(sucursal, proveedor, usuario, Decimal('40.00'), estado=Compra.ESTADO_RECIBIDA)
 
     response = api_client.get('/api/reportes/resumen/', {'periodo': 'mes'})
-    assert response.data['compras_total'] == '40.00'
+    assert response.data['compras_total'] == '120.00'
 
 
 @pytest.mark.django_db

@@ -3,6 +3,8 @@ from decimal import Decimal
 import pytest
 from rest_framework.test import APIClient
 
+from apps.caja.models import MovimientoCaja
+from apps.caja.services import calcular_saldos, registrar_movimiento_caja
 from apps.catalogo.models import Categoria, MateriaPrima, Producto
 from apps.compras.models import Compra
 from apps.inventario.models import (
@@ -24,6 +26,13 @@ def usuario(db):
 
 @pytest.fixture
 def api_client(usuario):
+    # Fondea caja: crear una compra ahora retira su total de caja al
+    # crearse (ajuste "compras en caja" de `013 · Caja`) — sin esto,
+    # cualquier compra de este archivo se rechazaría por saldo insuficiente.
+    registrar_movimiento_caja(
+        tipo_movimiento=MovimientoCaja.INGRESO, monto=Decimal('1000000.00'), motivo=MovimientoCaja.MOTIVO_MANUAL,
+        referencia_id=None, usuario=usuario, observacion='Fondeo inicial para tests',
+    )
     client = APIClient()
     client.force_authenticate(user=usuario)
     return client
@@ -123,6 +132,37 @@ def test_crear_compra_con_cantidad_negativa_es_rechazada(api_client, proveedor, 
     assert response.status_code == 400
 
 
+# --- Caja (ajuste "compras en caja") --------------------------------------
+
+
+@pytest.mark.django_db
+def test_crear_compra_registra_retiro_de_caja_con_referencia(api_client, proveedor, sucursal, producto):
+    saldo_antes = calcular_saldos()['saldo_total']
+
+    payload = _payload_compra(proveedor, sucursal, producto=producto)
+    id_compra = api_client.post('/api/compras/', payload, format='json').data['id']
+
+    movimiento = MovimientoCaja.objects.get(motivo=MovimientoCaja.MOTIVO_COMPRA, referencia_id=id_compra)
+    assert movimiento.tipo_movimiento == MovimientoCaja.RETIRO
+    assert movimiento.monto == Decimal('55.00')
+    assert calcular_saldos()['saldo_total'] == saldo_antes - Decimal('55.00')
+
+
+@pytest.mark.django_db
+def test_crear_compra_sin_saldo_suficiente_es_rechazada_y_no_crea_nada(usuario, proveedor, sucursal, producto):
+    # Cliente propio, sin el fondeo de la fixture `api_client`: caja arranca
+    # en cero, así que cualquier compra con costo la deja rechazada.
+    client = APIClient()
+    client.force_authenticate(user=usuario)
+
+    payload = _payload_compra(proveedor, sucursal, producto=producto)
+    response = client.post('/api/compras/', payload, format='json')
+
+    assert response.status_code == 400
+    assert not Compra.objects.exists()
+    assert not MovimientoCaja.objects.exists()
+
+
 # --- Recepción --------------------------------------------------------
 
 
@@ -190,9 +230,10 @@ def test_recibir_compra_acumula_stock_existente(api_client, proveedor, sucursal,
 
 
 @pytest.mark.django_db
-def test_cancelar_compra_pendiente_no_genera_movimientos(api_client, proveedor, sucursal, producto):
+def test_cancelar_compra_pendiente_no_genera_movimientos_de_inventario(api_client, proveedor, sucursal, producto):
     payload = _payload_compra(proveedor, sucursal, producto=producto)
     id_compra = api_client.post('/api/compras/', payload, format='json').data['id']
+    saldo_tras_crear = calcular_saldos()['saldo_total']
 
     response = api_client.post(f'/api/compras/{id_compra}/cancelar/')
 
@@ -200,6 +241,13 @@ def test_cancelar_compra_pendiente_no_genera_movimientos(api_client, proveedor, 
     assert response.data['estado'] == 'cancelada'
     assert not MovimientoInventario.objects.filter(referencia_id=id_compra).exists()
     assert not InventarioSucursalProducto.objects.filter(sucursal=sucursal, producto=producto).exists()
+
+    # El retiro de caja sí ocurrió al crearla (estaba pendiente) — cancelar
+    # debe revertirlo igual que si ya hubiera sido recibida.
+    reverso = MovimientoCaja.objects.get(motivo=MovimientoCaja.MOTIVO_AJUSTE, referencia_id=id_compra)
+    assert reverso.tipo_movimiento == MovimientoCaja.INGRESO
+    assert reverso.monto == Decimal('55.00')
+    assert calcular_saldos()['saldo_total'] == saldo_tras_crear + Decimal('55.00')
 
 
 @pytest.mark.django_db
@@ -223,6 +271,12 @@ def test_cancelar_compra_recibida_genera_movimiento_inverso_y_no_edita_el_origin
     entrada, salida = movimientos
     assert entrada.tipo_movimiento == 'entrada' and entrada.cantidad == Decimal('10.00')
     assert salida.tipo_movimiento == 'salida' and salida.motivo == 'ajuste' and salida.cantidad == Decimal('10.00')
+
+    # El retiro de caja ocurrió al crearla, sin importar que después haya
+    # sido recibida — cancelar lo revierte igual que en el caso pendiente.
+    reverso = MovimientoCaja.objects.get(motivo=MovimientoCaja.MOTIVO_AJUSTE, referencia_id=id_compra)
+    assert reverso.tipo_movimiento == MovimientoCaja.INGRESO
+    assert reverso.monto == Decimal('55.00')
 
 
 @pytest.mark.django_db
