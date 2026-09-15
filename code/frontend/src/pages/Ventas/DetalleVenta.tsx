@@ -236,7 +236,10 @@ export function DetalleVenta() {
       <Modal titulo="Marcar como entregada" abierto={confirmarEntregar} onCerrar={() => setConfirmarEntregar(false)}>
         <p className={styles.textoConfirmacion}>
           ¿Confirmas que quieres marcar la venta #{venta.id} como entregada? El stock y el ingreso de caja ya se
-          registraron al crear la venta — esto solo actualiza el estado y la fecha de entrega real.
+          registraron al crear la venta — esto actualiza el estado y la fecha de entrega real
+          {Number(venta.gasto_envio) > 0
+            ? ', y retira de caja el saldo adicional por costo de envío.'
+            : '.'}
         </p>
         <div className={styles.accionesFormulario}>
           <BotonPrimario variante="secundario" onClick={() => setConfirmarEntregar(false)}>

@@ -1,7 +1,7 @@
 import { apiClient } from './client'
 
 export type TipoMovimientoCaja = 'ingreso' | 'retiro'
-export type MotivoMovimientoCaja = 'venta' | 'ajuste' | 'manual'
+export type MotivoMovimientoCaja = 'venta' | 'ajuste' | 'manual' | 'compra' | 'envio'
 
 export interface MovimientoCaja {
   id: number
@@ -34,9 +34,15 @@ export async function getMovimientosCaja(filtros: FiltrosMovimientosCaja): Promi
   return data
 }
 
-export async function getSaldoCaja(): Promise<string> {
-  const { data } = await apiClient.get<{ saldo_actual: string }>('/caja/saldo/')
-  return data.saldo_actual
+export interface SaldosCaja {
+  saldo_actual: string
+  saldo_adicional: string
+  saldo_total: string
+}
+
+export async function getSaldoCaja(): Promise<SaldosCaja> {
+  const { data } = await apiClient.get<SaldosCaja>('/caja/saldo/')
+  return data
 }
 
 export async function crearMovimientoCaja(datos: MovimientoCajaFormulario): Promise<MovimientoCaja> {

@@ -185,3 +185,23 @@ def test_endpoint_saldo_refleja_ultimo_movimiento_pese_a_filtros(admin_client, a
     response = admin_client.get('/api/caja/saldo/')
     assert response.status_code == 200
     assert response.data['saldo_actual'] == '200.00'
+    assert response.data['saldo_adicional'] == '0.00'
+    assert response.data['saldo_total'] == '200.00'
+
+
+@pytest.mark.django_db
+def test_endpoint_saldo_separa_saldo_actual_y_adicional_por_envio(admin_client, admin):
+    registrar_movimiento_caja(
+        tipo_movimiento=MovimientoCaja.INGRESO, monto=Decimal('450.00'), motivo=MovimientoCaja.MOTIVO_VENTA,
+        referencia_id=1, usuario=admin,
+    )
+    registrar_movimiento_caja(
+        tipo_movimiento=MovimientoCaja.INGRESO, monto=Decimal('50.00'), motivo=MovimientoCaja.MOTIVO_ENVIO,
+        referencia_id=1, usuario=admin,
+    )
+
+    response = admin_client.get('/api/caja/saldo/')
+    assert response.status_code == 200
+    assert response.data['saldo_total'] == '500.00'
+    assert response.data['saldo_adicional'] == '50.00'
+    assert response.data['saldo_actual'] == '450.00'

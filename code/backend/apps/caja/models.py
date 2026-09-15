@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 
@@ -31,10 +33,14 @@ class MovimientoCaja(models.Model):
     MOTIVO_VENTA = 'venta'
     MOTIVO_AJUSTE = 'ajuste'
     MOTIVO_MANUAL = 'manual'
+    MOTIVO_COMPRA = 'compra'
+    MOTIVO_ENVIO = 'envio'
     MOTIVO_CHOICES = [
         (MOTIVO_VENTA, 'Venta'),
         (MOTIVO_AJUSTE, 'Ajuste'),
         (MOTIVO_MANUAL, 'Manual'),
+        (MOTIVO_COMPRA, 'Compra'),
+        (MOTIVO_ENVIO, 'Envío'),
     ]
 
     monto = models.DecimalField(max_digits=12, decimal_places=2)
@@ -42,6 +48,13 @@ class MovimientoCaja(models.Model):
     motivo = models.CharField(max_length=20, choices=MOTIVO_CHOICES)
     referencia_id = models.PositiveIntegerField(null=True, blank=True)
     saldo_resultante = models.DecimalField(max_digits=12, decimal_places=2)
+    # Saldo acumulado exclusivo de movimientos `motivo=envio` — respaldo del
+    # ajuste "saldo adicional por costo de envío" (`013 · Caja`): se arrastra
+    # igual que `saldo_resultante` en cualquier otro movimiento, y solo
+    # cambia cuando `motivo == MOTIVO_ENVIO`. `saldo_actual` (el que excluye
+    # envío) se deriva como `saldo_resultante - saldo_adicional_resultante`,
+    # nunca se guarda por separado.
+    saldo_adicional_resultante = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     observacion = models.TextField(blank=True)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='movimientos_caja')
     fecha = models.DateTimeField(auto_now_add=True)

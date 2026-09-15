@@ -4,6 +4,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.caja.models import MovimientoCaja
+from apps.caja.services import calcular_saldos
 from apps.catalogo.models import Categoria, Producto
 from apps.inventario.models import InventarioSucursalProducto, MovimientoInventario
 from apps.personas.models import Cliente
@@ -233,8 +234,27 @@ def test_crear_venta_con_gasto_envio_lo_suma_al_total_y_a_caja(api_client, sucur
     assert response.data['gasto_envio'] == '50.00'
     assert response.data['total'] == '500.00'
 
-    movimiento_caja = MovimientoCaja.objects.get(referencia_id=response.data['id'])
-    assert movimiento_caja.monto == Decimal('500.00')
+    # El ingreso se separa en dos movimientos: subtotal de productos
+    # (motivo `venta`) y costo de envío aparte (motivo `envio`).
+    movimientos_caja = MovimientoCaja.objects.filter(referencia_id=response.data['id']).order_by('id')
+    assert movimientos_caja.count() == 2
+    venta_mov, envio_mov = movimientos_caja
+    assert venta_mov.tipo_movimiento == 'ingreso' and venta_mov.motivo == 'venta' and venta_mov.monto == Decimal('450.00')
+    assert envio_mov.tipo_movimiento == 'ingreso' and envio_mov.motivo == 'envio' and envio_mov.monto == Decimal('50.00')
+
+    saldos = calcular_saldos()
+    assert saldos['saldo_total'] == Decimal('500.00')
+    assert saldos['saldo_adicional'] == Decimal('50.00')
+    assert saldos['saldo_actual'] == Decimal('450.00')
+
+
+@pytest.mark.django_db
+def test_crear_venta_sin_gasto_envio_no_genera_segundo_movimiento(api_client, sucursal, producto, stock):
+    response = api_client.post('/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00'), format='json')
+
+    assert response.status_code == 201
+    assert MovimientoCaja.objects.filter(referencia_id=response.data['id']).count() == 1
+    assert calcular_saldos()['saldo_adicional'] == Decimal('0.00')
 
 
 @pytest.mark.django_db
@@ -286,6 +306,25 @@ def test_entregar_venta_no_pendiente_es_rechazado(api_client, sucursal, producto
     assert response.status_code == 400
 
 
+@pytest.mark.django_db
+def test_entregar_venta_con_envio_retira_el_saldo_adicional(api_client, sucursal, producto, stock):
+    id_venta = api_client.post(
+        '/api/ventas/',
+        _payload_venta(sucursal, producto, fecha_entrega='2026-09-01', gasto_envio='50.00'),
+        format='json',
+    ).data['id']
+    assert calcular_saldos()['saldo_adicional'] == Decimal('50.00')
+
+    response = api_client.post(f'/api/ventas/{id_venta}/entregar/')
+
+    assert response.status_code == 200
+    retiro_envio = MovimientoCaja.objects.get(
+        referencia_id=id_venta, motivo=MovimientoCaja.MOTIVO_ENVIO, tipo_movimiento=MovimientoCaja.RETIRO,
+    )
+    assert retiro_envio.monto == Decimal('50.00')
+    assert calcular_saldos()['saldo_adicional'] == Decimal('0.00')
+
+
 # --- Cancelación --------------------------------------------------------
 
 
@@ -328,6 +367,42 @@ def test_cancelar_venta_pendiente_tambien_revierte(api_client, sucursal, product
     assert response.status_code == 200
     stock.refresh_from_db()
     assert stock.stock_actual == Decimal('100.00')
+
+
+@pytest.mark.django_db
+def test_cancelar_venta_pendiente_con_envio_tambien_retira_el_envio(api_client, sucursal, producto, stock):
+    id_venta = api_client.post(
+        '/api/ventas/',
+        _payload_venta(sucursal, producto, fecha_entrega='2026-09-01', gasto_envio='50.00'),
+        format='json',
+    ).data['id']
+
+    response = api_client.post(f'/api/ventas/{id_venta}/cancelar/')
+    assert response.status_code == 200
+
+    movimientos_envio = MovimientoCaja.objects.filter(referencia_id=id_venta, motivo=MovimientoCaja.MOTIVO_ENVIO)
+    assert movimientos_envio.count() == 2  # ingreso al crear + retiro al cancelar
+    assert movimientos_envio.filter(tipo_movimiento=MovimientoCaja.RETIRO, monto=Decimal('50.00')).exists()
+    assert calcular_saldos()['saldo_adicional'] == Decimal('0.00')
+
+    ajuste = MovimientoCaja.objects.get(referencia_id=id_venta, motivo=MovimientoCaja.MOTIVO_AJUSTE)
+    assert ajuste.monto == Decimal('450.00')  # revierte solo el subtotal, no el total con envío
+
+
+@pytest.mark.django_db
+def test_cancelar_venta_entregada_con_envio_no_duplica_el_retiro(api_client, sucursal, producto, stock):
+    id_venta = api_client.post(
+        '/api/ventas/', _payload_venta(sucursal, producto, cantidad='10.00', gasto_envio='50.00'), format='json',
+    ).data['id']  # sin fecha_entrega: queda entregada de inmediato, el envío ya se retiró al crear
+
+    response = api_client.post(f'/api/ventas/{id_venta}/cancelar/')
+    assert response.status_code == 200
+
+    movimientos_envio = MovimientoCaja.objects.filter(referencia_id=id_venta, motivo=MovimientoCaja.MOTIVO_ENVIO)
+    assert movimientos_envio.count() == 1  # solo el ingreso al crear, sin retiro duplicado al cancelar
+
+    ajuste = MovimientoCaja.objects.get(referencia_id=id_venta, motivo=MovimientoCaja.MOTIVO_AJUSTE)
+    assert ajuste.monto == Decimal('450.00')
 
 
 @pytest.mark.django_db

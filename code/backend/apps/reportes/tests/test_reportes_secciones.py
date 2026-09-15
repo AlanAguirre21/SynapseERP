@@ -173,10 +173,25 @@ def test_resumen_compras_desglosa_productos_e_insumos(api_client, sucursal, prov
 
 
 @pytest.mark.django_db
-def test_resumen_compras_excluye_pendientes_de_las_series_de_monto(
+def test_resumen_compras_incluye_pendientes_en_las_series_de_monto(
     api_client, sucursal, proveedor, usuario, producto,
 ):
     compra = _crear_compra(sucursal, proveedor, usuario, total=Decimal('200.00'), estado=Compra.ESTADO_PENDIENTE)
+    DetalleCompraProducto.objects.create(
+        compra=compra, producto=producto, cantidad=Decimal('1'), costo_unitario=Decimal('200.00'),
+        subtotal=Decimal('200.00'),
+    )
+
+    response = api_client.get('/api/reportes/compras/', {'periodo': 'mes'})
+
+    assert sum(Decimal(p['monto']) for p in response.data['todas']) == Decimal('200.00')
+
+
+@pytest.mark.django_db
+def test_resumen_compras_excluye_canceladas_de_las_series_de_monto(
+    api_client, sucursal, proveedor, usuario, producto,
+):
+    compra = _crear_compra(sucursal, proveedor, usuario, total=Decimal('200.00'), estado=Compra.ESTADO_CANCELADA)
     DetalleCompraProducto.objects.create(
         compra=compra, producto=producto, cantidad=Decimal('1'), costo_unitario=Decimal('200.00'),
         subtotal=Decimal('200.00'),

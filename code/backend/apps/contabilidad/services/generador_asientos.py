@@ -142,11 +142,18 @@ def generar_asiento_caja(movimiento_caja):
             constants.CODIGO_CAPITAL if movimiento_caja.tipo_movimiento == MovimientoCaja.INGRESO
             else constants.CODIGO_GASTOS_GENERALES
         )
+    elif movimiento_caja.motivo == MovimientoCaja.MOTIVO_COMPRA:
+        # El retiro de caja al crear una compra (`013 · Caja`, ajuste
+        # "compras en caja") queda como anticipo a proveedor hasta que
+        # `recibir()` registre su contrapartida de Inventario — ver
+        # "Fuera de alcance" del ajuste en `spec.md`.
+        codigo_contraparte = constants.CODIGO_PROVEEDORES
     else:
-        # `venta` (ingreso automático) y `ajuste` (único ajuste existente
-        # hoy es el reverso de una venta cancelada) afectan la misma
-        # cuenta de Ventas, en el sentido que corresponda según la
-        # dirección del movimiento.
+        # `venta` (ingreso automático), `ajuste` (reverso de una venta o
+        # compra cancelada) y `envio` (saldo adicional por costo de envío)
+        # afectan la misma cuenta de Ventas, en el sentido que corresponda
+        # según la dirección del movimiento — no se crea una cuenta
+        # contable nueva para envío en este ajuste.
         codigo_contraparte = constants.CODIGO_VENTAS
 
     monto = movimiento_caja.monto

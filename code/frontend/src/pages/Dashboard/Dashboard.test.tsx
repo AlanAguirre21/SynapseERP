@@ -79,8 +79,11 @@ const movimientosBase: MovimientoCajaReporte[] = [
 
 function mockearTodo({
   usuario = { nombre: 'Ana', rol: 'admin' as const },
-  saldo = '1000.00',
-}: { usuario?: { nombre: string; rol: 'admin' | 'operador' } | undefined; saldo?: string } = {}) {
+  saldo = { saldo_actual: '1000.00', saldo_adicional: '0.00', saldo_total: '1000.00' },
+}: {
+  usuario?: { nombre: string; rol: 'admin' | 'operador' } | undefined
+  saldo?: { saldo_actual: string; saldo_adicional: string; saldo_total: string }
+} = {}) {
   vi.mocked(useResumenDashboard).mockReturnValue(
     { data: resumenBase(), isLoading: false } as unknown as ReturnType<typeof useResumenDashboard>,
   )

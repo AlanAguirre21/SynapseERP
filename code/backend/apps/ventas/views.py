@@ -122,10 +122,20 @@ class VentaViewSet(viewsets.ModelViewSet):
         for detalle in venta.detalles.select_related('producto').all():
             _confirmar_linea_venta(venta, detalle, request.user)
 
+        # El ingreso se separa en dos movimientos cuando hay costo de envío:
+        # el subtotal de productos (motivo `venta`) y el envío aparte
+        # (motivo `envio`, saldo adicional informativo) — si `gasto_envio`
+        # es 0 no se genera el segundo movimiento.
         registrar_movimiento_caja(
-            tipo_movimiento=MovimientoCaja.INGRESO, monto=venta.total, motivo=MovimientoCaja.MOTIVO_VENTA,
-            referencia_id=venta.id, usuario=request.user, observacion=f'Venta #{venta.id}',
+            tipo_movimiento=MovimientoCaja.INGRESO, monto=venta.total - venta.gasto_envio,
+            motivo=MovimientoCaja.MOTIVO_VENTA, referencia_id=venta.id, usuario=request.user,
+            observacion=f'Venta #{venta.id}',
         )
+        if venta.gasto_envio > 0:
+            registrar_movimiento_caja(
+                tipo_movimiento=MovimientoCaja.INGRESO, monto=venta.gasto_envio, motivo=MovimientoCaja.MOTIVO_ENVIO,
+                referencia_id=venta.id, usuario=request.user, observacion=f'Envío de venta #{venta.id}',
+            )
         # Costo de venta / salida de inventario — el lado de Caja/Ventas ya
         # lo generó `registrar_movimiento_caja()` (018 · Contabilidad).
         generar_asiento_venta(venta)
@@ -141,6 +151,17 @@ class VentaViewSet(viewsets.ModelViewSet):
         if venta.estado != Venta.ESTADO_PENDIENTE:
             return Response({'detail': 'Solo se puede entregar una venta pendiente.'}, status=400)
 
+        # El dinero de envío sale del saldo adicional en el momento de la
+        # entrega — hasta entonces solo estaba "reservado" ahí.
+        if venta.gasto_envio > 0:
+            try:
+                registrar_movimiento_caja(
+                    tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.gasto_envio, motivo=MovimientoCaja.MOTIVO_ENVIO,
+                    referencia_id=venta.id, usuario=request.user, observacion=f'Envío de venta #{venta.id} (entrega)',
+                )
+            except SaldoInsuficienteError as exc:
+                raise ValidationError({'detail': f'No se puede entregar la venta: {exc}'}) from exc
+
         venta.estado = Venta.ESTADO_ENTREGADA
         venta.fecha_entrega_real = timezone.now()
         venta.save(update_fields=['estado', 'fecha_entrega_real'])
@@ -155,6 +176,12 @@ class VentaViewSet(viewsets.ModelViewSet):
         if venta.estado == Venta.ESTADO_CANCELADA:
             return Response({'detail': 'La venta ya está cancelada.'}, status=400)
 
+        # Se captura antes de sobrescribirlo más abajo: determina si el
+        # envío ya se retiró en `entregar()` (estado `entregada`, no se
+        # repite) o si todavía nunca se retiró (estado `pendiente`, sale
+        # aquí junto con el resto de la cancelación).
+        estado_previo = venta.estado
+
         # El stock y el ingreso de caja ya ocurrieron al crear la venta,
         # sin importar si su estado es pendiente o entregada — cancelar
         # siempre revierte ambos, nunca editando los movimientos originales.
@@ -162,11 +189,19 @@ class VentaViewSet(viewsets.ModelViewSet):
             _revertir_linea_venta(venta, detalle, request.user)
 
         try:
+            # El ajuste revierte solo el subtotal de productos — el envío
+            # (si lo hubo) se revierte aparte, con su propio motivo `envio`.
             registrar_movimiento_caja(
-                tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.total, motivo=MovimientoCaja.MOTIVO_AJUSTE,
-                referencia_id=venta.id, usuario=request.user,
+                tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.total - venta.gasto_envio,
+                motivo=MovimientoCaja.MOTIVO_AJUSTE, referencia_id=venta.id, usuario=request.user,
                 observacion=f'Reverso por cancelación de venta #{venta.id}',
             )
+            if estado_previo == Venta.ESTADO_PENDIENTE and venta.gasto_envio > 0:
+                registrar_movimiento_caja(
+                    tipo_movimiento=MovimientoCaja.RETIRO, monto=venta.gasto_envio, motivo=MovimientoCaja.MOTIVO_ENVIO,
+                    referencia_id=venta.id, usuario=request.user,
+                    observacion=f'Envío de venta #{venta.id} (cancelada sin entregar)',
+                )
         except SaldoInsuficienteError as exc:
             raise ValidationError({
                 'detail': f'No se puede cancelar la venta: {exc} (¿se registraron retiros de caja después de la venta?)',

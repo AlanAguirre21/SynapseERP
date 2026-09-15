@@ -12,8 +12,28 @@
   @apply m-0 text-texto text-xl font-semibold;
 }
 
-.saldo {
-  @apply flex flex-col gap-1 px-6 py-5 bg-primario text-fondo rounded-xl mb-2;
+.saldosFila {
+  @apply flex flex-wrap items-stretch gap-3 mb-2;
+}
+
+.tarjetaSaldo {
+  @apply flex flex-col justify-center gap-1 px-6 py-5 rounded-xl min-w-[220px] flex-1;
+}
+
+.saldoActual {
+  @apply bg-primario-suave text-primario;
+}
+
+.saldoAdicional {
+  @apply bg-inicio-suave text-inicio;
+}
+
+.saldoTotal {
+  @apply bg-primario text-fondo shadow-lg shadow-primario/20;
+}
+
+.operador {
+  @apply hidden sm:flex items-center justify-center text-2xl font-semibold text-texto/30 select-none;
 }
 
 .saldoEtiqueta {

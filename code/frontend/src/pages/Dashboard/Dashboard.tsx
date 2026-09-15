@@ -21,12 +21,14 @@ const ETIQUETAS_PERIODO: { clave: PeriodoDashboard; etiqueta: string }[] = [
 ]
 
 function SaldoCajaAdmin() {
-  const { data: saldoActual, isLoading } = useSaldoCaja()
+  const { data: saldos, isLoading } = useSaldoCaja()
 
   return (
     <div className={styles.saldo}>
       <span className={styles.saldoEtiqueta}>Saldo actual de la caja</span>
-      <span className={styles.saldoMonto}>{isLoading || !saldoActual ? '…' : formatearMoneda(saldoActual)}</span>
+      <span className={styles.saldoMonto}>
+        {isLoading || !saldos ? '…' : formatearMoneda(saldos.saldo_actual)}
+      </span>
     </div>
   )
 }

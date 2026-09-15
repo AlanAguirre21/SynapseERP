@@ -39,12 +39,13 @@ GRANULARIDAD_MES = 'mes'
 #   el ingreso de caja ya se descontaron/registraron al CREAR la venta
 #   (011 · Ventas no tiene paso "recibir" separado) — solo `cancelada` se
 #   excluye.
-# - Compra: solo `recibida` cuenta. A diferencia de Ventas, una compra
-#   `pendiente` todavía no afectó inventario ni representa un costo ya
-#   incurrido (010 · Compras: el efecto ocurre en `recibir()`, no al
-#   crear) — contarla inflaría "compras" con gasto que aún no sucede.
+# - Compra: `pendiente` y `recibida` cuentan por igual (ajuste "compras en
+#   caja" de `013 · Caja`) — el retiro de caja ya ocurre al CREAR la
+#   compra, no en `recibir()` (que sigue gobernando solo el efecto sobre
+#   inventario/asiento de Inventario-Proveedores) — solo `cancelada` se
+#   excluye, mismo criterio que Ventas.
 ESTADOS_VENTA_CUENTAN = [Venta.ESTADO_PENDIENTE, Venta.ESTADO_ENTREGADA]
-ESTADOS_COMPRA_CUENTAN = [Compra.ESTADO_RECIBIDA]
+ESTADOS_COMPRA_CUENTAN = [Compra.ESTADO_PENDIENTE, Compra.ESTADO_RECIBIDA]
 
 CERO = Decimal('0.00')
 
@@ -204,11 +205,11 @@ def calcular_resumen_compras(periodo: str) -> dict:
     claves = _generar_claves(inicio, ahora, granularidad)
 
     detalles_producto = DetalleCompraProducto.objects.filter(
-        compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado=Compra.ESTADO_RECIBIDA,
+        compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado__in=ESTADOS_COMPRA_CUENTAN,
     ).values_list('compra__fecha', 'subtotal')
 
     detalles_materia_prima = DetalleCompraMateriaPrima.objects.filter(
-        compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado=Compra.ESTADO_RECIBIDA,
+        compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado__in=ESTADOS_COMPRA_CUENTAN,
     ).values_list('compra__fecha', 'subtotal')
 
     productos_por_bucket = _agrupar_por_bucket(detalles_producto, granularidad)
