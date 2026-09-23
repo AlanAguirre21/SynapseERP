@@ -12,8 +12,8 @@ from apps.inventario.models import (
     InventarioSucursalProducto,
     MovimientoInventario,
 )
-from apps.personas.models import Proveedor
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Proveedor
 from apps.usuarios.models import Usuario
 
 

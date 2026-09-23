@@ -1,9 +1,6 @@
-from decimal import Decimal
-
-from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
-from .models import Cliente, DatosFiscalesCliente, Empleado, Proveedor
+from .models import Cliente, DatosFiscalesCliente, Proveedor
 
 CAMPOS_FISCALES_OBLIGATORIOS = ['rfc', 'razon_social', 'codigo_postal_fiscal', 'regimen_fiscal']
 
@@ -81,15 +78,4 @@ class ProveedorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proveedor
         fields = ['id', 'nombre_proveedor', 'rfc', 'contacto_nombre', 'telefono', 'email', 'direccion', 'activo']
-        read_only_fields = ['id', 'activo']
-
-
-class EmpleadoSerializer(serializers.ModelSerializer):
-    salario = serializers.DecimalField(
-        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal(0))],
-    )
-
-    class Meta:
-        model = Empleado
-        fields = ['id', 'nombre_completo', 'puesto', 'telefono', 'email', 'fecha_contratacion', 'salario', 'activo']
         read_only_fields = ['id', 'activo']

@@ -24,7 +24,7 @@ const USUARIO_PREVIEW: Usuario = {
     { slug: 'caja', nombre: 'Caja', ruta: '/caja' },
     { slug: 'catalogo', nombre: 'Catálogo', ruta: '/catalogo' },
     { slug: 'rrhh', nombre: 'Recursos Humanos', ruta: '/rrhh' },
-    { slug: 'personas', nombre: 'Terceros', ruta: '/personas' },
+    { slug: 'terceros', nombre: 'Terceros', ruta: '/terceros' },
     { slug: 'usuarios', nombre: 'Usuarios', ruta: '/usuarios' },
     { slug: 'sucursales', nombre: 'Sucursales', ruta: '/sucursales' },
     { slug: 'contabilidad', nombre: 'Contabilidad', ruta: '/contabilidad' },

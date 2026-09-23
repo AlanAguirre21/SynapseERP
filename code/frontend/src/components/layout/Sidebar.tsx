@@ -18,7 +18,7 @@ const ICONO_POR_SLUG: Record<string, NombreIcono> = {
   caja: 'caja',
   catalogo: 'catalogo',
   rrhh: 'rrhh',
-  personas: 'personas',
+  terceros: 'personas',
   sucursales: 'sucursales',
   contabilidad: 'contabilidad',
   configuracion_fiscal: 'configuracionFiscal',

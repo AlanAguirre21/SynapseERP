@@ -8,8 +8,8 @@ from rest_framework.test import APIClient
 from apps.caja.models import MovimientoCaja
 from apps.catalogo.models import Categoria, MateriaPrima, Producto
 from apps.compras.models import Compra, DetalleCompraMateriaPrima, DetalleCompraProducto
-from apps.personas.models import Cliente, Proveedor
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Cliente, Proveedor
 from apps.usuarios.models import Usuario
 from apps.ventas.models import DetalleVenta, Venta
 

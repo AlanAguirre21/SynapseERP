@@ -17,11 +17,7 @@ MODULOS = [
     # Configuración Fiscal/Usuarios (ver feature 008 · RRHH, aún sin implementar:
     # esta entrada solo habilita el ítem del sidebar, la página en sí llega con esa feature).
     {'slug': 'rrhh', 'nombre': 'Recursos Humanos', 'ruta': '/rrhh', 'roles': [ROL_ADMIN]},
-    # Slug/ruta se mantienen como 'personas' (la página y el app de Django detrás
-    # todavía no se dividieron) — solo el nombre mostrado cambia a "Terceros",
-    # que es lo que pide la feature 001 · Header. El split real de página/app
-    # (Clientes/Proveedores) es responsabilidad de 009 · Terceros.
-    {'slug': 'personas', 'nombre': 'Terceros', 'ruta': '/personas', 'roles': [ROL_ADMIN, ROL_OPERADOR]},
+    {'slug': 'terceros', 'nombre': 'Terceros', 'ruta': '/terceros', 'roles': [ROL_ADMIN, ROL_OPERADOR]},
     # Agrupado junto a RRHH/Terceros (los tres módulos "de personas"), en vez
     # de al final de la lista — orden explícito pedido por el usuario.
     {'slug': 'usuarios', 'nombre': 'Usuarios', 'ruta': '/usuarios', 'roles': [ROL_ADMIN]},

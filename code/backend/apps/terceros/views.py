@@ -3,10 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.permissions import LecturaParaTodosEscrituraSoloAdmin
-
-from .models import Cliente, Empleado, Proveedor
-from .serializers import ClienteSerializer, EmpleadoSerializer, ProveedorSerializer
+from .models import Cliente, Proveedor
+from .serializers import ClienteSerializer, ProveedorSerializer
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
@@ -58,29 +56,3 @@ class ProveedorViewSet(viewsets.ModelViewSet):
         proveedor.save(update_fields=['activo'])
 
         return Response(self.get_serializer(proveedor).data)
-
-
-class EmpleadoViewSet(viewsets.ModelViewSet):
-    """CRUD de empleados. Lectura para cualquier usuario autenticado,
-    escritura (crear/editar/desactivar/reactivar) solo para rol admin.
-    """
-
-    queryset = Empleado.objects.all().order_by('nombre_completo')
-    serializer_class = EmpleadoSerializer
-    permission_classes = [LecturaParaTodosEscrituraSoloAdmin]
-
-    def perform_destroy(self, instance):
-        instance.activo = False
-        instance.save(update_fields=['activo'])
-
-    @action(detail=True, methods=['post'])
-    def reactivar(self, request, pk=None):
-        empleado = self.get_object()
-
-        if empleado.activo:
-            return Response({'detail': 'El empleado ya está activo.'}, status=400)
-
-        empleado.activo = True
-        empleado.save(update_fields=['activo'])
-
-        return Response(self.get_serializer(empleado).data)

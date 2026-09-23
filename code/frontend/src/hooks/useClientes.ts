@@ -7,7 +7,7 @@ import {
   getClientes,
   reactivarCliente,
   type ClienteFormulario,
-} from '../api/personas'
+} from '../api/terceros'
 
 const CLAVE_CLIENTES = ['clientes']
 

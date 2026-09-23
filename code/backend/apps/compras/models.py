@@ -21,7 +21,7 @@ class Compra(models.Model):
         (ESTADO_CANCELADA, 'Cancelada'),
     ]
 
-    proveedor = models.ForeignKey('personas.Proveedor', on_delete=models.PROTECT, related_name='compras')
+    proveedor = models.ForeignKey('terceros.Proveedor', on_delete=models.PROTECT, related_name='compras')
     sucursal = models.ForeignKey('sucursales.Sucursal', on_delete=models.PROTECT, related_name='compras')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='compras')
     # `db_index=True`: 014 · Dashboard filtra/agrega por rango de `fecha`

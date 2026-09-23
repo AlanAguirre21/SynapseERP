@@ -6,8 +6,8 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.compras.models import Compra
-from apps.personas.models import Proveedor
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Proveedor
 from apps.usuarios.models import Usuario
 from apps.ventas.models import Venta
 

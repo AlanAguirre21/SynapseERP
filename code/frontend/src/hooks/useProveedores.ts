@@ -7,7 +7,7 @@ import {
   getProveedores,
   reactivarProveedor,
   type ProveedorFormulario,
-} from '../api/personas'
+} from '../api/terceros'
 
 const CLAVE_PROVEEDORES = ['proveedores']
 

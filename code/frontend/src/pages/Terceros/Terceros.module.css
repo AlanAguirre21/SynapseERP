@@ -56,6 +56,66 @@
   @apply underline;
 }
 
+/* Nombre de cliente/proveedor como botón que despliega su historial —
+   mismo patrón hand-rolled que los asientos de 020 · Contabilidad
+   (Set<number> de expandidos + indicador ▸/▾), sin modificar el
+   componente compartido Tabla. */
+.enlaceExpandir {
+  @apply bg-transparent border-0 text-texto text-[0.9rem] cursor-pointer p-0 inline-flex items-center gap-1.5;
+}
+
+.enlaceExpandir:hover {
+  @apply text-primario;
+}
+
+.indicadorExpandir {
+  @apply inline-block w-3 text-texto/40 text-[0.75rem];
+}
+
+.seccionExpandida {
+  @apply flex flex-col gap-3 mt-2 mb-2 p-4 border border-texto/10 rounded-md;
+}
+
+.encabezadoExpandido {
+  @apply flex items-center justify-between gap-3 flex-wrap;
+}
+
+.subtituloExpandido {
+  @apply m-0 text-[0.9rem] font-semibold text-texto;
+}
+
+.selectorLimite {
+  @apply flex items-center gap-1 rounded-control border border-borde p-1;
+}
+
+.botonLimite {
+  @apply bg-transparent border-0 rounded-control px-3 py-1 text-[0.8rem] text-texto/70 cursor-pointer transition-colors;
+}
+
+.botonLimite:hover {
+  @apply text-texto;
+}
+
+.botonLimiteActivo {
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+.listaExpandida {
+  @apply flex flex-col gap-1 list-none p-0 m-0;
+}
+
+.listaExpandida li {
+  @apply flex items-center justify-between gap-3 px-3 py-2 text-[0.85rem] text-texto border-b border-texto/5;
+}
+
+.listaExpandida li:last-child {
+  @apply border-b-0;
+}
+
+.vacio {
+  @apply text-texto/60 text-[0.9rem];
+}
+
 .formulario {
   @apply flex flex-col gap-4;
 }

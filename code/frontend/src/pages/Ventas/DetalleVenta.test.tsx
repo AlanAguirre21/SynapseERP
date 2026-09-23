@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Factura } from '../../api/facturacion'
-import type { Cliente } from '../../api/personas'
+import type { Cliente } from '../../api/terceros'
 import type { Venta } from '../../api/ventas'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturaDeVenta, useGenerarFactura } from '../../hooks/useFacturas'

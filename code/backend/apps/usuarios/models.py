@@ -12,20 +12,23 @@ ROLES_USUARIO = [
 
 class Usuario(AbstractUser):
     """Modelo de usuario autenticado. El CRUD completo (alta/edición/
-    desactivación por un admin) vive en la feature 008 · Personas, que
+    desactivación por un admin) vive en la feature 010 · Usuarios, que
     también agrega la vinculación opcional con `Empleado`.
 
     Reutiliza `is_active` (heredado de `AbstractUser`) como el campo
     `activo` de este modelo en vez de agregar uno nuevo — `JWTAuthentication`
     ya rechaza a un usuario con `is_active=False` en cada petición
     autenticada (no solo en login), que es exactamente el comportamiento
-    de "desactivación con efecto inmediato" que pide la feature 008.
+    de "desactivación con efecto inmediato" que pide la feature 010.
     """
 
     email = models.EmailField('correo electrónico', unique=True)
     rol_usuario = models.CharField(max_length=20, choices=ROLES_USUARIO, default=ROL_OPERADOR)
+    # FK (no 1:1 todavía — esa conversión es responsabilidad de 010 ·
+    # Usuarios) a `rrhh.Empleado`, movido ahí desde `personas.Empleado` por
+    # la feature 008 · RRHH.
     empleado = models.ForeignKey(
-        'personas.Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios',
+        'rrhh.Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios',
     )
 
     USERNAME_FIELD = 'email'

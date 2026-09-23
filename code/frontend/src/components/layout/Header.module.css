@@ -90,6 +90,43 @@
   @apply text-advertencia text-xs;
 }
 
+.dropdownSeccion {
+  @apply m-0 px-4 py-2 text-[0.75rem] font-semibold text-texto/60 border-t border-texto/[0.08];
+}
+
+.listaSolicitudes {
+  @apply list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+}
+
+.listaSolicitudes li {
+  @apply flex flex-col gap-2 px-4 py-[10px] border-b border-texto/[0.08] text-[0.85rem];
+}
+
+.datosSolicitud {
+  @apply flex flex-col;
+}
+
+.datosSolicitud span {
+  @apply text-texto/60 text-xs;
+}
+
+.accionesSolicitud {
+  @apply flex items-center gap-2;
+}
+
+.botonAprobar,
+.botonRechazar {
+  @apply border-0 rounded-control px-3 py-1 text-[0.8rem] cursor-pointer;
+}
+
+.botonAprobar {
+  @apply bg-exito/15 text-exito;
+}
+
+.botonRechazar {
+  @apply bg-error/15 text-error;
+}
+
 .itemMenu {
   @apply block w-full text-left px-4 py-[10px] bg-transparent border-0 text-inherit no-underline cursor-pointer text-[0.9rem];
 }

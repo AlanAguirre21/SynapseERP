@@ -22,7 +22,7 @@ class Venta(models.Model):
     ]
 
     cliente = models.ForeignKey(
-        'personas.Cliente', on_delete=models.PROTECT, null=True, blank=True, related_name='ventas',
+        'terceros.Cliente', on_delete=models.PROTECT, null=True, blank=True, related_name='ventas',
     )
     sucursal = models.ForeignKey('sucursales.Sucursal', on_delete=models.PROTECT, related_name='ventas')
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='ventas')

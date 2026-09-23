@@ -4,6 +4,8 @@ URL configuration for config project.
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -34,7 +36,8 @@ urlpatterns = [
     path('api/inventario/', include('apps.inventario.urls')),
     path('api/sucursales/', include('apps.sucursales.urls')),
     path('api/catalogo/', include('apps.catalogo.urls')),
-    path('api/personas/', include('apps.personas.urls')),
+    path('api/terceros/', include('apps.terceros.urls')),
+    path('api/rrhh/', include('apps.rrhh.urls')),
     path('api/compras/', include('apps.compras.urls')),
     path('api/ventas/', include('apps.ventas.urls')),
     path('api/produccion/', include('apps.produccion.urls')),
@@ -44,3 +47,9 @@ urlpatterns = [
     path('api/facturacion/', include('apps.facturacion.urls')),
     path('api/contabilidad/', include('apps.contabilidad.urls')),
 ]
+
+if settings.DEBUG:
+    # Solo las fotografías de empleado (008 · RRHH) — nunca `MEDIA_URL`/
+    # `MEDIA_ROOT` en sí, que guardan los XML/PDF de Facturación y deben
+    # seguir sin una URL pública (ver nota en `config/settings.py`).
+    urlpatterns += static(settings.EMPLEADOS_FOTOS_URL, document_root=settings.EMPLEADOS_FOTOS_ROOT)
