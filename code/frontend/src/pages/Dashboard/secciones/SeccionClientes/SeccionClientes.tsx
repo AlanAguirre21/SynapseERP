@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import type { OrdenTop, PeriodoDashboard } from '../../api/reportes'
-import { formatearMoneda } from './formato'
-import { GraficaBarras } from './GraficaBarras'
-import { useClientesTop } from '../../hooks/useClientesTop'
-import styles from './SeccionTop.module.css'
+import type { OrdenTop, PeriodoDashboard } from '../../../../api/reportes'
+import { formatearMoneda } from '../../compartido/formato'
+import { GraficaBarras } from '../../compartido/GraficaBarras'
+import { useClientesTop } from '../../../../hooks/useClientesTop'
+import styles from '../../compartido/SeccionTop.module.css'
 
 interface SeccionClientesProps {
   periodo: PeriodoDashboard

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
-import type { OrdenTop, PeriodoDashboard } from '../../api/reportes'
-import { GraficaBarras } from './GraficaBarras'
-import { useProductosTop } from '../../hooks/useProductosTop'
-import styles from './SeccionTop.module.css'
+import type { OrdenTop, PeriodoDashboard } from '../../../../api/reportes'
+import { GraficaBarras } from '../../compartido/GraficaBarras'
+import { useProductosTop } from '../../../../hooks/useProductosTop'
+import styles from '../../compartido/SeccionTop.module.css'
 
 interface SeccionProductosProps {
   periodo: PeriodoDashboard

@@ -14,6 +14,7 @@ export type NombreIcono =
   | 'facturacion'
   | 'caja'
   | 'catalogo'
+  | 'rrhh'
   | 'personas'
   | 'sucursales'
   | 'contabilidad'
@@ -106,6 +107,14 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
     <>
       <path d="M11.5 3H5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l6-6a2 2 0 0 0 0-2.8l-9-9a2 2 0 0 0-1.4-.6Z" />
       <circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  rrhh: (
+    <>
+      <rect x="3" y="8" width="18" height="11" rx="2" />
+      <path d="M9 8V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v2" />
+      <line x1="3" y1="13" x2="21" y2="13" />
+      <rect x="10.5" y="11.7" width="3" height="2.6" rx="0.5" fill="currentColor" stroke="none" />
     </>
   ),
   personas: (

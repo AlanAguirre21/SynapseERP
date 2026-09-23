@@ -1,4 +1,4 @@
-@reference "../../index.css";
+@reference "../../../index.css";
 
 .seccion {
   @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
