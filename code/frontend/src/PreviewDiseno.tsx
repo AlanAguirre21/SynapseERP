@@ -23,11 +23,12 @@ const USUARIO_PREVIEW: Usuario = {
     { slug: 'facturacion', nombre: 'Facturación', ruta: '/facturacion' },
     { slug: 'caja', nombre: 'Caja', ruta: '/caja' },
     { slug: 'catalogo', nombre: 'Catálogo', ruta: '/catalogo' },
-    { slug: 'personas', nombre: 'Personas', ruta: '/personas' },
+    { slug: 'rrhh', nombre: 'Recursos Humanos', ruta: '/rrhh' },
+    { slug: 'personas', nombre: 'Terceros', ruta: '/personas' },
+    { slug: 'usuarios', nombre: 'Usuarios', ruta: '/usuarios' },
     { slug: 'sucursales', nombre: 'Sucursales', ruta: '/sucursales' },
     { slug: 'contabilidad', nombre: 'Contabilidad', ruta: '/contabilidad' },
     { slug: 'configuracion_fiscal', nombre: 'Configuración Fiscal', ruta: '/configuracion-fiscal' },
-    { slug: 'usuarios', nombre: 'Usuarios', ruta: '/usuarios' },
   ],
 }
 
