@@ -5,7 +5,9 @@ import {
   crearEmpleado,
   desactivarEmpleado,
   editarEmpleado,
+  getEmpleado,
   getEmpleados,
+  getEmpleadosDisponibles,
   reactivarEmpleado,
   type ContratarEmpleadoFormulario,
   type EmpleadoFormulario,
@@ -73,5 +75,24 @@ export function useReactivarEmpleado() {
   return useMutation({
     mutationFn: reactivarEmpleado,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CLAVE_EMPLEADOS }),
+  })
+}
+
+// Selector de empleado del alta/edición de Usuario (feature 010 · Usuarios).
+export function useEmpleadosDisponibles() {
+  return useQuery({
+    queryKey: ['empleados-disponibles'],
+    queryFn: getEmpleadosDisponibles,
+  })
+}
+
+// Al editar un Usuario que ya tiene un empleado vinculado, ese empleado no
+// aparece en `useEmpleadosDisponibles` (ya tiene cuenta) — se consulta
+// aparte para poder mostrarlo igual como opción seleccionada en el formulario.
+export function useEmpleado(id: number | null) {
+  return useQuery({
+    queryKey: ['empleado', id],
+    queryFn: () => getEmpleado(id as number),
+    enabled: id !== null,
   })
 }

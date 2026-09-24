@@ -13,6 +13,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from apps.usuarios.views import (
     CambiarContrasenaView,
     LoginView,
+    LogoutView,
     SolicitarRecuperacionView,
     VerificarCodigoView,
 )
@@ -20,6 +21,7 @@ from apps.usuarios.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/login/', LoginView.as_view(), name='auth-login'),
+    path('api/auth/logout/', LogoutView.as_view(), name='auth-logout'),
     path('api/auth/recuperar/', SolicitarRecuperacionView.as_view(), name='auth-recuperar'),
     path(
         'api/auth/verificar-codigo/',

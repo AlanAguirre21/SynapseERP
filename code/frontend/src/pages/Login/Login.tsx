@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { Icono } from '../../components/common/Icono'
+import { CampoContrasena } from '../../components/common/CampoContrasena'
 import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
 import styles from './Login.module.css'
@@ -15,7 +15,6 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
-  const [mostrarPassword, setMostrarPassword] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -66,26 +65,13 @@ export function Login() {
           />
         </label>
 
-        <label className={styles.campo}>
-          Contraseña
-          <div className={styles.campoConIcono}>
-            <input
-              type={mostrarPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(evento) => setPassword(evento.target.value)}
-              autoComplete="current-password"
-              required
-            />
-            <button
-              type="button"
-              className={styles.botonOjo}
-              onClick={() => setMostrarPassword((valor) => !valor)}
-              aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            >
-              <Icono nombre={mostrarPassword ? 'ojoCerrado' : 'ojo'} tamano={18} />
-            </button>
-          </div>
-        </label>
+        <CampoContrasena
+          etiqueta="Contraseña"
+          valor={password}
+          onCambiar={setPassword}
+          autoComplete="current-password"
+          required
+        />
 
         {error && (
           <p className={styles.error} role="alert">

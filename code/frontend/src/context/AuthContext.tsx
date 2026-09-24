@@ -2,7 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 
 import { login as loginRequest } from '../api/auth'
-import { clearTokens, getToken, setRefreshToken, setToken } from '../api/client'
+import { clearTokens, getRefreshToken, getToken, setRefreshToken, setToken } from '../api/client'
+import { logout as logoutRequest } from '../api/usuarios'
 
 interface AuthContextValue {
   autenticado: boolean
@@ -33,7 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
-    clearTokens()
+    // Best-effort: si la petición de red falla, igual se limpian los
+    // tokens localmente — no debe dejar al usuario atrapado en la sesión
+    // actual solo porque el backend no respondió (ver plan.md). Importante:
+    // `clearTokens()` va en `.finally()`, no justo después de disparar la
+    // petición — el interceptor de `apiClient` que agrega el header
+    // `Authorization` corre en un microtask async: si se llama a
+    // `clearTokens()` de forma síncrona inmediatamente después, borra el
+    // token antes de que el interceptor llegue a leerlo, y la petición de
+    // logout sale sin credenciales (401).
+    logoutRequest(getRefreshToken())
+      .catch(() => {})
+      .finally(() => clearTokens())
     setAutenticado(false)
     queryClient.clear()
   }, [queryClient])

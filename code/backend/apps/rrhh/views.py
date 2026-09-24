@@ -101,6 +101,15 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
     serializer_class = EmpleadoSerializer
     permission_classes = [EsAdmin]
 
+    def get_queryset(self):
+        """`?disponible=true` filtra a empleados activos sin cuenta de
+        usuario vinculada — usado por el selector de empleado del alta de
+        `010 · Usuarios` (relación 1:1, ver `Usuario.empleado`)."""
+        queryset = Empleado.objects.all().order_by('nombre_completo')
+        if self.request.query_params.get('disponible') == 'true':
+            queryset = queryset.filter(activo=True, usuario__isnull=True)
+        return queryset
+
     @action(detail=False, methods=['post'])
     @transaction.atomic
     def contratar(self, request):
@@ -142,13 +151,17 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         instance.activo = False
         instance.save(update_fields=['activo'])
 
-        # Cascada (ver spec.md, criterio agregado por 010 · Usuarios): si el
-        # empleado tiene una cuenta de Usuario vinculada, se desactiva
-        # también, en la misma transacción — evita que conserve acceso al
-        # sistema. `usuarios` es hoy un FK (podría haber más de una cuenta;
-        # se convierte a 1:1 cuando 010 implemente esa relación), así que se
-        # desactivan todas por seguridad, no solo "la primera".
-        instance.usuarios.filter(is_active=True).update(is_active=False)
+        # Cascada (spec.md, criterio agregado por 010 · Usuarios): si el
+        # empleado tiene una cuenta de Usuario vinculada (1:1 desde 010), se
+        # desactiva también, en la misma transacción — evita que conserve
+        # acceso al sistema. El descriptor inverso de un `OneToOneField` sin
+        # fila relacionada lanza `RelatedObjectDoesNotExist` (subclase de
+        # `AttributeError`), por eso `getattr(instance, 'usuario', None)` en
+        # vez de acceder directo.
+        cuenta_vinculada = getattr(instance, 'usuario', None)
+        if cuenta_vinculada and cuenta_vinculada.is_active:
+            cuenta_vinculada.is_active = False
+            cuenta_vinculada.save(update_fields=['is_active'])
 
     @action(detail=True, methods=['post'])
     def reactivar(self, request, pk=None):

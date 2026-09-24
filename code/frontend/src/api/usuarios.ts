@@ -90,3 +90,42 @@ export async function reactivarUsuarioCuenta(id: number): Promise<UsuarioCuenta>
   const { data } = await apiClient.post<UsuarioCuenta>(`/usuarios/${id}/reactivar/`)
   return data
 }
+
+// --- Historial de accesos (feature 010 · Usuarios) --------------------------
+
+export interface RegistroAcceso {
+  id: number
+  tipo: 'exitoso' | 'cierre_sesion' | 'fallido'
+  ip: string | null
+  creado_en: string
+}
+
+export type LimiteAccesos = '5' | '10' | 'todos'
+
+export async function getAccesosUsuario(id: number, limite: LimiteAccesos): Promise<RegistroAcceso[]> {
+  const { data } = await apiClient.get(`/usuarios/${id}/accesos/`, { params: { limite } })
+  // `limite=todos` pagina en el backend (ver plan.md): la respuesta trae
+  // `{count, next, previous, results}` en vez del arreglo plano que
+  // devuelven `limite=5`/`10` — se normaliza acá para que el hook/página no
+  // tengan que distinguir entre ambas formas.
+  return Array.isArray(data) ? data : data.results
+}
+
+// --- Cierre de sesión (feature 010 · Usuarios) -------------------------------
+
+export async function logout(refresh: string | null): Promise<void> {
+  await apiClient.post('/auth/logout/', refresh ? { refresh } : {})
+}
+
+// --- Generación de contraseña aleatoria (feature 010 · Usuarios) ------------
+// Utilidad de frontend, no endpoint — ver plan.md, Decisiones: solo rellena
+// el campo del formulario, la validación real de fuerza sigue en el backend
+// (`UsuarioSerializer.validate_password`) al guardar.
+
+const ALFABETO_PASSWORD = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*'
+
+export function generarPasswordAleatoria(longitud = 14): string {
+  const valores = new Uint32Array(longitud)
+  crypto.getRandomValues(valores)
+  return Array.from(valores, (v) => ALFABETO_PASSWORD[v % ALFABETO_PASSWORD.length]).join('')
+}

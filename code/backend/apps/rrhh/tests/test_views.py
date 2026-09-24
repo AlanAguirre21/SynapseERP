@@ -385,3 +385,39 @@ def test_no_se_puede_resolver_una_solicitud_ya_resuelta(admin_client, solicitud)
 def test_operador_no_puede_aprobar_solicitud(operador_client, solicitud):
     response = operador_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/aprobar/')
     assert response.status_code == 403
+
+
+# --- Filtro `?disponible=true` (selector de empleado en 010 · Usuarios) --
+
+
+@pytest.mark.django_db
+def test_disponible_excluye_empleados_ya_vinculados_a_un_usuario(admin_client, empleado):
+    empleado_libre = Empleado.objects.create(nombre_completo='Empleado Libre')
+    Usuario.objects.create_user(
+        username='con-cuenta', email='con-cuenta@flebosil.test', password='clave-segura-123',
+        empleado=empleado,
+    )
+
+    response = admin_client.get('/api/rrhh/empleados/?disponible=true')
+    assert response.status_code == 200
+    ids = [e['id'] for e in response.data]
+    assert empleado_libre.id in ids
+    assert empleado.id not in ids
+
+
+@pytest.mark.django_db
+def test_disponible_excluye_empleados_inactivos(admin_client):
+    Empleado.objects.create(nombre_completo='Empleado Inactivo', activo=False)
+    response = admin_client.get('/api/rrhh/empleados/?disponible=true')
+    assert response.data == []
+
+
+@pytest.mark.django_db
+def test_sin_el_query_param_devuelve_todos_los_empleados(admin_client, empleado):
+    Usuario.objects.create_user(
+        username='con-cuenta', email='con-cuenta@flebosil.test', password='clave-segura-123',
+        empleado=empleado,
+    )
+    response = admin_client.get('/api/rrhh/empleados/')
+    ids = [e['id'] for e in response.data]
+    assert empleado.id in ids

@@ -14,12 +14,13 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.validators import UniqueValidator
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from core.modules import modulos_para_rol
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
-from .models import CodigoRecuperacion
+from .models import CodigoRecuperacion, RegistroAcceso
 
 Usuario = get_user_model()
 
@@ -67,7 +68,7 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    """CRUD administrativo de usuarios (feature 008 · Personas).
+    """CRUD administrativo de usuarios (feature 010 · Usuarios).
 
     `password` es `write_only` y solo se usa en creación — nunca se expone
     en una respuesta de lectura, y `update()` la descarta explícitamente
@@ -202,19 +203,62 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, trim_whitespace=False)
 
     def validate(self, attrs):
+        request = self.context.get('request')
+        ip = request.META.get('REMOTE_ADDR') if request else None
         usuario = Usuario.objects.filter(email=attrs['email']).first()
 
-        if usuario is None or not usuario.check_password(attrs['password']):
+        if usuario is None:
+            # Correo inexistente: se registra por trazabilidad (posible
+            # escaneo de correos), pero sin vínculo a ningún `Usuario` — por
+            # eso no aparece en el historial de accesos de nadie (ver nota
+            # en `RegistroAcceso` y "Fuera de alcance" del spec).
+            RegistroAcceso.objects.create(tipo='fallido', email_intentado=attrs['email'], ip=ip)
+            raise AuthenticationFailed('Correo o contraseña incorrectos.')
+
+        if not usuario.check_password(attrs['password']):
+            # Contraseña incorrecta contra un correo que sí existe: se
+            # vincula a ese `Usuario` (a diferencia del caso anterior) para
+            # que aparezca en su propio historial de accesos — es la señal
+            # que permite detectar fuerza bruta contra una cuenta real.
+            RegistroAcceso.objects.create(usuario=usuario, tipo='fallido', ip=ip)
             raise AuthenticationFailed('Correo o contraseña incorrectos.')
 
         if not usuario.is_active:
+            RegistroAcceso.objects.create(usuario=usuario, tipo='fallido', ip=ip)
             raise AuthenticationFailed('Tu cuenta está inactiva. Contacta a un administrador.')
+
+        RegistroAcceso.objects.create(usuario=usuario, tipo='exitoso', ip=ip)
 
         refresh = RefreshToken.for_user(usuario)
         return {
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         }
+
+
+class LogoutSerializer(serializers.Serializer):
+    """`refresh` es opcional: si no llega (ej. ya se perdió del storage del
+    cliente), igual se registra el cierre de sesión — el logout nunca debe
+    fallar por un token ausente o ya inválido/expirado.
+    """
+
+    refresh = serializers.CharField(required=False, allow_blank=True)
+
+    def cerrar_sesion(self, usuario, ip):
+        refresh_token = self.validated_data.get('refresh')
+        if refresh_token:
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except TokenError:
+                pass
+
+        RegistroAcceso.objects.create(usuario=usuario, tipo='cierre_sesion', ip=ip)
+
+
+class RegistroAccesoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistroAcceso
+        fields = ['id', 'tipo', 'ip', 'creado_en']
 
 
 class SolicitarRecuperacionSerializer(serializers.Serializer):

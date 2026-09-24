@@ -1,16 +1,19 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
-from core.permissions import LecturaParaTodosEscrituraSoloAdmin
+from core.permissions import ROL_ADMIN, EsAdmin
 
 from .models import Usuario
 from .serializers import (
     CambiarContrasenaSerializer,
     LoginSerializer,
+    LogoutSerializer,
+    RegistroAccesoSerializer,
     SolicitarRecuperacionSerializer,
     UsuarioActualSerializer,
     UsuarioPropioSerializer,
@@ -59,9 +62,25 @@ class LoginView(GenericAPIView):
     throttle_scope = 'login'
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
+
+
+class LogoutView(GenericAPIView):
+    """POST /api/auth/logout/ — invalida (blacklist) el refresh token
+    vigente de la sesión y registra el cierre de sesión en el historial de
+    accesos del usuario autenticado.
+    """
+
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.cerrar_sesion(request.user, request.META.get('REMOTE_ADDR'))
+        return Response(status=204)
 
 
 MENSAJE_RECUPERACION_ENVIADA = 'Si el correo está registrado, te enviamos un código de verificación.'
@@ -117,14 +136,45 @@ class CambiarContrasenaView(GenericAPIView):
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    """CRUD de usuarios (feature 008 · Personas). Lectura para cualquier
-    usuario autenticado, escritura (crear/editar/desactivar/reactivar)
-    solo para rol admin.
+    """CRUD de usuarios (feature 010 · Usuarios). Exclusivo de rol admin —
+    a diferencia de otros ViewSets de catálogo, ni siquiera la lectura se
+    abre a operador (spec: "no tiene acceso ni de lectura ni de escritura
+    vía API").
     """
 
     queryset = Usuario.objects.select_related('empleado').all().order_by('username')
     serializer_class = UsuarioSerializer
-    permission_classes = [LecturaParaTodosEscrituraSoloAdmin]
+    permission_classes = [EsAdmin]
+
+    def _error_no_desactivable(self, instance):
+        """Devuelve un mensaje de error si `instance` no puede desactivarse,
+        o `None` si la desactivación es válida. Separado de `destroy()` para
+        responder siempre `{"detail": "..."}", igual que el resto de la API
+        (una `ValidationError` con un string plano se serializa como una
+        lista, no como ese formato — ver constitución, "API errors").
+        """
+        if instance == self.request.user:
+            return 'No puedes desactivar tu propia cuenta.'
+
+        if instance.rol_usuario == ROL_ADMIN:
+            hay_otro_admin = (
+                Usuario.objects.filter(rol_usuario=ROL_ADMIN, is_active=True)
+                .exclude(pk=instance.pk)
+                .exists()
+            )
+            if not hay_otro_admin:
+                return 'No puedes desactivar al único administrador activo del sistema.'
+
+        return None
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        error = self._error_no_desactivable(instance)
+        if error:
+            return Response({'detail': error}, status=400)
+
+        self.perform_destroy(instance)
+        return Response(status=204)
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -141,3 +191,25 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         usuario.save(update_fields=['is_active'])
 
         return Response(self.get_serializer(usuario).data)
+
+    @action(detail=True, methods=['get'])
+    def accesos(self, request, pk=None):
+        """GET /api/usuarios/<id>/accesos/?limite=5|10|todos — historial de
+        accesos del usuario, más reciente primero (orden ya definido en
+        `RegistroAcceso.Meta.ordering`). `limite=5`/`10` recorta el
+        queryset directamente; `limite=todos` pagina (única acción de esta
+        API que lo hace — el proyecto no define paginación global, ver
+        `plan.md`), porque es una tabla insert-only que crece sin límite.
+        """
+        usuario = self.get_object()
+        queryset = usuario.registros_acceso.all()
+        limite = request.query_params.get('limite', '5')
+
+        if limite == 'todos':
+            paginador = PageNumberPagination()
+            paginador.page_size = 20
+            pagina = paginador.paginate_queryset(queryset, request, view=self)
+            return paginador.get_paginated_response(RegistroAccesoSerializer(pagina, many=True).data)
+
+        cantidad = 10 if limite == '10' else 5
+        return Response(RegistroAccesoSerializer(queryset[:cantidad], many=True).data)

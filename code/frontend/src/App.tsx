@@ -22,6 +22,7 @@ import { RecuperarContrasena } from './pages/RecuperarContrasena/RecuperarContra
 import { RRHH } from './pages/RRHH/RRHH'
 import { Sucursales } from './pages/Sucursales/Sucursales'
 import { Terceros } from './pages/Terceros/Terceros'
+import { Usuarios } from './pages/Usuarios/Usuarios'
 import { DetalleVenta } from './pages/Ventas/DetalleVenta'
 import { NuevaVenta } from './pages/Ventas/NuevaVenta'
 import { Ventas } from './pages/Ventas/Ventas'
@@ -49,6 +50,7 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/rrhh" element={<RRHH />} />
               <Route path="/terceros" element={<Terceros />} />
+              <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/inventario" element={<Inventario />} />
               <Route path="/compras" element={<Compras />} />
               <Route path="/compras/nueva" element={<NuevaCompra />} />

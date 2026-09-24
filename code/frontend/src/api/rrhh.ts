@@ -116,6 +116,18 @@ export async function getEmpleados(): Promise<Empleado[]> {
   return data
 }
 
+// Selector de empleado en el alta/edición de Usuario (feature 010 ·
+// Usuarios): solo empleados activos sin cuenta ya vinculada (relación 1:1).
+export async function getEmpleadosDisponibles(): Promise<Empleado[]> {
+  const { data } = await apiClient.get<Empleado[]>('/rrhh/empleados/', { params: { disponible: 'true' } })
+  return data
+}
+
+export async function getEmpleado(id: number): Promise<Empleado> {
+  const { data } = await apiClient.get<Empleado>(`/rrhh/empleados/${id}/`)
+  return data
+}
+
 export async function crearEmpleado(datos: EmpleadoFormulario, foto?: File | null): Promise<Empleado> {
   const { data } = await apiClient.post<Empleado>(
     '/rrhh/empleados/', construirFormDataEmpleado(datos, foto),
