@@ -17,10 +17,12 @@ import { Facturacion } from './pages/Facturacion/Facturacion'
 import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 import { Inventario } from './pages/Inventario/Inventario'
 import { Login } from './pages/Login/Login'
-import { Personas } from './pages/Personas/Personas'
 import { Produccion } from './pages/Produccion/Produccion'
 import { RecuperarContrasena } from './pages/RecuperarContrasena/RecuperarContrasena'
+import { RRHH } from './pages/RRHH/RRHH'
 import { Sucursales } from './pages/Sucursales/Sucursales'
+import { Terceros } from './pages/Terceros/Terceros'
+import { Usuarios } from './pages/Usuarios/Usuarios'
 import { DetalleVenta } from './pages/Ventas/DetalleVenta'
 import { NuevaVenta } from './pages/Ventas/NuevaVenta'
 import { Ventas } from './pages/Ventas/Ventas'
@@ -46,7 +48,9 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sucursales" element={<Sucursales />} />
               <Route path="/catalogo" element={<Catalogo />} />
-              <Route path="/personas" element={<Personas />} />
+              <Route path="/rrhh" element={<RRHH />} />
+              <Route path="/terceros" element={<Terceros />} />
+              <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/inventario" element={<Inventario />} />
               <Route path="/compras" element={<Compras />} />
               <Route path="/compras/nueva" element={<NuevaCompra />} />

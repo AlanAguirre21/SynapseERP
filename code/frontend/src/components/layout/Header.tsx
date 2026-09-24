@@ -4,6 +4,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
+import {
+  useAprobarSolicitudNomina,
+  useRechazarSolicitudNomina,
+  useSolicitudesNominaPendientes,
+} from '../../hooks/useSolicitudesNomina'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { obtenerIniciales } from '../../utils/texto'
 import { Icono } from '../common/Icono'
@@ -15,13 +20,22 @@ interface HeaderProps {
 
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { data: usuario } = useUsuarioActual()
+  const esAdmin = usuario?.rol === 'admin'
   const { data: alertas, isLoading: alertasCargando } = useAlertasStock()
+  // Solo admin puede ver/resolver solicitudes de nómina (008 · RRHH) — ni
+  // siquiera se pide el endpoint para operador, que de todos modos lo
+  // tiene vedado en el backend.
+  const { data: solicitudesNomina, isLoading: solicitudesCargando } = useSolicitudesNominaPendientes(esAdmin)
+  const aprobar = useAprobarSolicitudNomina()
+  const rechazar = useRechazarSolicitudNomina()
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false)
   const [menuAbierto, setMenuAbierto] = useState(false)
   const { logout } = useAuth()
   const navigate = useNavigate()
 
   const totalAlertas = alertas?.length ?? 0
+  const totalSolicitudes = esAdmin ? solicitudesNomina?.length ?? 0 : 0
+  const totalNotificaciones = totalAlertas + totalSolicitudes
 
   function cerrarSesion() {
     logout()
@@ -53,8 +67,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             aria-label="Alertas de stock"
           >
             <Icono nombre="campana" tamano={20} />
-            {totalAlertas > 0 && (
-              <span className={styles.contador}>{totalAlertas}</span>
+            {totalNotificaciones > 0 && (
+              <span className={styles.contador}>{totalNotificaciones}</span>
             )}
           </button>
           {notificacionesAbiertas && (
@@ -74,6 +88,48 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {esAdmin && (
+                <>
+                  <p className={styles.dropdownSeccion}>Solicitudes de nómina</p>
+                  {solicitudesCargando ? (
+                    <p className={styles.dropdownVacio}>Cargando solicitudes…</p>
+                  ) : totalSolicitudes === 0 ? (
+                    <p className={styles.dropdownVacio}>Sin solicitudes pendientes</p>
+                  ) : (
+                    <ul className={styles.listaSolicitudes}>
+                      {(solicitudesNomina ?? []).map((solicitud) => (
+                        <li key={solicitud.id}>
+                          <div className={styles.datosSolicitud}>
+                            <strong>Empleado #{solicitud.empleado}</strong>
+                            <span>
+                              {solicitud.periodo_inicio} — {solicitud.periodo_fin} · ${solicitud.monto}
+                            </span>
+                          </div>
+                          <div className={styles.accionesSolicitud}>
+                            <button
+                              type="button"
+                              className={styles.botonAprobar}
+                              onClick={() => aprobar.mutate(solicitud.id)}
+                              disabled={aprobar.isPending || rechazar.isPending}
+                            >
+                              Aprobar
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.botonRechazar}
+                              onClick={() => rechazar.mutate(solicitud.id)}
+                              disabled={aprobar.isPending || rechazar.isPending}
+                            >
+                              Rechazar
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
               )}
             </div>
           )}

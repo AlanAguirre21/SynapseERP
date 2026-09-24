@@ -51,12 +51,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'apps.usuarios',
     'apps.sucursales',
     'apps.catalogo',
     'apps.inventario',
     'apps.personas',
+    'apps.terceros',
+    'apps.rrhh',
     'apps.compras',
     'apps.caja',
     'apps.ventas',
@@ -215,3 +218,12 @@ STATIC_URL = 'static/'
 # autenticadas de `FacturaViewSet`, nunca por un archivo estático abierto.
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Fotografías de empleado (008 · RRHH) — storage y URL propios, separados de
+# `MEDIA_ROOT`/`MEDIA_URL`, que a propósito no se conectan en `config/urls.py`
+# (ver nota arriba). Las fotos son menos sensibles que un CFDI y sí se sirven
+# por una URL estática simple bajo `DEBUG`, pero desde su propia carpeta para
+# no arrastrar esa exposición a los archivos de Facturación si en algún
+# momento `MEDIA_URL` llegara a conectarse.
+EMPLEADOS_FOTOS_URL = 'fotos-empleados/'
+EMPLEADOS_FOTOS_ROOT = BASE_DIR / 'media_rrhh' / 'fotos_empleados'

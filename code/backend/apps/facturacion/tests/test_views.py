@@ -11,8 +11,8 @@ from apps.catalogo.models import Categoria, Producto
 from apps.configuracion_fiscal.models import SerieFolio
 from apps.facturacion.models import ComplementoPago, Factura
 from apps.inventario.models import InventarioSucursalProducto
-from apps.personas.models import Cliente, DatosFiscalesCliente
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Cliente, DatosFiscalesCliente
 from apps.usuarios.models import Usuario
 from apps.ventas.models import Venta
 

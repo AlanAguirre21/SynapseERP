@@ -4,8 +4,8 @@ from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
 from apps.catalogo.models import Producto
-from apps.personas.models import Cliente
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Cliente
 
 from .models import DetalleVenta, Venta
 

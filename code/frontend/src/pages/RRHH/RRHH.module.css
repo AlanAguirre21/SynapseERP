@@ -1,0 +1,249 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-4 gap-3;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.subtitulo {
+  @apply m-0 text-texto text-base font-semibold;
+}
+
+/* Fila de departamentos: pestañas a la izquierda, acciones a la derecha,
+   ambas centradas en la misma línea — mismo alto, mismo estilo. */
+.barraDepartamentos {
+  @apply flex items-center justify-between gap-4 flex-wrap border-b border-texto/10;
+}
+
+.pestañas {
+  @apply flex items-center gap-1 flex-wrap;
+}
+
+.pestaña {
+  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-3 text-[0.9rem] text-texto/70 cursor-pointer;
+}
+
+.pestaña:hover {
+  @apply text-texto;
+}
+
+.pestañaActiva {
+  @apply text-primario border-primario font-semibold;
+}
+
+.accionesDepartamento {
+  @apply flex items-center gap-3 divide-x divide-texto/15 text-[0.85rem];
+}
+
+.accionesDepartamento > button {
+  @apply pl-3 first:pl-0;
+}
+
+/* Sección de posiciones como tarjeta — mismo lenguaje visual que las
+   secciones del Dashboard (bg-superficie + borde suave, sin sombra). */
+.panel {
+  @apply flex flex-col gap-4 mt-2 bg-superficie border border-texto/10 rounded-xl p-5;
+}
+
+.vacio {
+  @apply text-texto/60 text-[0.9rem];
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.enlaceAccionPeligro {
+  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccionPeligro:hover {
+  @apply underline;
+}
+
+/* --- Tabla de posiciones ---------------------------------------------- */
+
+.tablaPosiciones {
+  @apply w-full border-collapse text-left text-[0.9rem];
+}
+
+.tablaPosiciones thead th {
+  @apply px-4 py-3 bg-texto/[0.03] text-texto font-semibold border-b border-b-texto/10 whitespace-nowrap;
+}
+
+.tablaPosiciones tbody td {
+  /* `border-b-texto/5` (no solo `border-texto/5`) a propósito: la versión
+     sin lado pone el color en las cuatro aristas, ganándole por
+     especificidad al `border-l-secundario` de `.celdaPosicionRaiz` más
+     abajo — bug real encontrado al verificar el rediseño en el navegador. */
+  @apply px-4 py-3 border-b border-b-texto/5 text-texto align-middle;
+}
+
+.filaPosicion {
+  @apply cursor-pointer;
+}
+
+.filaPosicion:hover {
+  @apply bg-texto/[0.02];
+}
+
+/* La fila raíz (sin superior) lleva un acento de color en su primera
+   celda — la jerarquía se remarca por color/peso, no solo por sangría. */
+.celdaPosicionRaiz {
+  @apply border-l-[3px] border-l-secundario;
+}
+
+.tituloPosicion {
+  @apply inline-flex items-center;
+}
+
+.indicadorExpandir {
+  @apply inline-block w-4 text-texto/40 text-[0.75rem];
+}
+
+.conectorArbol {
+  @apply text-texto/35 mr-1.5 font-mono;
+}
+
+.nombrePosicionRaiz {
+  @apply font-semibold text-secundario-texto;
+}
+
+.nombrePosicionHija {
+  @apply text-texto;
+}
+
+.celdaSalario {
+  @apply text-texto/80 whitespace-nowrap;
+}
+
+.accionesFila {
+  @apply flex items-center gap-3;
+}
+
+.celdaExpandida {
+  @apply p-0 bg-texto/[0.015];
+}
+
+/* --- Panel de empleados por posición (fila expandida) ------------------ */
+
+.panelEmpleados {
+  @apply flex flex-col gap-3 p-4;
+}
+
+.encabezadoEmpleados {
+  @apply flex items-center justify-between gap-3;
+}
+
+.selectorLimite {
+  @apply flex items-center gap-1 rounded-control border border-borde p-1;
+}
+
+.botonLimite {
+  @apply bg-transparent border-0 rounded-control px-3 py-1 text-[0.8rem] text-texto/70 cursor-pointer transition-colors;
+}
+
+.botonLimite:hover {
+  @apply text-texto;
+}
+
+.botonLimiteActivo {
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+.listaEmpleados {
+  @apply flex flex-col gap-1 list-none p-0 m-0;
+}
+
+.itemEmpleado {
+  @apply w-full flex items-center justify-between gap-3 bg-superficie border border-texto/10 text-left px-3 py-2 rounded-control cursor-pointer text-texto;
+}
+
+.itemEmpleado:hover {
+  @apply border-primario/40 bg-primario-suave/40;
+}
+
+.itemEmpleadoPosicion {
+  @apply text-[0.8rem] text-texto/60;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input,
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-control;
+}
+
+.campo input:disabled,
+.campo select:disabled {
+  @apply bg-texto/5 text-texto/60;
+}
+
+.fotoEmpleado {
+  @apply w-20 h-20 rounded-full object-cover border border-texto/20;
+}
+
+.ayuda {
+  @apply text-[0.75rem] text-texto/60;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-control text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}
+
+.estadoActivo {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.estadoInactivo {
+  @apply text-error text-[0.8rem] font-semibold;
+}
+
+.seccionAnexos {
+  @apply flex flex-col gap-4 mt-4 pt-4 border-t border-texto/10;
+}
+
+.subtituloAnexo {
+  @apply m-0 mb-2 text-[0.9rem] font-semibold text-texto;
+}
+
+.listaAnexo {
+  @apply flex flex-col gap-1 list-none p-0 m-0 mb-2;
+}
+
+.listaAnexo li {
+  @apply flex items-center justify-between gap-3 text-[0.85rem] text-texto;
+}
+
+.filaAgregarAnexo {
+  @apply flex items-center gap-2 flex-wrap;
+}
+
+.filaAgregarAnexo input {
+  @apply px-3 py-2 text-[0.85rem] border border-texto/20 rounded-control flex-1 min-w-[120px];
+}

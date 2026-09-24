@@ -4,8 +4,10 @@ import {
   crearUsuarioCuenta,
   desactivarUsuarioCuenta,
   editarUsuarioCuenta,
+  getAccesosUsuario,
   getUsuariosCuentas,
   reactivarUsuarioCuenta,
+  type LimiteAccesos,
   type UsuarioCuentaFormularioEdicion,
 } from '../api/usuarios'
 
@@ -48,5 +50,12 @@ export function useReactivarUsuario() {
   return useMutation({
     mutationFn: reactivarUsuarioCuenta,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CLAVE_USUARIOS }),
+  })
+}
+
+export function useAccesosUsuario(usuarioId: number, limite: LimiteAccesos) {
+  return useQuery({
+    queryKey: ['usuarios-accesos', usuarioId, limite],
+    queryFn: () => getAccesosUsuario(usuarioId, limite),
   })
 }

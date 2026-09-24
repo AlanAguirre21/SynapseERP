@@ -2,7 +2,7 @@ import pytest
 from django.core.cache import cache
 from rest_framework.test import APIClient
 
-from apps.usuarios.models import Usuario
+from apps.usuarios.models import RegistroAcceso, Usuario
 
 
 @pytest.fixture
@@ -36,6 +36,10 @@ def test_login_exitoso_devuelve_tokens(usuario_activo):
     assert 'access' in response.data
     assert 'refresh' in response.data
 
+    registro = RegistroAcceso.objects.get(usuario=usuario_activo)
+    assert registro.tipo == 'exitoso'
+    assert registro.ip is not None
+
 
 @pytest.mark.django_db
 def test_login_password_incorrecta_mensaje_generico(usuario_activo):
@@ -49,6 +53,10 @@ def test_login_password_incorrecta_mensaje_generico(usuario_activo):
 
     assert response.status_code == 401
     assert response.data['detail'] == 'Correo o contraseña incorrectos.'
+
+    registro = RegistroAcceso.objects.get(usuario=usuario_activo)
+    assert registro.tipo == 'fallido'
+    assert registro.email_intentado == ''
 
 
 @pytest.mark.django_db
@@ -64,6 +72,10 @@ def test_login_email_inexistente_mismo_mensaje_generico(db):
     assert response.status_code == 401
     assert response.data['detail'] == 'Correo o contraseña incorrectos.'
 
+    registro = RegistroAcceso.objects.get(email_intentado='no-existe@flebosil.test')
+    assert registro.tipo == 'fallido'
+    assert registro.usuario is None
+
 
 @pytest.mark.django_db
 def test_login_usuario_inactivo_mensaje_especifico(usuario_inactivo):
@@ -77,6 +89,9 @@ def test_login_usuario_inactivo_mensaje_especifico(usuario_inactivo):
 
     assert response.status_code == 401
     assert response.data['detail'] == 'Tu cuenta está inactiva. Contacta a un administrador.'
+
+    registro = RegistroAcceso.objects.get(usuario=usuario_inactivo)
+    assert registro.tipo == 'fallido'
 
 
 @pytest.mark.django_db

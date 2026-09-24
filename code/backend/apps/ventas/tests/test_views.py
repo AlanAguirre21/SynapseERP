@@ -7,8 +7,8 @@ from apps.caja.models import MovimientoCaja
 from apps.caja.services import calcular_saldos
 from apps.catalogo.models import Categoria, Producto
 from apps.inventario.models import InventarioSucursalProducto, MovimientoInventario
-from apps.personas.models import Cliente
 from apps.sucursales.models import Sucursal
+from apps.terceros.models import Cliente
 from apps.usuarios.models import Usuario
 from apps.ventas.models import Venta
 
