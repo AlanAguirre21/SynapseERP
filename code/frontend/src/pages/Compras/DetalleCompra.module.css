@@ -1,0 +1,62 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4 max-w-3xl;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-2;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.datosGenerales {
+  @apply grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] text-texto p-4 border border-texto/10 rounded-md;
+}
+
+.etiqueta {
+  @apply text-texto/60;
+}
+
+.estadoPendiente {
+  @apply text-advertencia font-semibold;
+}
+
+.estadoRecibida {
+  @apply text-exito font-semibold;
+}
+
+.estadoCancelada {
+  @apply text-error font-semibold;
+}
+
+.tablaLineas {
+  @apply w-full text-left text-[0.85rem];
+}
+
+.tablaLineas th,
+.tablaLineas td {
+  @apply px-2 py-2 border-b border-texto/10;
+}
+
+.total {
+  @apply flex items-center justify-end gap-2 text-texto text-base font-semibold mt-2;
+}
+
+.acciones {
+  @apply flex items-center justify-end gap-3 mt-2;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}

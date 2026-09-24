@@ -1,0 +1,95 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4 max-w-3xl;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-2;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.datosGenerales {
+  @apply grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] text-texto p-4 border border-texto/10 rounded-md;
+}
+
+.etiqueta {
+  @apply text-texto/60;
+}
+
+.estadoPendiente {
+  @apply text-advertencia font-semibold;
+}
+
+.estadoTimbrada {
+  @apply text-exito font-semibold;
+}
+
+.estadoPendienteCancelacion {
+  @apply text-advertencia font-semibold;
+}
+
+.estadoCancelada {
+  @apply text-error font-semibold;
+}
+
+.estadoError {
+  @apply text-error font-semibold;
+}
+
+.acciones {
+  @apply flex items-center justify-end gap-3 mt-2 flex-wrap;
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.aviso {
+  @apply m-0 px-3 py-2 text-[0.9rem] rounded-md bg-[color-mix(in_srgb,var(--color-advertencia)_18%,transparent)];
+  color: color-mix(in srgb, var(--color-advertencia) 55%, black);
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.9rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.seccion {
+  @apply flex flex-col gap-4 pt-4 border-t border-texto/10;
+}
+
+.subtitulo {
+  @apply m-0 text-texto text-base font-semibold;
+}
+
+.encabezadoSeccion {
+  @apply flex items-center justify-between;
+}
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input,
+.campo select {
+  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
+}
+
+.textoConfirmacion {
+  @apply text-texto text-[0.9rem] mb-4;
+}
+
+.accionesFormulario {
+  @apply flex items-center justify-end gap-3;
+}

@@ -1,0 +1,136 @@
+@reference "../../index.css";
+
+.header {
+  @apply flex items-center justify-between h-16 px-4 bg-fondo text-texto border-b border-borde;
+}
+
+.izquierda {
+  @apply flex items-center gap-3;
+}
+
+.botonSidebar {
+  @apply bg-transparent border-0 text-texto/70 cursor-pointer p-2 min-w-[44px] min-h-[44px] rounded-control transition-colors;
+}
+
+.botonSidebar:hover {
+  @apply bg-primario-suave text-primario;
+}
+
+.logo {
+  @apply flex items-center no-underline text-inherit;
+}
+
+.logoImg {
+  @apply h-10 w-auto block;
+}
+
+.derecha {
+  @apply flex items-center gap-2;
+}
+
+.notificaciones,
+.usuario {
+  @apply relative;
+}
+
+.botonNotificaciones,
+.botonUsuario {
+  @apply bg-transparent border-0 text-texto cursor-pointer min-h-[44px] flex items-center gap-2 relative px-2 rounded-control transition-colors;
+}
+
+.botonNotificaciones {
+  @apply min-w-[44px] justify-center;
+}
+
+.botonNotificaciones:hover {
+  @apply bg-primario-suave text-primario;
+}
+
+.botonUsuario:hover {
+  @apply bg-texto/5;
+}
+
+.contador {
+  @apply absolute top-0 right-0 bg-error text-fondo rounded-full text-[0.65rem] min-w-[16px] h-4 flex items-center justify-center px-1;
+}
+
+.avatar {
+  @apply flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primario-suave text-primario font-titulo font-semibold text-[0.8rem];
+}
+
+.datosUsuario {
+  @apply flex flex-col items-start leading-tight;
+}
+
+.nombreUsuario {
+  @apply font-semibold text-[0.9rem];
+}
+
+.rolUsuario {
+  @apply text-[0.7rem] text-texto/60 capitalize;
+}
+
+.dropdown {
+  @apply absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-superficie text-texto rounded-control shadow-marcada border border-borde overflow-hidden z-10;
+}
+
+.dropdownVacio {
+  @apply px-4 py-3 m-0 text-[0.85rem];
+}
+
+.listaAlertas {
+  @apply list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+}
+
+.listaAlertas li {
+  @apply flex flex-col px-4 py-[10px] border-b border-texto/[0.08] text-[0.85rem];
+}
+
+.listaAlertas li span {
+  @apply text-advertencia text-xs;
+}
+
+.dropdownSeccion {
+  @apply m-0 px-4 py-2 text-[0.75rem] font-semibold text-texto/60 border-t border-texto/[0.08];
+}
+
+.listaSolicitudes {
+  @apply list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+}
+
+.listaSolicitudes li {
+  @apply flex flex-col gap-2 px-4 py-[10px] border-b border-texto/[0.08] text-[0.85rem];
+}
+
+.datosSolicitud {
+  @apply flex flex-col;
+}
+
+.datosSolicitud span {
+  @apply text-texto/60 text-xs;
+}
+
+.accionesSolicitud {
+  @apply flex items-center gap-2;
+}
+
+.botonAprobar,
+.botonRechazar {
+  @apply border-0 rounded-control px-3 py-1 text-[0.8rem] cursor-pointer;
+}
+
+.botonAprobar {
+  @apply bg-exito/15 text-exito;
+}
+
+.botonRechazar {
+  @apply bg-error/15 text-error;
+}
+
+.itemMenu {
+  @apply block w-full text-left px-4 py-[10px] bg-transparent border-0 text-inherit no-underline cursor-pointer text-[0.9rem];
+}
+
+.itemMenu:hover {
+  @apply bg-primario-suave/50;
+}

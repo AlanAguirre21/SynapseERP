@@ -1,0 +1,41 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-6;
+}
+
+.encabezado {
+  @apply flex flex-col items-center gap-3 mb-2;
+}
+
+.logo {
+  @apply h-36 w-auto object-contain;
+}
+
+.saldo {
+  @apply flex flex-col items-center gap-0.5;
+}
+
+.saldoEtiqueta {
+  @apply text-[0.8rem] text-texto/60;
+}
+
+.saldoMonto {
+  @apply text-xl font-bold text-texto;
+}
+
+.pestañas {
+  @apply flex items-center gap-1 border-b border-texto/10;
+}
+
+.pestaña {
+  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+}
+
+.pestaña:hover {
+  @apply text-texto;
+}
+
+.pestañaActiva {
+  @apply text-primario border-primario font-semibold;
+}

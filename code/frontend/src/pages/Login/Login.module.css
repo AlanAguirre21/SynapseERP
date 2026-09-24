@@ -1,0 +1,29 @@
+@reference "../../index.css";
+
+.formulario {
+  @apply flex flex-col gap-4;
+}
+
+.campo {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campo input {
+  @apply px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+}
+
+.campo input:focus {
+  @apply border-primario shadow-[0_0_0_3px_var(--color-primario-suave)];
+}
+
+.error {
+  @apply m-0 px-3 py-2 text-error rounded-control text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+}
+
+.enlace {
+  @apply text-center text-[0.85rem] text-primario no-underline;
+}
+
+.enlace:hover {
+  @apply underline;
+}

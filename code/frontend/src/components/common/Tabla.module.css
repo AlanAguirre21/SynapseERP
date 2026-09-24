@@ -1,0 +1,25 @@
+@reference "../../index.css";
+
+.contenedor {
+  @apply w-full overflow-x-auto;
+}
+
+.tabla {
+  @apply w-full border-collapse text-left text-[0.9rem];
+}
+
+.tabla thead th {
+  @apply px-4 py-3 bg-texto/[0.03] text-texto font-semibold border-b border-texto/10 whitespace-nowrap;
+}
+
+.tabla tbody td {
+  @apply px-4 py-3 border-b border-texto/5 text-texto;
+}
+
+.tabla tbody tr:hover {
+  @apply bg-texto/[0.02];
+}
+
+.vacio {
+  @apply text-center text-texto opacity-60 py-8 text-[0.9rem];
+}

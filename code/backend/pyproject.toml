@@ -1,0 +1,7 @@
+[tool.ruff]
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+ignore = [
+    "RUF012", # mutable class attributes are the normal Django/DRF idiom (permission_classes, Meta lists, etc.)
+]

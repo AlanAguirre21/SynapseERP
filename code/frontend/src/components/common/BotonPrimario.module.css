@@ -1,0 +1,37 @@
+@reference "../../index.css";
+
+.primario {
+  @apply px-4 py-2 text-fondo bg-primario border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
+}
+
+.primario:hover {
+  @apply opacity-90;
+}
+
+.primario:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+.secundario {
+  @apply px-4 py-2 text-primario bg-fondo border border-primario rounded-control font-semibold cursor-pointer text-[0.9rem];
+}
+
+.secundario:hover {
+  @apply bg-texto/5;
+}
+
+.secundario:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+.peligro {
+  @apply px-4 py-2 text-fondo bg-error border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
+}
+
+.peligro:hover {
+  @apply opacity-90;
+}
+
+.peligro:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}

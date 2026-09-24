@@ -1,0 +1,46 @@
+@reference "../../index.css";
+
+.pagina {
+  @apply flex flex-col gap-4;
+}
+
+.encabezado {
+  @apply flex items-center justify-between mb-4;
+}
+
+.titulo {
+  @apply m-0 text-texto text-xl font-semibold;
+}
+
+.filtros {
+  @apply flex flex-wrap items-end gap-4 mb-4;
+}
+
+.campoFiltro {
+  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+}
+
+.campoFiltro select,
+.campoFiltro input {
+  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
+}
+
+.enlaceAccion {
+  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+}
+
+.enlaceAccion:hover {
+  @apply underline;
+}
+
+.estadoPendiente {
+  @apply text-advertencia text-[0.8rem] font-semibold;
+}
+
+.estadoRecibida {
+  @apply text-exito text-[0.8rem] font-semibold;
+}
+
+.estadoCancelada {
+  @apply text-error text-[0.8rem] font-semibold;
+}

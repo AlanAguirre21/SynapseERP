@@ -1,0 +1,33 @@
+@reference "../../../index.css";
+
+.seccion {
+  @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
+}
+
+.encabezadoSeccion {
+  @apply flex items-center justify-between flex-wrap gap-3;
+}
+
+.tituloSeccion {
+  @apply m-0 text-lg font-semibold text-texto;
+}
+
+.selectorOrden {
+  @apply flex items-center gap-1 rounded-control border border-borde p-1;
+}
+
+.opcionOrden {
+  @apply px-3 py-1.5 text-[0.8rem] bg-transparent border-0 rounded-control text-texto/70 cursor-pointer transition-colors;
+}
+
+.opcionOrden:hover {
+  @apply text-texto;
+}
+
+.opcionOrdenActiva {
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+.sinDatos {
+  @apply text-[0.85rem] text-texto/60;
+}

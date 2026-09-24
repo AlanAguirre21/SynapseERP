@@ -1,0 +1,97 @@
+{% load static %}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {size: letter; margin-left: 2cm; margin-right: 2cm; margin-top: 1.5cm; margin-bottom: 1.5cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #222; }
+  h1 { font-size: 16px; margin-bottom: 0; }
+  .subtitulo { color: #666; margin-top: 2px; margin-bottom: 0; }
+  /* xhtml2pdf no soporta flexbox: la cabecera y las columnas se maquetan con tablas. */
+  .encabezado { width: 100%; border-collapse: collapse; margin: 0 auto 16px; }
+  .encabezado td { border-bottom: none; padding: 0; vertical-align: top; }
+  .encabezado .logo { width: 100%; text-align: center; }
+  .encabezado .logo img { width: 400px; }
+  .datos { margin-bottom: 4px; }
+  .encabezado-info { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 32px; }
+  .encabezado-info td { border-bottom: none; padding: 0; vertical-align: top; width: 50%; }
+  .encabezado-info td.col-derecha { padding-left: 16px; }
+  .encabezado-info p { margin: 0 0 3px; }
+  /* Lista de productos: encabezado en negrita separado por una línea negra,
+     sin bordes de celda ni separación entre columnas en las filas. */
+  table.lista-productos { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  table.lista-productos th {
+    padding: 4px 6px; text-align: left; font-weight: bold;
+    border: none; border-bottom: 1.5px solid #000;
+  }
+  table.lista-productos td { padding: 4px 6px; text-align: left; border: none; }
+  .subtotal-productos { margin-top: 8px; text-align: right; }
+  .gasto-envio { margin-top: 2px; text-align: right; }
+  .totales { margin-top: 4px; text-align: right; font-weight: bold; }
+</style>
+</head>
+<body>
+  <table class="encabezado">
+    <tr>
+      <td class="logo">
+        <img src="{% static 'ventas/img/logo_flebosil.jpg' %}" alt="FleboSil">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <h1>Ticket de venta</h1>
+        <p class="subtitulo">Venta #{{ venta.id }} &mdash; {{ venta.get_estado_display }}</p>
+      </td>
+    </tr>
+  </table>
+
+  <p class="datos"><strong>Fecha:</strong> {{ venta.fecha|date:"d/m/Y H:i" }}</p>
+
+  <table class="encabezado-info">
+    <tr>
+      <td class="col-izquierda">
+        <p><strong>FleboSil - Serenidad para tus piernas</strong></p>
+        <p>{{ venta.sucursal.nombre_sucursal }}</p>
+        <p>{{ venta.sucursal.ubicacion_sucursal }}</p>
+        <p>{{ venta.sucursal.telefono_sucursal }}</p>
+        <p>{{ usuario.get_full_name }}</p>
+        <p>{{ usuario.email }}</p>
+      </td>
+      {% if cliente %}
+      <td class="col-derecha">
+        <p><strong>Cliente:</strong></p>
+        <p>{{ cliente.nombre_cliente }}</p>
+        <p>{{ cliente.direccion }}</p>
+        <p>{{ cliente.telefono }}</p>
+        <p>{% if cliente.email %}{{ cliente.email }}{% endif %}</p>
+      </td>
+      {% endif %}
+    </tr>
+  </table>
+  
+  <table class="lista-productos">
+    <thead>
+      <tr>
+        <th>Cantidad</th>
+        <th>Producto</th>
+        <th>Precio unitario</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for detalle in detalles %}
+      <tr>
+        <td>{{ detalle.cantidad }}</td>
+        <td>{{ detalle.producto.nombre_producto }}</td>
+        <td>{{ detalle.precio_unitario }}</td>
+        <td>{{ detalle.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="subtotal-productos">Subtotal: ${{ subtotal_productos }}</p>
+  <p class="gasto-envio">Gastos de env&iacute;o: ${{ venta.gasto_envio }}</p>
+  <p class="totales">Total: ${{ venta.total }}</p>
+</body>
+</html>

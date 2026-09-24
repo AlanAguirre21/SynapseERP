@@ -1,0 +1,63 @@
+@reference "../../index.css";
+
+.sidebar {
+  @apply w-[220px] shrink-0 bg-fondo border-r border-borde overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ease-in-out;
+}
+
+.sidebar.colapsado {
+  @apply w-0;
+}
+
+.listaInicio {
+  @apply list-none m-0 p-2 pb-1 flex flex-col whitespace-nowrap border-b border-borde;
+}
+
+.enlaceInicio {
+  @apply flex items-center gap-3 px-3 py-2.5 text-inicio no-underline text-[0.9rem] font-semibold rounded-control transition-colors;
+}
+
+.enlaceInicio:hover {
+  @apply bg-inicio-suave;
+}
+
+.activoInicio {
+  @apply bg-inicio-suave;
+}
+
+.iconoInicio {
+  @apply shrink-0 text-inicio;
+}
+
+.lista {
+  @apply list-none m-0 p-2 flex flex-col gap-1 whitespace-nowrap;
+}
+
+.enlace {
+  @apply flex items-center gap-3 px-3 py-2.5 text-texto/80 no-underline text-[0.9rem] rounded-control transition-colors;
+}
+
+.enlace:hover {
+  @apply bg-primario-suave/60 text-texto;
+}
+
+.icono {
+  @apply shrink-0 text-texto/50;
+}
+
+.activo {
+  @apply bg-primario-suave text-primario font-semibold;
+}
+
+.activo .icono {
+  @apply text-primario;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    @apply absolute top-0 left-0 bottom-0 z-20 shadow-marcada;
+  }
+
+  .sidebar.colapsado {
+    @apply w-[220px] -translate-x-full;
+  }
+}

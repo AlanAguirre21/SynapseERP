@@ -1,0 +1,5 @@
+@reference "../../index.css";
+
+.footer {
+  @apply flex items-center justify-center gap-4 px-4 py-2 text-xs text-texto opacity-60 border-t border-texto/10 shrink-0;
+}
