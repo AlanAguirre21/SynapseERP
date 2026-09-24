@@ -26,13 +26,13 @@ Usuario = get_user_model()
 
 VIGENCIA_CODIGO_MINUTOS = 10
 
-RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_flebosil.png'
+RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_synapse.png'
 
 
 def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     """Arma el correo de recuperación con parte texto plano + HTML con marca.
 
-    El logo va embebido como adjunto con Content-ID (`cid:logo_flebosil`) en
+    El logo va embebido como adjunto con Content-ID (`cid:logo_synapse`) en
     vez de referenciarse por URL pública — el backend todavía no está
     desplegado en un dominio accesible, y varios clientes de correo bloquean
     por defecto imágenes cargadas desde URLs externas.
@@ -48,7 +48,7 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     })
 
     mensaje = EmailMultiAlternatives(
-        subject='Código de recuperación de contraseña — FleboSil',
+        subject='Código de recuperación de contraseña — SynapseERP',
         body=texto_plano,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[email],
@@ -60,7 +60,7 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     logo = MIMEPart()
     logo.set_content(
         datos_logo, maintype='image', subtype='png',
-        disposition='inline', filename='logo_flebosil.png', cid='<logo_flebosil>',
+        disposition='inline', filename='logo_synapse.png', cid='<logo_synapse>',
     )
     mensaje.attach(logo)
 

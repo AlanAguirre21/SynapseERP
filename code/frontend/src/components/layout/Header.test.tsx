@@ -68,7 +68,7 @@ describe('Header', () => {
 
     renderHeader()
 
-    expect(screen.getByRole('link', { name: /FleboSil/i })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('link', { name: /SynapseERP/i })).toHaveAttribute('href', '/dashboard')
   })
 
   it('muestra el contador de notificaciones cuando hay alertas de stock', () => {

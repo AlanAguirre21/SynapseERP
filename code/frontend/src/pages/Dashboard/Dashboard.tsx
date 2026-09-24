@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil_magentafont.png'
+import logoSynapse from '../../assets/synapse_img/synapseErp_logo_transparent.png'
 import type { PeriodoDashboard } from '../../api/reportes'
 import { formatearMoneda } from './compartido/formato'
 import { useSaldoCaja } from '../../hooks/useMovimientosCaja'
@@ -45,7 +45,7 @@ export function Dashboard() {
   return (
     <div className={styles.pagina}>
       <header className={styles.encabezado}>
-        <img src={logoFlebosil} alt="FleboSil" className={styles.logo} />
+        <img src={logoSynapse} alt="SynapseERP" className={styles.logo} />
 
         {esAdmin && <SaldoCajaAdmin />}
 

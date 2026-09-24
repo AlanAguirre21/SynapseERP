@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
+import logoSynapse from '../../assets/synapse_img/synapseErp_logo_transparent.png'
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
 import {
@@ -54,7 +54,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <Icono nombre="menu" tamano={22} />
         </button>
         <Link to="/dashboard" className={styles.logo}>
-          <img src={logoFlebosil} alt="FleboSil" className={styles.logoImg} />
+          <img src={logoSynapse} alt="SynapseERP" className={styles.logoImg} />
         </Link>
       </div>
 

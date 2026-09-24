@@ -123,8 +123,8 @@ describe('Dashboard', () => {
     mockearTodo()
     renderDashboard()
 
-    expect(screen.getByRole('img', { name: 'FleboSil' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Resumen FleboSil' })).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'SynapseERP' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Resumen SynapseERP' })).not.toBeInTheDocument()
   })
 
   it('muestra las 4 pestañas de periodo, incluyendo Año', () => {

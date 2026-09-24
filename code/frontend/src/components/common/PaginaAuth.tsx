@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
-import iconoFlebosil from '../../assets/flebosil_img/flebosil_icon_purple.jpg'
-import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
-import marcaAgua from '../../assets/flebosil_transparentbg/purple_icon.png'
+import iconoSynapse from '../../assets/synapse_img/synapseErp_isotipo_transparent.png'
+import logoSynapse from '../../assets/synapse_img/synapseErp_logo_transparent.png'
+import marcaAgua from '../../assets/synapse_img/synapseErp_isotipo_transparent.png'
 import styles from './PaginaAuth.module.css'
 
 interface PaginaAuthProps {
@@ -16,12 +16,12 @@ export function PaginaAuth({ titulo, subtitulo, children }: PaginaAuthProps) {
     <div className={styles.pagina}>
       <div className={styles.panelMarca} aria-hidden="true">
         <img src={marcaAgua} alt="" className={styles.marcaAgua} />
-        <img src={logoFlebosil} alt="" className={styles.logoGrande} />
+        <img src={logoSynapse} alt="" className={styles.logoGrande} />
       </div>
 
       <div className={styles.panelFormulario}>
         <div className={styles.contenedor}>
-          <img src={iconoFlebosil} alt="FleboSil" className={styles.logoPequeno} />
+          <img src={iconoSynapse} alt="SynapseERP" className={styles.logoPequeno} />
           <div className={styles.encabezado}>
             <h1 className={styles.titulo}>{titulo}</h1>
             <p className={styles.subtitulo}>{subtitulo}</p>
