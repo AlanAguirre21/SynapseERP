@@ -255,4 +255,17 @@ describe('RRHH', () => {
     fireEvent.click(screen.getByRole('button', { name: /agregar departamento/i }))
     expect(screen.getByRole('dialog', { name: /nuevo departamento/i })).toBeInTheDocument()
   })
+  it('sin departamentos registrados sigue mostrando el enlace para agregar uno', () => {
+    mockearHooks()
+    vi.mocked(useDepartamentos).mockReturnValue(
+      { data: [], isLoading: false } as unknown as ReturnType<typeof useDepartamentos>,
+    )
+    render(<RRHH />)
+
+    expect(screen.getByText(/todavía no hay departamentos registrados/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /editar departamento/i })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /agregar departamento/i }))
+    expect(screen.getByRole('dialog', { name: /nuevo departamento/i })).toBeInTheDocument()
+  })
 })

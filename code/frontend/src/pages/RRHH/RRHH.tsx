@@ -118,15 +118,17 @@ export function RRHH() {
 
       {isLoading ? (
         <p>Cargando departamentos…</p>
-      ) : departamentos && departamentos.length > 0 ? (
+      ) : (
         <>
           {/* Pestañas de departamento y sus acciones (editar/desactivar el
               seleccionado, agregar uno nuevo) comparten la misma fila y el
               mismo estilo de enlace — no hay una acción "primaria" aquí que
-              deba destacar más que las otras. */}
+              deba destacar más que las otras. La barra se muestra aunque no
+              haya departamentos, para que el enlace "Agregar departamento"
+              siga disponible desde el estado vacío. */}
           <div className={styles.barraDepartamentos}>
             <div className={styles.pestañas} role="tablist">
-              {departamentos.map((d) => (
+              {(departamentos ?? []).map((d) => (
                 <button
                   key={d.id}
                   type="button"
@@ -166,12 +168,12 @@ export function RRHH() {
             </div>
           </div>
 
-          {departamentoSeleccionado && (
+          {departamentoSeleccionado ? (
             <PanelDepartamento departamento={departamentoSeleccionado} empleados={empleados ?? []} />
+          ) : (
+            <p className={styles.vacio}>Todavía no hay departamentos registrados.</p>
           )}
         </>
-      ) : (
-        <p className={styles.vacio}>Todavía no hay departamentos registrados.</p>
       )}
 
       <FormularioDepartamento
