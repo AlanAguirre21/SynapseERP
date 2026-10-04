@@ -159,8 +159,7 @@ export function DetalleCompra() {
 
       <Modal titulo="Marcar como recibida" abierto={confirmarRecibir} onCerrar={() => setConfirmarRecibir(false)}>
         <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres marcar la compra #{compra.id} como recibida? Esto aumentará el stock de sus líneas
-          en {compra.sucursal_nombre} y registrará el movimiento de entrada correspondiente.
+          ¿Confirmas que quieres marcar la compra #{compra.id} como recibida?
         </p>
         <div className={styles.accionesFormulario}>
           <BotonPrimario variante="secundario" onClick={() => setConfirmarRecibir(false)}>
