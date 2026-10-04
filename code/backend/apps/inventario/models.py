@@ -73,12 +73,17 @@ class MovimientoInventario(models.Model):
     MOTIVO_PRODUCCION_CONSUMO = 'produccion_consumo'
     MOTIVO_PRODUCCION_ENTRADA = 'produccion_entrada'
     MOTIVO_AJUSTE = 'ajuste'
+    MOTIVO_TRASLADO_SALIDA = 'traslado_salida'
+    MOTIVO_TRASLADO_ENTRADA = 'traslado_entrada'
+    MOTIVOS_TRASLADO = (MOTIVO_TRASLADO_SALIDA, MOTIVO_TRASLADO_ENTRADA)
     MOTIVO_CHOICES = [
         (MOTIVO_COMPRA, 'Compra'),
         (MOTIVO_VENTA, 'Venta'),
         (MOTIVO_PRODUCCION_CONSUMO, 'Consumo de producción'),
         (MOTIVO_PRODUCCION_ENTRADA, 'Entrada de producción'),
         (MOTIVO_AJUSTE, 'Ajuste'),
+        (MOTIVO_TRASLADO_SALIDA, 'Traslado (salida)'),
+        (MOTIVO_TRASLADO_ENTRADA, 'Traslado (entrada)'),
     ]
 
     sucursal = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name='movimientos_inventario')
@@ -103,3 +108,56 @@ class MovimientoInventario(models.Model):
 
     def __str__(self):
         return f'{self.tipo_movimiento} de {self.cantidad} ({self.tipo_item} #{self.item_id}) @ {self.sucursal}'
+
+
+class Traslado(models.Model):
+    """Cabecera de un traslado de stock entre dos sucursales — feature 011,
+    ampliación. INSERT-only: un traslado erróneo se corrige registrando el
+    traslado inverso, nunca editando ni borrando este registro.
+
+    Sus líneas (`DetalleTraslado`) pueden mezclar productos y materia
+    prima. Cada línea genera dos `MovimientoInventario` (salida en origen,
+    entrada en destino) con `referencia_id = traslado.id`. Nombres de campo
+    sin sufijo de entidad, siguiendo el precedente de `Venta`.
+    """
+
+    sucursal_origen = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name='traslados_salida')
+    sucursal_destino = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name='traslados_entrada')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='traslados')
+    fecha = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-fecha']
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(sucursal_origen=models.F('sucursal_destino')),
+                name='traslado_origen_distinto_destino',
+            ),
+        ]
+
+    def __str__(self):
+        return f'Traslado #{self.pk}: {self.sucursal_origen} → {self.sucursal_destino}'
+
+
+class DetalleTraslado(models.Model):
+    """Línea de un `Traslado`. Referencia polimórfica (`tipo_item` +
+    `item_id`) igual que `MovimientoInventario`, para poder mezclar
+    productos y materia prima en una sola tabla de detalle — una línea de
+    traslado no tiene campos propios de cada tipo (ni costo ni precio).
+    """
+
+    traslado = models.ForeignKey(Traslado, on_delete=models.CASCADE, related_name='detalles')
+    tipo_item = models.CharField(max_length=20, choices=MovimientoInventario.TIPO_ITEM_CHOICES)
+    item_id = models.PositiveIntegerField()
+    cantidad = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(cantidad__gt=0), name='detalle_traslado_cantidad_positiva'),
+            models.UniqueConstraint(
+                fields=['traslado', 'tipo_item', 'item_id'], name='detalle_traslado_item_unico',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.cantidad} ({self.tipo_item} #{self.item_id}) en traslado #{self.traslado_id}'

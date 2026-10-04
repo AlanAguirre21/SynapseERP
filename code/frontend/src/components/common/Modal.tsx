@@ -7,15 +7,17 @@ interface ModalProps {
   abierto: boolean
   onCerrar: () => void
   children: ReactNode
+  // 'amplio' para formularios con tablas de líneas (ej. traslados); 'normal' por defecto.
+  ancho?: 'normal' | 'amplio'
 }
 
-export function Modal({ titulo, abierto, onCerrar, children }: ModalProps) {
+export function Modal({ titulo, abierto, onCerrar, children, ancho = 'normal' }: ModalProps) {
   if (!abierto) return null
 
   return (
     <div className={styles.overlay} onClick={onCerrar}>
       <div
-        className={styles.contenido}
+        className={ancho === 'amplio' ? `${styles.contenido} ${styles.contenidoAmplio}` : styles.contenido}
         onClick={(evento) => evento.stopPropagation()}
         role="dialog"
         aria-modal="true"

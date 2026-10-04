@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
+import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import type {
+  FiltroMotivoMovimientoInventario,
   MotivoMovimientoInventario,
   MovimientoInventario,
   StockItem,
@@ -15,6 +17,7 @@ import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import styles from './Inventario.module.css'
+import { ModalTraslado } from './ModalTraslado'
 
 const ETIQUETAS_TIPO_ITEM: Record<TipoItemInventario, string> = {
   producto: 'Producto',
@@ -32,6 +35,28 @@ const ETIQUETAS_MOTIVO: Record<MotivoMovimientoInventario, string> = {
   produccion_consumo: 'Consumo de producción',
   produccion_entrada: 'Entrada de producción',
   ajuste: 'Ajuste',
+  traslado_salida: 'Traslado (salida)',
+  traslado_entrada: 'Traslado (entrada)',
+}
+
+// Opciones del filtro de motivo: los dos motivos de traslado se agrupan en uno.
+const OPCIONES_FILTRO_MOTIVO: { valor: FiltroMotivoMovimientoInventario; etiqueta: string }[] = [
+  { valor: 'compra', etiqueta: 'Compra' },
+  { valor: 'venta', etiqueta: 'Venta' },
+  { valor: 'produccion_consumo', etiqueta: 'Consumo de producción' },
+  { valor: 'produccion_entrada', etiqueta: 'Entrada de producción' },
+  { valor: 'ajuste', etiqueta: 'Ajuste' },
+  { valor: 'traslado', etiqueta: 'Traslado' },
+]
+
+function textoMotivo(movimiento: MovimientoInventario): string {
+  if (movimiento.motivo === 'traslado_salida' || movimiento.motivo === 'traslado_entrada') {
+    const sentido = movimiento.motivo === 'traslado_salida' ? 'salida' : 'entrada'
+    const flecha = movimiento.motivo === 'traslado_salida' ? '→' : '←'
+    const contraparte = movimiento.sucursal_contraparte ? ` ${flecha} ${movimiento.sucursal_contraparte}` : ''
+    return `Traslado #${movimiento.referencia_id ?? '?'} (${sentido})${contraparte}`
+  }
+  return ETIQUETAS_MOTIVO[movimiento.motivo]
 }
 
 function formatearFecha(fecha: string): string {
@@ -114,6 +139,7 @@ export function Inventario() {
   const sucursalStock = sucursalStockElegida ?? sucursalesActivas[0]?.id ?? null
 
   const { data: stock, isLoading: cargandoStock } = useStock(tipoStock, sucursalStock)
+  const [trasladoAbierto, setTrasladoAbierto] = useState(false)
 
   const columnasStock: ColumnaTabla<StockItem>[] = [
     { clave: 'nombre', encabezado: 'Nombre' },
@@ -154,6 +180,7 @@ export function Inventario() {
   const [itemHistorial, setItemHistorial] = useState<number | ''>('')
   const [sucursalHistorial, setSucursalHistorial] = useState<number | ''>('')
   const [tipoMovimientoHistorial, setTipoMovimientoHistorial] = useState<TipoMovimientoInventario | ''>('')
+  const [motivoHistorial, setMotivoHistorial] = useState<FiltroMotivoMovimientoInventario | ''>('')
 
   const { data: productos } = useProductos()
   const { data: materiaPrima } = useMateriaPrima()
@@ -170,6 +197,7 @@ export function Inventario() {
     item_id: itemHistorial || undefined,
     sucursal: sucursalHistorial || undefined,
     tipo_movimiento: tipoMovimientoHistorial || undefined,
+    motivo: motivoHistorial || undefined,
   })
 
   const columnasMovimientos: ColumnaTabla<MovimientoInventario>[] = [
@@ -182,7 +210,7 @@ export function Inventario() {
       render: (fila) => ETIQUETAS_TIPO_MOVIMIENTO[fila.tipo_movimiento],
     },
     { clave: 'cantidad', encabezado: 'Cantidad' },
-    { clave: 'motivo', encabezado: 'Motivo', render: (fila) => ETIQUETAS_MOTIVO[fila.motivo] },
+    { clave: 'motivo', encabezado: 'Motivo', render: (fila) => textoMotivo(fila) },
     { clave: 'usuario_nombre', encabezado: 'Usuario' },
   ]
 
@@ -221,7 +249,20 @@ export function Inventario() {
             ))}
           </select>
         </label>
+
+        <div className={styles.accionesStock}>
+          <BotonPrimario onClick={() => setTrasladoAbierto(true)}>Traslado</BotonPrimario>
+        </div>
       </div>
+
+      {/* Se monta solo al abrirse: cerrar descarta el estado del formulario. */}
+      {trasladoAbierto && (
+        <ModalTraslado
+          onCerrar={() => setTrasladoAbierto(false)}
+          sucursalInicial={sucursalStock}
+          tipoInicial={tipoStock}
+        />
+      )}
 
       {cargandoStock ? (
         <p>Cargando inventario…</p>
@@ -295,6 +336,21 @@ export function Inventario() {
             {(Object.keys(ETIQUETAS_TIPO_MOVIMIENTO) as TipoMovimientoInventario[]).map((tipo) => (
               <option key={tipo} value={tipo}>
                 {ETIQUETAS_TIPO_MOVIMIENTO[tipo]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={styles.campoFiltro}>
+          Motivo
+          <select
+            value={motivoHistorial}
+            onChange={(e) => setMotivoHistorial(e.target.value as FiltroMotivoMovimientoInventario | '')}
+          >
+            <option value="">Todos</option>
+            {OPCIONES_FILTRO_MOTIVO.map((opcion) => (
+              <option key={opcion.valor} value={opcion.valor}>
+                {opcion.etiqueta}
               </option>
             ))}
           </select>
