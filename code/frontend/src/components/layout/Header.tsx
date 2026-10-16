@@ -44,43 +44,46 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.izquierda}>
+      <div className={styles.headerLeft}>
         <button
           type="button"
-          className={styles.botonSidebar}
+          className={styles.sidebarToggle}
           onClick={onToggleSidebar}
           aria-label="Mostrar u ocultar barra lateral"
         >
           <Icono nombre="menu" tamano={22} />
         </button>
         <Link to="/dashboard" className={styles.logo}>
-          <img src={logoFlebosil} alt="FleboSil" className={styles.logoImg} />
+          <img src={logoFlebosil} alt="FleboSil" className={styles.logoImage} />
         </Link>
       </div>
 
-      <div className={styles.derecha}>
-        <div className={styles.notificaciones}>
+      <div className={styles.headerRight}>
+        <div className={styles.notifications}>
           <button
             type="button"
-            className={styles.botonNotificaciones}
+            className={styles.notificationsButton}
             onClick={() => setNotificacionesAbiertas((abierto) => !abierto)}
             aria-label="Alertas de stock"
+            aria-haspopup="menu"
+            aria-expanded={notificacionesAbiertas}
           >
             <Icono nombre="campana" tamano={20} />
             {totalNotificaciones > 0 && (
-              <span className={styles.contador}>{totalNotificaciones}</span>
+              <span className={styles.counter}>{totalNotificaciones}</span>
             )}
           </button>
           {notificacionesAbiertas && (
             <div className={styles.dropdown} role="menu">
+              <p className={styles.dropdownSection}>Stock bajo el mínimo</p>
               {/* Mientras la petición no resuelve no se afirma "sin alertas":
                   sería contenido incorrecto, no un estado de carga. */}
               {alertasCargando ? (
-                <p className={styles.dropdownVacio}>Cargando alertas…</p>
+                <p className={styles.dropdownEmpty}>Cargando alertas…</p>
               ) : totalAlertas === 0 ? (
-                <p className={styles.dropdownVacio}>Sin alertas de stock</p>
+                <p className={styles.dropdownEmpty}>Sin alertas de stock</p>
               ) : (
-                <ul className={styles.listaAlertas}>
+                <ul className={styles.alertList}>
                   {(alertas ?? []).map((alerta) => (
                     <li key={`${alerta.tipo}-${alerta.nombre}-${alerta.sucursal}`}>
                       <strong>{alerta.nombre}</strong>
@@ -92,25 +95,25 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
               {esAdmin && (
                 <>
-                  <p className={styles.dropdownSeccion}>Solicitudes de nómina</p>
+                  <p className={styles.dropdownSection}>Solicitudes de nómina</p>
                   {solicitudesCargando ? (
-                    <p className={styles.dropdownVacio}>Cargando solicitudes…</p>
+                    <p className={styles.dropdownEmpty}>Cargando solicitudes…</p>
                   ) : totalSolicitudes === 0 ? (
-                    <p className={styles.dropdownVacio}>Sin solicitudes pendientes</p>
+                    <p className={styles.dropdownEmpty}>Sin solicitudes pendientes</p>
                   ) : (
-                    <ul className={styles.listaSolicitudes}>
+                    <ul className={styles.requestList}>
                       {(solicitudesNomina ?? []).map((solicitud) => (
                         <li key={solicitud.id}>
-                          <div className={styles.datosSolicitud}>
+                          <div className={styles.requestData}>
                             <strong>Empleado #{solicitud.empleado}</strong>
                             <span>
                               {solicitud.periodo_inicio} — {solicitud.periodo_fin} · ${solicitud.monto}
                             </span>
                           </div>
-                          <div className={styles.accionesSolicitud}>
+                          <div className={styles.requestActions}>
                             <button
                               type="button"
-                              className={styles.botonAprobar}
+                              className={styles.approveButton}
                               onClick={() => aprobar.mutate(solicitud.id)}
                               disabled={aprobar.isPending || rechazar.isPending}
                             >
@@ -118,7 +121,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                             </button>
                             <button
                               type="button"
-                              className={styles.botonRechazar}
+                              className={styles.rejectButton}
                               onClick={() => rechazar.mutate(solicitud.id)}
                               disabled={aprobar.isPending || rechazar.isPending}
                             >
@@ -135,26 +138,31 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           )}
         </div>
 
-        <div className={styles.usuario}>
+        <div className={styles.userMenu}>
           <button
             type="button"
-            className={styles.botonUsuario}
+            className={styles.userButton}
             onClick={() => setMenuAbierto((abierto) => !abierto)}
+            aria-haspopup="menu"
+            aria-expanded={menuAbierto}
           >
             <span className={styles.avatar} aria-hidden="true">
               {obtenerIniciales(usuario?.nombre)}
             </span>
-            <span className={styles.datosUsuario}>
-              <span className={styles.nombreUsuario}>{usuario?.nombre ?? '…'}</span>
-              <span className={styles.rolUsuario}>{usuario?.rol ?? ''}</span>
+            <span className={styles.userData}>
+              <span className={styles.userName}>{usuario?.nombre ?? '…'}</span>
+              <span className={styles.userRole}>{usuario?.rol ?? ''}</span>
+            </span>
+            <span className={styles.caret} aria-hidden="true">
+              ▾
             </span>
           </button>
           {menuAbierto && (
             <div className={styles.dropdown} role="menu">
-              <Link to="/informacion-usuario" className={styles.itemMenu}>
+              <Link to="/informacion-usuario" className={styles.menuItem}>
                 Información de Usuario
               </Link>
-              <button type="button" className={styles.itemMenu} onClick={cerrarSesion}>
+              <button type="button" className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={cerrarSesion}>
                 Cerrar sesión
               </button>
             </div>

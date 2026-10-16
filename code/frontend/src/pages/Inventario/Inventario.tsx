@@ -16,7 +16,6 @@ import { useProductos } from '../../hooks/useProductos'
 import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import styles from './Inventario.module.css'
 import { ModalTraslado } from './ModalTraslado'
 
 const ETIQUETAS_TIPO_ITEM: Record<TipoItemInventario, string> = {
@@ -106,12 +105,12 @@ function CeldaStockMinimoEditable({
   }
 
   return (
-    <div className={styles.celdaStockMinimo}>
+    <div className="cellStack">
       <input
         type="number"
         min={0}
         step={1}
-        className={styles.inputStockMinimo}
+        className="inputCompact"
         value={valor}
         onChange={(e) => setValor(e.target.value)}
         onBlur={guardar}
@@ -120,7 +119,7 @@ function CeldaStockMinimoEditable({
         }}
         aria-label={`Stock mínimo de ${fila.nombre}`}
       />
-      {error && <span className={styles.errorStockMinimo}>{error}</span>}
+      {error && <span className="fieldError">{error}</span>}
     </div>
   )
 }
@@ -143,7 +142,7 @@ export function Inventario() {
 
   const columnasStock: ColumnaTabla<StockItem>[] = [
     { clave: 'nombre', encabezado: 'Nombre' },
-    { clave: 'stock_actual', encabezado: 'Stock actual' },
+    { clave: 'stock_actual', alineacion: 'derecha', encabezado: 'Stock actual' },
     {
       clave: 'stock_minimo',
       encabezado: 'Stock mínimo',
@@ -167,7 +166,7 @@ export function Inventario() {
       clave: 'stock_bajo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.stock_bajo ? styles.estadoAlerta : styles.estadoNormal}>
+        <span className={fila.stock_bajo ? 'status statusWarning' : 'status statusSuccess'}>
           {fila.stock_bajo ? 'Bajo mínimo' : 'OK'}
         </span>
       ),
@@ -209,25 +208,25 @@ export function Inventario() {
       encabezado: 'Tipo',
       render: (fila) => ETIQUETAS_TIPO_MOVIMIENTO[fila.tipo_movimiento],
     },
-    { clave: 'cantidad', encabezado: 'Cantidad' },
+    { clave: 'cantidad', alineacion: 'derecha', encabezado: 'Cantidad' },
     { clave: 'motivo', encabezado: 'Motivo', render: (fila) => textoMotivo(fila) },
     { clave: 'usuario_nombre', encabezado: 'Usuario' },
   ]
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Inventario</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Inventario</h1>
       </div>
 
-      <div className={styles.pestañas} role="tablist">
+      <div className="tabs" role="tablist">
         {PESTAÑAS_STOCK.map((p) => (
           <button
             key={p.clave}
             type="button"
             role="tab"
             aria-selected={tipoStock === p.clave}
-            className={tipoStock === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+            className={tipoStock === p.clave ? 'tab tabActive' : 'tab'}
             onClick={() => setTipoStock(p.clave)}
           >
             {p.etiqueta}
@@ -235,8 +234,8 @@ export function Inventario() {
         ))}
       </div>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="filters">
+        <label className="filterField">
           Sucursal
           <select
             value={sucursalStock ?? ''}
@@ -250,7 +249,7 @@ export function Inventario() {
           </select>
         </label>
 
-        <div className={styles.accionesStock}>
+        <div className="filtersEnd">
           <BotonPrimario onClick={() => setTrasladoAbierto(true)}>Traslado</BotonPrimario>
         </div>
       </div>
@@ -274,10 +273,10 @@ export function Inventario() {
         />
       )}
 
-      <h2 className={styles.tituloSeccion}>Historial de movimientos</h2>
+      <h2 className="sectionTitle">Historial de movimientos</h2>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="filters">
+        <label className="filterField">
           Tipo de ítem
           <select
             value={tipoItemHistorial}
@@ -295,7 +294,7 @@ export function Inventario() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Ítem
           <select
             value={itemHistorial}
@@ -311,7 +310,7 @@ export function Inventario() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Sucursal
           <select
             value={sucursalHistorial}
@@ -326,7 +325,7 @@ export function Inventario() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Tipo de movimiento
           <select
             value={tipoMovimientoHistorial}
@@ -341,7 +340,7 @@ export function Inventario() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Motivo
           <select
             value={motivoHistorial}

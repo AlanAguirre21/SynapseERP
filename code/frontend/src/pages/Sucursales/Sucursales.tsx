@@ -12,7 +12,6 @@ import {
   useSucursales,
 } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import styles from './Sucursales.module.css'
 
 const SUCURSAL_VACIA: SucursalFormulario = {
   nombre_sucursal: '',
@@ -134,7 +133,7 @@ export function Sucursales() {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -142,9 +141,9 @@ export function Sucursales() {
   ]
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Sucursales</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Sucursales</h1>
         {esAdmin && <BotonPrimario onClick={abrirCrear}>Nueva sucursal</BotonPrimario>}
       </div>
 
@@ -158,20 +157,20 @@ export function Sucursales() {
           renderAcciones={
             esAdmin
               ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+                  <div className="rowActions">
+                    <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                       Editar
                     </button>
                     {fila.activo ? (
                       <button
                         type="button"
-                        className={styles.enlaceAccionPeligro}
+                        className="dangerActionLink"
                         onClick={() => setSucursalADesactivar(fila)}
                       >
                         Desactivar
                       </button>
                     ) : (
-                      <button type="button" className={styles.enlaceAccion} onClick={() => abrirReactivar(fila)}>
+                      <button type="button" className="actionLink" onClick={() => abrirReactivar(fila)}>
                         Reactivar
                       </button>
                     )}
@@ -187,8 +186,8 @@ export function Sucursales() {
         abierto={formularioAbierto}
         onCerrar={cerrarFormulario}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -198,7 +197,7 @@ export function Sucursales() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Ubicación
             <input
               type="text"
@@ -207,7 +206,7 @@ export function Sucursales() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Teléfono
             <input
               type="text"
@@ -217,12 +216,12 @@ export function Sucursales() {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={cerrarFormulario}>
               Cancelar
             </BotonPrimario>
@@ -238,11 +237,11 @@ export function Sucursales() {
         abierto={Boolean(sucursalADesactivar)}
         onCerrar={() => setSucursalADesactivar(null)}
       >
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar la sucursal "{sucursalADesactivar?.nombre_sucursal}"? Dejará de estar
           disponible para nuevos movimientos, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setSucursalADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -253,18 +252,18 @@ export function Sucursales() {
       </Modal>
 
       <Modal titulo="Reactivar sucursal" abierto={Boolean(sucursalAReactivar)} onCerrar={cerrarReactivar}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar la sucursal "{sucursalAReactivar?.nombre_sucursal}"? Volverá a estar
           disponible para nuevos movimientos de inventario.
         </p>
 
         {errorReactivar && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {errorReactivar}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={cerrarReactivar}>
             Cancelar
           </BotonPrimario>

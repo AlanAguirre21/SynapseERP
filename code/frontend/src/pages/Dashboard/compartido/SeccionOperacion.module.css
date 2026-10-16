@@ -1,37 +1,22 @@
 @reference "../../../index.css";
 
-.seccion {
-  @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
+/* Indicador de monto junto al botón de la sección. */
+.indicator {
+  @apply flex flex-col items-end gap-0.5 leading-tight;
 }
 
-.encabezadoSeccion {
-  @apply flex items-center justify-between flex-wrap gap-3;
+.indicatorLabel {
+  @apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-texto-suave;
 }
 
-.tituloSeccion {
-  @apply m-0 text-lg font-semibold text-texto;
+.indicatorAmount {
+  @apply text-xl font-titulo font-semibold text-texto tabular-nums;
 }
 
-.accionesSeccion {
-  @apply flex items-center gap-4;
-}
-
-.indicadorSeccion {
-  @apply flex flex-col items-end leading-tight;
-}
-
-.indicadorEtiqueta {
-  @apply text-[0.75rem] text-texto/60;
-}
-
-.indicadorMonto {
-  @apply text-base font-semibold text-texto;
-}
-
-.filaTresGraficas {
+.chartRowThree {
   @apply grid grid-cols-1 lg:grid-cols-3 gap-4;
 }
 
-.filaUnaGrafica {
+.chartRowOne {
   @apply grid grid-cols-1 gap-4;
 }

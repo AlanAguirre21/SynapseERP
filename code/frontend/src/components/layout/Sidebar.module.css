@@ -1,63 +1,102 @@
 @reference "../../index.css";
 
 .sidebar {
-  @apply w-[220px] shrink-0 bg-fondo border-r border-borde overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ease-in-out;
+  @apply w-[232px] shrink-0 pb-4 bg-superficie border-r border-borde overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ease-in-out;
 }
 
-.sidebar.colapsado {
-  @apply w-0;
+/* Escritorio: colapsado es un riel de iconos. */
+.sidebar.collapsed {
+  @apply w-[68px];
 }
 
-.listaInicio {
-  @apply list-none m-0 p-2 pb-1 flex flex-col whitespace-nowrap border-b border-borde;
+.homeList {
+  @apply list-none m-0 p-2 border-b border-borde;
 }
 
-.enlaceInicio {
-  @apply flex items-center gap-3 px-3 py-2.5 text-inicio no-underline text-[0.9rem] font-semibold rounded-control transition-colors;
+.homeLink,
+.navLink {
+  @apply relative flex items-center gap-3 px-3 py-2.5 text-[0.9rem] no-underline whitespace-nowrap rounded-control transition-colors;
 }
 
-.enlaceInicio:hover {
+.homeLink {
+  @apply text-inicio font-semibold;
+}
+
+.homeLink:hover,
+.homeLinkActive {
   @apply bg-inicio-suave;
 }
 
-.activoInicio {
-  @apply bg-inicio-suave;
-}
-
-.iconoInicio {
+.homeIcon {
   @apply shrink-0 text-inicio;
 }
 
-.lista {
-  @apply list-none m-0 p-2 flex flex-col gap-1 whitespace-nowrap;
+.navGroup {
+  @apply flex flex-col;
 }
 
-.enlace {
-  @apply flex items-center gap-3 px-3 py-2.5 text-texto/80 no-underline text-[0.9rem] rounded-control transition-colors;
+.navGroupTitle {
+  @apply m-0 px-5 pt-4 pb-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-texto-suave whitespace-nowrap;
 }
 
-.enlace:hover {
-  @apply bg-primario-suave/60 text-texto;
+.navList {
+  @apply list-none m-0 px-2 py-1 flex flex-col gap-0.5;
 }
 
-.icono {
-  @apply shrink-0 text-texto/50;
+.navLink {
+  @apply text-texto;
 }
 
-.activo {
+.navLink:hover {
+  @apply bg-fondo;
+}
+
+.navIcon {
+  @apply shrink-0 text-texto-suave;
+}
+
+.navLinkActive,
+.navLinkActive:hover {
   @apply bg-primario-suave text-primario font-semibold;
 }
 
-.activo .icono {
+.navLinkActive .navIcon {
   @apply text-primario;
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    @apply absolute top-0 left-0 bottom-0 z-20 shadow-marcada;
-  }
+/* Barra indicadora del módulo activo. */
+.navLinkActive::before {
+  content: '';
+  @apply absolute left-0 top-2 bottom-2 w-[3px] bg-primario rounded-pildora;
+}
 
-  .sidebar.colapsado {
-    @apply w-[220px] -translate-x-full;
-  }
+.navLabel {
+  @apply min-w-0 overflow-hidden text-ellipsis;
+}
+
+/* Riel: sin textos, iconos centrados y los rótulos de grupo como divisor. */
+.collapsed .navLabel {
+  @apply md:hidden;
+}
+
+.collapsed .homeLink,
+.collapsed .navLink {
+  @apply md:justify-center md:px-0;
+}
+
+.collapsed .navGroupTitle {
+  @apply md:h-px md:mx-4 md:mt-3 md:mb-2 md:p-0 md:overflow-hidden md:bg-borde md:text-transparent;
+}
+
+/* Pantallas angostas: panel superpuesto que entra desde la izquierda. */
+.sidebar {
+  @apply max-md:absolute max-md:top-0 max-md:left-0 max-md:bottom-0 max-md:z-20;
+}
+
+.sidebar:not(.collapsed) {
+  @apply max-md:shadow-marcada;
+}
+
+.sidebar.collapsed {
+  @apply max-md:w-[232px] max-md:-translate-x-full;
 }

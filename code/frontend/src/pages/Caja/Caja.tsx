@@ -88,25 +88,25 @@ function CajaContenido() {
       clave: 'tipo_movimiento',
       encabezado: 'Tipo',
       render: (fila) => (
-        <span className={fila.tipo_movimiento === 'ingreso' ? styles.badgeIngreso : styles.badgeRetiro}>
+        <span className={fila.tipo_movimiento === 'ingreso' ? 'status statusSuccess' : 'status statusError'}>
           {ETIQUETAS_TIPO[fila.tipo_movimiento]}
         </span>
       ),
     },
-    { clave: 'monto', encabezado: 'Monto', render: (fila) => formatearMoneda(fila.monto) },
+    { clave: 'monto', alineacion: 'derecha', encabezado: 'Monto', render: (fila) => formatearMoneda(fila.monto) },
     {
       clave: 'motivo',
       encabezado: 'Motivo',
       render: (fila) => (
         <div>
-          <span className={styles.badgeMotivo}>{ETIQUETAS_MOTIVO[fila.motivo]}</span>
+          <span className="status statusNeutral">{ETIQUETAS_MOTIVO[fila.motivo]}</span>
           {fila.motivo === 'venta' && fila.referencia_id && (
-            <Link to={`/ventas/${fila.referencia_id}`} className={styles.enlaceReferencia}>
+            <Link to={`/ventas/${fila.referencia_id}`} className={styles.referenceLink}>
               Ver venta #{fila.referencia_id}
             </Link>
           )}
           {fila.motivo === 'compra' && fila.referencia_id && (
-            <Link to={`/compras/${fila.referencia_id}`} className={styles.enlaceReferencia}>
+            <Link to={`/compras/${fila.referencia_id}`} className={styles.referenceLink}>
               Ver compra #{fila.referencia_id}
             </Link>
           )}
@@ -117,47 +117,48 @@ function CajaContenido() {
     { clave: 'usuario_nombre', encabezado: 'Usuario' },
     {
       clave: 'saldo_resultante',
+      alineacion: 'derecha',
       encabezado: 'Saldo resultante',
-      render: (fila) => <span className={styles.saldoResultante}>{formatearMoneda(fila.saldo_resultante)}</span>,
+      render: (fila) => <span className={styles.resultingBalance}>{formatearMoneda(fila.saldo_resultante)}</span>,
     },
   ]
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Caja</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Caja</h1>
         <BotonPrimario onClick={() => setFormularioAbierto(true)}>Registrar movimiento</BotonPrimario>
       </div>
 
-      <div className={styles.saldosFila}>
-        <div className={`${styles.tarjetaSaldo} ${styles.saldoActual}`}>
-          <span className={styles.saldoEtiqueta}>Saldo actual de la caja</span>
-          <span className={styles.saldoMonto}>
+      <div className={styles.balanceRow}>
+        <div className={`${styles.balanceCard} ${styles.balanceCurrent}`}>
+          <span className={styles.balanceLabel}>Saldo actual de la caja</span>
+          <span className={styles.balanceAmount}>
             {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_actual)}
           </span>
         </div>
 
-        <span className={styles.operador} aria-hidden="true">+</span>
+        <span className={styles.balanceOperator} aria-hidden="true">+</span>
 
-        <div className={`${styles.tarjetaSaldo} ${styles.saldoAdicional}`}>
-          <span className={styles.saldoEtiqueta}>Saldo adicional (Costo de envíos)</span>
-          <span className={styles.saldoMonto}>
+        <div className={`${styles.balanceCard} ${styles.balanceExtra}`}>
+          <span className={styles.balanceLabel}>Saldo adicional (Costo de envíos)</span>
+          <span className={styles.balanceAmount}>
             {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_adicional)}
           </span>
         </div>
 
-        <span className={styles.operador} aria-hidden="true">=</span>
+        <span className={styles.balanceOperator} aria-hidden="true">=</span>
 
-        <div className={`${styles.tarjetaSaldo} ${styles.saldoTotal}`}>
-          <span className={styles.saldoEtiqueta}>Saldo de la caja</span>
-          <span className={styles.saldoMonto}>
+        <div className={`${styles.balanceCard} ${styles.balanceTotal}`}>
+          <span className={styles.balanceLabel}>Saldo de la caja</span>
+          <span className={styles.balanceAmount}>
             {saldoCargando || !saldo ? '…' : formatearMoneda(saldo.saldo_total)}
           </span>
         </div>
       </div>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="filters">
+        <label className="filterField">
           Tipo
           <select
             value={tipoFiltro}
@@ -172,7 +173,7 @@ function CajaContenido() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Motivo
           <select
             value={motivoFiltro}
@@ -187,12 +188,12 @@ function CajaContenido() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
@@ -254,8 +255,8 @@ function NuevoMovimientoModal({ abierto, onCerrar }: { abierto: boolean; onCerra
 
   return (
     <Modal titulo="Registrar movimiento de caja" abierto={abierto} onCerrar={cerrarYLimpiar}>
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
+      <form className="form" onSubmit={alGuardar} noValidate>
+        <label className="field">
           Tipo de movimiento
           <select value={tipoMovimiento} onChange={(e) => setTipoMovimiento(e.target.value as TipoMovimientoCaja)}>
             <option value="ingreso">Ingreso</option>
@@ -263,23 +264,23 @@ function NuevoMovimientoModal({ abierto, onCerrar }: { abierto: boolean; onCerra
           </select>
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Monto
           <input type="number" step="0.01" min="0.01" value={monto} onChange={(e) => setMonto(e.target.value)} />
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Descripción (motivo del movimiento)
           <textarea value={observacion} onChange={(e) => setObservacion(e.target.value)} />
         </label>
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {error}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario type="button" variante="secundario" onClick={cerrarYLimpiar}>
             Cancelar
           </BotonPrimario>

@@ -6,6 +6,8 @@ export interface ColumnaTabla<T> {
   clave: Extract<keyof T, string>
   encabezado: string
   render?: (fila: T) => ReactNode
+  // 'derecha' para columnas numéricas o de dinero.
+  alineacion?: 'derecha'
 }
 
 interface TablaProps<T> {
@@ -24,12 +26,14 @@ export function Tabla<T>({
   mensajeVacio = 'Sin datos para mostrar.',
 }: TablaProps<T>) {
   return (
-    <div className={styles.contenedor}>
-      <table className={styles.tabla}>
+    <div className={styles.tableContainer}>
+      <table className="dataTable">
         <thead>
           <tr>
             {columnas.map((columna) => (
-              <th key={columna.clave}>{columna.encabezado}</th>
+              <th key={columna.clave} className={columna.alineacion === 'derecha' ? 'numeric' : undefined}>
+                {columna.encabezado}
+              </th>
             ))}
             {renderAcciones && <th>Acciones</th>}
           </tr>
@@ -38,7 +42,7 @@ export function Tabla<T>({
           {datos.map((fila) => (
             <tr key={String(fila[claveFila])}>
               {columnas.map((columna) => (
-                <td key={columna.clave}>
+                <td key={columna.clave} className={columna.alineacion === 'derecha' ? 'numeric' : undefined}>
                   {columna.render ? columna.render(fila) : (fila[columna.clave] as ReactNode)}
                 </td>
               ))}
@@ -47,7 +51,7 @@ export function Tabla<T>({
           ))}
         </tbody>
       </table>
-      {datos.length === 0 && <p className={styles.vacio}>{mensajeVacio}</p>}
+      {datos.length === 0 && <p className={styles.tableEmpty}>{mensajeVacio}</p>}
     </div>
   )
 }

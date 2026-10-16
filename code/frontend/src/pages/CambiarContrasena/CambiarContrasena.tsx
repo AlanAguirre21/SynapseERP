@@ -6,7 +6,6 @@ import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { CampoContrasena } from '../../components/common/CampoContrasena'
 import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
-import styles from './CambiarContrasena.module.css'
 
 const MENSAJE_SIN_CONTEXTO =
   'Tu sesión de recuperación expiró o no es válida. Solicita un nuevo código.'
@@ -77,7 +76,7 @@ export function CambiarContrasena() {
 
   return (
     <PaginaAuth titulo="Nueva contraseña" subtitulo="Elige una contraseña nueva para tu cuenta">
-      <form className={styles.formulario} onSubmit={alEnviar} noValidate>
+      <form className="form" onSubmit={alEnviar} noValidate>
         <CampoContrasena etiqueta="Nueva contraseña" valor={password} onCambiar={setPassword} required />
 
         <CampoContrasena
@@ -87,12 +86,12 @@ export function CambiarContrasena() {
           required
         />
 
-        <Link to="/login" className={styles.enlace}>
+        <Link to="/login" className="link linkCentered">
           Volver a la página de inicio
         </Link>
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {error}
           </p>
         )}

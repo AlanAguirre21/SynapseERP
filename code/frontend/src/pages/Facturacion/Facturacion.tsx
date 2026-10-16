@@ -5,14 +5,13 @@ import { ETIQUETAS_ESTADO_FACTURA, type EstadoFactura, type Factura } from '../.
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
-import styles from './Facturacion.module.css'
 
 function claseEstado(estado: EstadoFactura) {
-  if (estado === 'timbrada') return styles.estadoTimbrada
-  if (estado === 'cancelada') return styles.estadoCancelada
-  if (estado === 'error') return styles.estadoError
-  if (estado === 'pendiente_cancelacion') return styles.estadoPendienteCancelacion
-  return styles.estadoPendiente
+  if (estado === 'timbrada') return 'status statusSuccess'
+  if (estado === 'cancelada') return 'status statusError'
+  if (estado === 'error') return 'status statusError'
+  if (estado === 'pendiente_cancelacion') return 'status statusWarning'
+  return 'status statusWarning'
 }
 
 export function Facturacion() {
@@ -43,7 +42,7 @@ export function Facturacion() {
       encabezado: 'Folio fiscal',
       render: (fila) => (fila.serie && fila.folio_interno ? `${fila.serie}-${fila.folio_interno}` : '—'),
     },
-    { clave: 'venta_total', encabezado: 'Total' },
+    { clave: 'venta_total', alineacion: 'derecha', encabezado: 'Total' },
     {
       clave: 'estado',
       encabezado: 'Estado',
@@ -52,13 +51,13 @@ export function Facturacion() {
   ]
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Facturación</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Facturación</h1>
       </div>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="filters">
+        <label className="filterField">
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoFactura | '')}>
             <option value="">Todos</option>
@@ -70,7 +69,7 @@ export function Facturacion() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Cliente
           <select
             value={clienteFiltro}
@@ -85,12 +84,12 @@ export function Facturacion() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
@@ -104,7 +103,7 @@ export function Facturacion() {
           datos={facturas ?? []}
           mensajeVacio="Todavía no hay facturas generadas."
           renderAcciones={(fila) => (
-            <button type="button" className={styles.enlaceAccion} onClick={() => navigate(`/facturacion/${fila.id}`)}>
+            <button type="button" className="actionLink" onClick={() => navigate(`/facturacion/${fila.id}`)}>
               Ver detalle
             </button>
           )}

@@ -1,6 +1,13 @@
 import { Fragment, useState, type FormEvent } from 'react'
 
-import type { Departamento, Empleado, MotivoCambio, Posicion } from '../../api/rrhh'
+import type {
+  Departamento,
+  Empleado,
+  EmpleadoFormulario,
+  EmpleadoPosicion,
+  MotivoCambio,
+  Posicion,
+} from '../../api/rrhh'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import {
@@ -32,6 +39,7 @@ import {
   useReactivarPosicion,
 } from '../../hooks/usePosiciones'
 import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
+import { obtenerIniciales } from '../../utils/texto'
 import styles from './RRHH.module.css'
 
 function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: string): string {
@@ -49,6 +57,21 @@ function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: 
   }
 
   return mensajePorDefecto
+}
+
+// Sangría del árbol de posiciones por nivel de profundidad (clases de
+// RRHH.module.css); los niveles más profundos reutilizan la última.
+const CLASES_NIVEL = [
+  '',
+  styles.treeLevel1,
+  styles.treeLevel2,
+  styles.treeLevel3,
+  styles.treeLevel4,
+  styles.treeLevel5,
+]
+
+function claseNivel(profundidad: number): string {
+  return CLASES_NIVEL[Math.min(profundidad, CLASES_NIVEL.length - 1)] ?? ''
 }
 
 // Posiciones de un departamento, ordenadas de mayor a menor jerarquía
@@ -113,28 +136,46 @@ export function RRHH() {
   }
 
   return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Recursos Humanos</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Recursos Humanos</h1>
+        <BotonPrimario variante="secundario" onClick={() => setFormularioDepto('nuevo')}>
+          Agregar departamento
+        </BotonPrimario>
+      </div>
+
+      <div className="statRow">
+        <div className="statTile">
+          <span className="statLabel">Departamentos</span>
+          <span className="statValue">{departamentos ? departamentos.length : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Empleados activos</span>
+          <span className="statValue">{empleados ? empleados.filter((e) => e.activo).length : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Empleados inactivos</span>
+          <span className="statValue">{empleados ? empleados.filter((e) => !e.activo).length : '…'}</span>
+        </div>
+      </div>
 
       {isLoading ? (
         <p>Cargando departamentos…</p>
       ) : (
         <>
-          {/* Pestañas de departamento y sus acciones (editar/desactivar el
-              seleccionado, agregar uno nuevo) comparten la misma fila y el
-              mismo estilo de enlace — no hay una acción "primaria" aquí que
-              deba destacar más que las otras. La barra se muestra aunque no
-              haya departamentos, para que el enlace "Agregar departamento"
-              siga disponible desde el estado vacío. */}
-          <div className={styles.barraDepartamentos}>
-            <div className={styles.pestañas} role="tablist">
+          {/* Pestañas de departamento a la izquierda; a la derecha, las
+              acciones sobre el departamento seleccionado. "Agregar
+              departamento" vive en el encabezado de la página, así que sigue
+              disponible aunque no haya ninguno. */}
+          <div className={styles.departmentBar}>
+            <div className={styles.departmentTabs} role="tablist">
               {(departamentos ?? []).map((d) => (
                 <button
                   key={d.id}
                   type="button"
                   role="tab"
                   aria-selected={idSeleccionado === d.id}
-                  className={idSeleccionado === d.id ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+                  className={idSeleccionado === d.id ? 'tab tabActive' : 'tab'}
                   onClick={() => setDepartamentoId(d.id)}
                 >
                   {d.nombre_departamento}
@@ -143,35 +184,32 @@ export function RRHH() {
               ))}
             </div>
 
-            <div className={styles.accionesDepartamento}>
+            <div className={styles.departmentActions}>
               {departamentoSeleccionado && (
                 <>
                   <button
                     type="button"
-                    className={styles.enlaceAccion}
+                    className="actionLink"
                     onClick={() => setFormularioDepto(departamentoSeleccionado)}
                   >
                     Editar departamento
                   </button>
                   <button
                     type="button"
-                    className={departamentoSeleccionado.activo ? styles.enlaceAccionPeligro : styles.enlaceAccion}
+                    className={departamentoSeleccionado.activo ? 'dangerActionLink' : 'actionLink'}
                     onClick={() => setConfirmarDeptoAbierto(true)}
                   >
                     {departamentoSeleccionado.activo ? 'Desactivar departamento' : 'Reactivar departamento'}
                   </button>
                 </>
               )}
-              <button type="button" className={styles.enlaceAccion} onClick={() => setFormularioDepto('nuevo')}>
-                Agregar departamento
-              </button>
             </div>
           </div>
 
           {departamentoSeleccionado ? (
             <PanelDepartamento departamento={departamentoSeleccionado} empleados={empleados ?? []} />
           ) : (
-            <p className={styles.vacio}>Todavía no hay departamentos registrados.</p>
+            <p className="emptyState">Todavía no hay departamentos registrados.</p>
           )}
         </>
       )}
@@ -190,11 +228,11 @@ export function RRHH() {
           abierto={confirmarDeptoAbierto}
           onCerrar={() => setConfirmarDeptoAbierto(false)}
         >
-          <p className={styles.textoConfirmacion}>
+          <p className="confirmText">
             ¿Confirmas que quieres {departamentoSeleccionado.activo ? 'desactivar' : 'reactivar'} "
             {departamentoSeleccionado.nombre_departamento}"?
           </p>
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario variante="secundario" onClick={() => setConfirmarDeptoAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -266,15 +304,15 @@ function FormularioDepartamento({
       abierto={abierto}
       onCerrar={onCerrar}
     >
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
+      <form className="form" onSubmit={alGuardar} noValidate>
+        <label className="field">
           Nombre del departamento
           <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
         </label>
 
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && <p className="errorMessage" role="alert">{error}</p>}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={guardando}>
             {guardando ? 'Guardando…' : 'Guardar'}
@@ -313,84 +351,85 @@ function PanelDepartamento({ departamento, empleados }: { departamento: Departam
   }
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.encabezado}>
-        <h2 className={styles.subtitulo}>Posiciones de {departamento.nombre_departamento}</h2>
+    <div className="card">
+      <div className="pageHeader">
+        <h2 className="sectionTitle">Posiciones de {departamento.nombre_departamento}</h2>
         <BotonPrimario onClick={() => setFormularioPosicion('nueva')}>Agregar posición</BotonPrimario>
       </div>
 
       {isLoading ? (
         <p>Cargando posiciones…</p>
       ) : jerarquia.length === 0 ? (
-        <p className={styles.vacio}>Este departamento todavía no tiene posiciones.</p>
+        <p className="emptyState">Este departamento todavía no tiene posiciones.</p>
       ) : (
-        <table className={styles.tablaPosiciones}>
-          <thead>
-            <tr>
-              <th>Posición</th>
-              <th>Rango salarial</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jerarquia.map(({ posicion, profundidad }) => {
-              const esRaiz = profundidad === 0
-              const expandida = posicionExpandidaId === posicion.id
-              return (
-                <Fragment key={posicion.id}>
-                  <tr
-                    className={styles.filaPosicion}
-                    onClick={() => setPosicionExpandidaId(expandida ? null : posicion.id)}
-                    aria-expanded={expandida}
-                  >
-                    <td className={esRaiz ? styles.celdaPosicionRaiz : undefined}>
-                      <span
-                        className={styles.tituloPosicion}
-                        style={{ paddingLeft: `${profundidad * 24}px` }}
-                      >
-                        <span className={styles.indicadorExpandir}>{expandida ? '▾' : '▸'}</span>
-                        {!esRaiz && <span className={styles.conectorArbol}>└</span>}
-                        <span className={esRaiz ? styles.nombrePosicionRaiz : styles.nombrePosicionHija}>
-                          {posicion.titulo_posicion}
-                        </span>
-                      </span>
-                    </td>
-                    <td className={styles.celdaSalario}>
-                      {formatearMoneda(posicion.salario_minimo)} – {formatearMoneda(posicion.salario_maximo)}
-                    </td>
-                    <td>
-                      <span className={posicion.activo ? styles.estadoActivo : styles.estadoInactivo}>
-                        {posicion.activo ? 'Activa' : 'Inactiva'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.accionesFila} onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className={styles.enlaceAccion} onClick={() => setFormularioPosicion(posicion)}>
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className={posicion.activo ? styles.enlaceAccionPeligro : styles.enlaceAccion}
-                          onClick={() => setPosicionAConfirmar(posicion)}
+        <div className="tableScroll">
+          <table className="dataTable">
+            <thead>
+              <tr>
+                <th>Posición</th>
+                <th>Rango salarial</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jerarquia.map(({ posicion, profundidad }) => {
+                const esRaiz = profundidad === 0
+                const expandida = posicionExpandidaId === posicion.id
+                return (
+                  <Fragment key={posicion.id}>
+                    <tr
+                      className={styles.positionRow}
+                      onClick={() => setPosicionExpandidaId(expandida ? null : posicion.id)}
+                      aria-expanded={expandida}
+                    >
+                      <td className={esRaiz ? styles.rootPositionCell : undefined}>
+                        <span
+                          className={`${styles.positionTitle} ${claseNivel(profundidad)}`}
                         >
-                          {posicion.activo ? 'Desactivar' : 'Reactivar'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {expandida && (
-                    <tr>
-                      <td colSpan={4} className={styles.celdaExpandida}>
-                        <PanelEmpleadosPorPosicion posicion={posicion} empleados={empleados} />
+                          <span className="expandIndicator">{expandida ? '▾' : '▸'}</span>
+                          {!esRaiz && <span className={styles.treeConnector}>└</span>}
+                          <span className={esRaiz ? styles.rootPositionName : styles.childPositionName}>
+                            {posicion.titulo_posicion}
+                          </span>
+                        </span>
+                      </td>
+                      <td className={styles.salaryCell}>
+                        {formatearMoneda(posicion.salario_minimo)} – {formatearMoneda(posicion.salario_maximo)}
+                      </td>
+                      <td>
+                        <span className={posicion.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+                          {posicion.activo ? 'Activa' : 'Inactiva'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="rowActions" onClick={(e) => e.stopPropagation()}>
+                          <button type="button" className="actionLink" onClick={() => setFormularioPosicion(posicion)}>
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className={posicion.activo ? 'dangerActionLink' : 'actionLink'}
+                            onClick={() => setPosicionAConfirmar(posicion)}
+                          >
+                            {posicion.activo ? 'Desactivar' : 'Reactivar'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  )}
-                </Fragment>
-              )
-            })}
-          </tbody>
-        </table>
+                    {expandida && (
+                      <tr>
+                        <td colSpan={4} className={styles.expandedCell}>
+                          <PanelEmpleadosPorPosicion posicion={posicion} empleados={empleados} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <FormularioPosicion
@@ -407,11 +446,11 @@ function PanelDepartamento({ departamento, empleados }: { departamento: Departam
         abierto={Boolean(posicionAConfirmar)}
         onCerrar={() => setPosicionAConfirmar(null)}
       >
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres {posicionAConfirmar?.activo ? 'desactivar' : 'reactivar'} "
           {posicionAConfirmar?.titulo_posicion}"?
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setPosicionAConfirmar(null)}>
             Cancelar
           </BotonPrimario>
@@ -477,13 +516,13 @@ function FormularioPosicion({
 
   return (
     <Modal titulo={posicionEnEdicion ? 'Editar posición' : 'Nueva posición'} abierto={abierto} onCerrar={onCerrar}>
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
+      <form className="form" onSubmit={alGuardar} noValidate>
+        <label className="field">
           Título de la posición
           <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Reporta a (opcional)
           <select
             value={reportaA ?? ''}
@@ -496,19 +535,19 @@ function FormularioPosicion({
           </select>
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Salario mínimo
           <input type="number" step="0.01" min="0" value={salarioMinimo} onChange={(e) => setSalarioMinimo(e.target.value)} />
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Salario máximo
           <input type="number" step="0.01" min="0" value={salarioMaximo} onChange={(e) => setSalarioMaximo(e.target.value)} />
         </label>
 
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && <p className="errorMessage" role="alert">{error}</p>}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={guardando}>
             {guardando ? 'Guardando…' : 'Guardar'}
@@ -520,6 +559,59 @@ function FormularioPosicion({
 }
 
 // --- Empleados por posición, con selector 5/10/todos ------------------------
+
+// Campos de la ficha, agrupados igual en consulta, edición y alta.
+const GRUPOS_EMPLEADO: {
+  titulo: string
+  campos: { clave: keyof EmpleadoFormulario; etiqueta: string; tipo: 'text' | 'email' }[]
+}[] = [
+  {
+    titulo: 'Datos personales',
+    campos: [
+      { clave: 'nombre_completo', etiqueta: 'Nombre completo', tipo: 'text' },
+      { clave: 'curp', etiqueta: 'CURP', tipo: 'text' },
+      { clave: 'rfc', etiqueta: 'RFC', tipo: 'text' },
+      { clave: 'nss', etiqueta: 'NSS', tipo: 'text' },
+    ],
+  },
+  {
+    titulo: 'Contacto',
+    campos: [
+      { clave: 'telefono', etiqueta: 'Teléfono', tipo: 'text' },
+      { clave: 'email', etiqueta: 'Correo', tipo: 'email' },
+    ],
+  },
+  {
+    titulo: 'Pago de nómina',
+    campos: [{ clave: 'cuenta_bancaria', etiqueta: 'Cuenta bancaria', tipo: 'text' }],
+  },
+]
+
+// 'AAAA-MM-DD' -> 'DD/MM/AAAA', sin pasar por Date para no mover el día por zona horaria.
+function formatearFecha(fecha: string): string {
+  return fecha.split('-').reverse().join('/')
+}
+
+// Fotografía del empleado o, si no tiene, sus iniciales.
+function AvatarEmpleado({ empleado, tamano }: { empleado: Empleado; tamano: 'chico' | 'grande' }) {
+  const clase = `${styles.employeeAvatar} ${tamano === 'grande' ? styles.employeeAvatarLarge : styles.employeeAvatarSmall}`
+
+  if (empleado.fotografia) {
+    return (
+      <img
+        src={empleado.fotografia}
+        alt={tamano === 'grande' ? `Fotografía de ${empleado.nombre_completo}` : ''}
+        className={clase}
+      />
+    )
+  }
+
+  return (
+    <span className={clase} aria-hidden="true">
+      {obtenerIniciales(empleado.nombre_completo)}
+    </span>
+  )
+}
 
 function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion; empleados: Empleado[] }) {
   const { data: asignaciones, isLoading } = useEmpleadoPosicionesVigentes(posicion.id)
@@ -541,14 +633,14 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
   const empleadoSeleccionado = empleadoSeleccionadoId !== null ? empleadoDe(empleadoSeleccionadoId) ?? null : null
 
   return (
-    <div className={styles.panelEmpleados}>
-      <div className={styles.encabezadoEmpleados}>
-        <div className={styles.selectorLimite} role="group" aria-label="Cantidad de empleados a mostrar">
+    <div className={styles.employeePanel}>
+      <div className="sectionHeader">
+        <div className="segmented" role="group" aria-label="Cantidad de empleados a mostrar">
           {(['5', '10', 'todos'] as LimiteLista[]).map((valor) => (
             <button
               key={valor}
               type="button"
-              className={limite === valor ? `${styles.botonLimite} ${styles.botonLimiteActivo}` : styles.botonLimite}
+              className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
               onClick={() => setLimite(valor)}
             >
               {valor === 'todos' ? 'Todos' : valor}
@@ -561,20 +653,25 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
       {isLoading ? (
         <p>Cargando empleados…</p>
       ) : listaRecortada.length === 0 ? (
-        <p className={styles.vacio}>Nadie desempeña esta posición actualmente.</p>
+        <p className="emptyState">Nadie desempeña esta posición actualmente.</p>
       ) : (
-        <ul className={styles.listaEmpleados}>
+        <ul className={styles.employeeList}>
           {listaRecortada.map((asignacion) => {
             const empleado = empleadoDe(asignacion.empleado)
             return (
               <li key={asignacion.id}>
                 <button
                   type="button"
-                  className={styles.itemEmpleado}
+                  className={styles.employeeItem}
                   onClick={() => empleado && setEmpleadoSeleccionadoId(empleado.id)}
                 >
-                  <span>{empleado?.nombre_completo ?? `Empleado #${asignacion.empleado}`}</span>
-                  <span className={styles.itemEmpleadoPosicion}>{posicion.titulo_posicion}</span>
+                  {empleado && <AvatarEmpleado empleado={empleado} tamano="chico" />}
+                  <span className={styles.employeeItemText}>
+                    <span className={styles.employeeItemName}>
+                      {empleado?.nombre_completo ?? `Empleado #${asignacion.empleado}`}
+                    </span>
+                    <span className={styles.employeeItemMeta}>Desde {formatearFecha(asignacion.fecha_inicio)}</span>
+                  </span>
                 </button>
               </li>
             )
@@ -589,7 +686,12 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
       />
 
       {empleadoSeleccionado && (
-        <ModalDetalleEmpleado empleado={empleadoSeleccionado} onCerrar={() => setEmpleadoSeleccionadoId(null)} />
+        <ModalDetalleEmpleado
+          empleado={empleadoSeleccionado}
+          posicion={posicion}
+          asignacion={lista.find((a) => a.empleado === empleadoSeleccionado.id)}
+          onCerrar={() => setEmpleadoSeleccionadoId(null)}
+        />
       )}
     </div>
   )
@@ -643,89 +745,56 @@ function FormularioContratar({
   }
 
   return (
-    <Modal titulo={`Nuevo empleado — ${posicion.titulo_posicion}`} abierto={abierto} onCerrar={onCerrar}>
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
-          Nombre completo
-          <input
-            type="text" value={datos.nombre_completo}
-            onChange={(e) => setDatos((v) => ({ ...v, nombre_completo: e.target.value }))}
-            required
-          />
-        </label>
+    <Modal titulo={`Nuevo empleado — ${posicion.titulo_posicion}`} abierto={abierto} onCerrar={onCerrar} ancho="amplio">
+      <form className="form" onSubmit={alGuardar} noValidate>
+        {GRUPOS_EMPLEADO.map((grupo) => (
+          <section key={grupo.titulo} className={styles.dataSection}>
+            <h3 className="subtitle">{grupo.titulo}</h3>
+            <div className="formGrid">
+              {grupo.campos.map((campo) => (
+                <label key={campo.clave} className="field">
+                  {campo.etiqueta}
+                  <input
+                    type={campo.tipo}
+                    value={datos[campo.clave]}
+                    onChange={(e) => setDatos((v) => ({ ...v, [campo.clave]: e.target.value }))}
+                    required={campo.clave === 'nombre_completo'}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+        ))}
 
-        <label className={styles.campo}>
-          Fotografía (opcional)
-          <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
-        </label>
+        <section className={styles.dataSection}>
+          <h3 className="subtitle">Puesto</h3>
+          <div className="formGrid">
+            <label className="field">
+              Salario asignado
+              <input
+                type="number" step="0.01" min="0" value={salarioAsignado}
+                onChange={(e) => setSalarioAsignado(e.target.value)}
+              />
+              <span className="fieldHint">
+                Rango de la posición: {posicion.salario_minimo} – {posicion.salario_maximo}
+              </span>
+            </label>
 
-        <label className={styles.campo}>
-          CURP
-          <input
-            type="text" value={datos.curp}
-            onChange={(e) => setDatos((v) => ({ ...v, curp: e.target.value }))}
-          />
-        </label>
+            <label className="field">
+              Fecha de inicio
+              <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} required />
+            </label>
 
-        <label className={styles.campo}>
-          RFC
-          <input
-            type="text" value={datos.rfc}
-            onChange={(e) => setDatos((v) => ({ ...v, rfc: e.target.value }))}
-          />
-        </label>
+            <label className="field formGridFull">
+              Fotografía (opcional)
+              <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
+            </label>
+          </div>
+        </section>
 
-        <label className={styles.campo}>
-          NSS
-          <input
-            type="text" value={datos.nss}
-            onChange={(e) => setDatos((v) => ({ ...v, nss: e.target.value }))}
-          />
-        </label>
+        {error && <p className="errorMessage" role="alert">{error}</p>}
 
-        <label className={styles.campo}>
-          Teléfono
-          <input
-            type="text" value={datos.telefono}
-            onChange={(e) => setDatos((v) => ({ ...v, telefono: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Correo
-          <input
-            type="email" value={datos.email}
-            onChange={(e) => setDatos((v) => ({ ...v, email: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Cuenta bancaria
-          <input
-            type="text" value={datos.cuenta_bancaria}
-            onChange={(e) => setDatos((v) => ({ ...v, cuenta_bancaria: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Salario asignado
-          <input
-            type="number" step="0.01" min="0" value={salarioAsignado}
-            onChange={(e) => setSalarioAsignado(e.target.value)}
-          />
-          <span className={styles.ayuda}>
-            Rango de la posición: {posicion.salario_minimo} – {posicion.salario_maximo}
-          </span>
-        </label>
-
-        <label className={styles.campo}>
-          Fecha de inicio
-          <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} required />
-        </label>
-
-        {error && <p className={styles.error} role="alert">{error}</p>}
-
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={contratar.isPending}>
             {contratar.isPending ? 'Guardando…' : 'Guardar'}
@@ -743,7 +812,14 @@ const MOTIVOS_DESACTIVACION: { valor: MotivoCambio; etiqueta: string }[] = [
   { valor: 'despido', etiqueta: 'Despido' },
 ]
 
-function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCerrar: () => void }) {
+function ModalDetalleEmpleado({
+  empleado, posicion, asignacion, onCerrar,
+}: {
+  empleado: Empleado
+  posicion: Posicion
+  asignacion?: EmpleadoPosicion
+  onCerrar: () => void
+}) {
   const editar = useEditarEmpleado()
   const desactivar = useDesactivarEmpleado()
   const reactivar = useReactivarEmpleado()
@@ -798,77 +874,82 @@ function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCe
   }
 
   return (
-    <Modal titulo={enEdicion ? 'Modificar empleado' : empleado.nombre_completo} abierto onCerrar={onCerrar}>
-      <form className={styles.formulario} onSubmit={pedirConfirmacion} noValidate>
-        <label className={styles.campo}>
-          Fotografía
-          {empleado.fotografia && !foto && (
-            <img src={empleado.fotografia} alt={`Fotografía de ${empleado.nombre_completo}`} className={styles.fotoEmpleado} />
+    <Modal
+      titulo={enEdicion ? 'Modificar empleado' : empleado.nombre_completo}
+      tituloVisible={enEdicion ? 'Modificar empleado' : 'Ficha de empleado'}
+      ancho="amplio"
+      abierto
+      onCerrar={onCerrar}
+    >
+      <header className={styles.profileHero}>
+        <AvatarEmpleado empleado={empleado} tamano="grande" />
+        <div className={styles.profileIdentity}>
+          <span className={empleado.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+            {empleado.activo ? 'Activo' : 'Inactivo'}
+          </span>
+          <p className={styles.profileName}>{empleado.nombre_completo}</p>
+          <p className={styles.profileRole}>{posicion.titulo_posicion}</p>
+          {asignacion && (
+            <dl className={styles.profileFacts}>
+              <div>
+                <dt>Salario asignado</dt>
+                <dd>{formatearMoneda(asignacion.salario_asignado)}</dd>
+              </div>
+              <div>
+                <dt>En el puesto desde</dt>
+                <dd>{formatearFecha(asignacion.fecha_inicio)}</dd>
+              </div>
+            </dl>
           )}
-          {enEdicion && (
-            <input
-              type="file" accept="image/*"
-              onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
-            />
-          )}
-        </label>
-        <label className={styles.campo}>
-          Nombre completo
-          <input
-            type="text" value={valores.nombre_completo} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, nombre_completo: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          CURP
-          <input
-            type="text" value={valores.curp} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, curp: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          RFC
-          <input
-            type="text" value={valores.rfc} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, rfc: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          NSS
-          <input
-            type="text" value={valores.nss} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, nss: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Teléfono
-          <input
-            type="text" value={valores.telefono} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, telefono: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Correo
-          <input
-            type="email" value={valores.email} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, email: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Cuenta bancaria
-          <input
-            type="text" value={valores.cuenta_bancaria} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, cuenta_bancaria: e.target.value }))}
-          />
-        </label>
+        </div>
+      </header>
 
-        <span className={empleado.activo ? styles.estadoActivo : styles.estadoInactivo}>
-          {empleado.activo ? 'Activo' : 'Inactivo'}
-        </span>
+      <form className="form" onSubmit={pedirConfirmacion} noValidate>
+        {GRUPOS_EMPLEADO.map((grupo) => (
+          <section key={grupo.titulo} className={styles.dataSection}>
+            <h3 className="subtitle">{grupo.titulo}</h3>
+            {enEdicion ? (
+              <div className="formGrid">
+                {grupo.campos.map((campo) => (
+                  <label key={campo.clave} className="field">
+                    {campo.etiqueta}
+                    <input
+                      type={campo.tipo}
+                      value={valores[campo.clave]}
+                      onChange={(e) => setValores((v) => ({ ...v, [campo.clave]: e.target.value }))}
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <dl className="factGrid">
+                {grupo.campos.map((campo) => (
+                  <div key={campo.clave}>
+                    <dt>{campo.etiqueta}</dt>
+                    <dd>{empleado[campo.clave] || '—'}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </section>
+        ))}
 
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {enEdicion && (
+          <section className={styles.dataSection}>
+            <h3 className="subtitle">Fotografía</h3>
+            <label className="field">
+              Reemplazar fotografía
+              <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
+              <span className="fieldHint">
+                {foto ? `Se guardará "${foto.name}".` : 'Si no eliges un archivo, se conserva la fotografía actual.'}
+              </span>
+            </label>
+          </section>
+        )}
 
-        <div className={styles.accionesFormulario}>
+        {error && <p className="errorMessage" role="alert">{error}</p>}
+
+        <div className="formActions">
           {!enEdicion ? (
             <>
               {empleado.activo ? (
@@ -893,12 +974,14 @@ function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCe
         </div>
       </form>
 
-      <ContactosYDependientes empleadoId={empleado.id} />
-      <SolicitarNomina empleadoId={empleado.id} />
+      <div className={styles.profilePanels}>
+        <ContactosYDependientes empleadoId={empleado.id} />
+        <SolicitarNomina empleadoId={empleado.id} />
+      </div>
 
       <Modal titulo="¿Estás seguro?" abierto={confirmarGuardadoAbierto} onCerrar={() => setConfirmarGuardadoAbierto(false)}>
-        <p className={styles.textoConfirmacion}>¿Confirmas que quieres guardar los cambios de este empleado?</p>
-        <div className={styles.accionesFormulario}>
+        <p className="confirmText">¿Confirmas que quieres guardar los cambios de este empleado?</p>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setConfirmarGuardadoAbierto(false)}>
             Cancelar
           </BotonPrimario>
@@ -909,12 +992,12 @@ function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCe
       </Modal>
 
       <Modal titulo="Desactivar empleado" abierto={confirmarDesactivarAbierto} onCerrar={() => setConfirmarDesactivarAbierto(false)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar a "{empleado.nombre_completo}"? Si tiene una posición vigente, se
           cerrará con la fecha de hoy. Si tiene una cuenta de usuario vinculada, también perderá acceso al sistema
           de inmediato.
         </p>
-        <label className={styles.campo}>
+        <label className="field">
           Motivo
           <select value={motivoDesactivacion} onChange={(e) => setMotivoDesactivacion(e.target.value as MotivoCambio)}>
             {MOTIVOS_DESACTIVACION.map((m) => (
@@ -922,7 +1005,7 @@ function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCe
             ))}
           </select>
         </label>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setConfirmarDesactivarAbierto(false)}>
             Cancelar
           </BotonPrimario>
@@ -971,27 +1054,30 @@ function SolicitarNomina({ empleadoId }: { empleadoId: number }) {
   }
 
   return (
-    <div className={styles.seccionAnexos}>
-      <h3 className={styles.subtituloAnexo}>Nueva solicitud de nómina</h3>
-      <div className={styles.filaAgregarAnexo}>
-        <input
-          type="date" aria-label="Periodo de inicio" value={periodoInicio}
-          onChange={(e) => setPeriodoInicio(e.target.value)}
-        />
-        <input
-          type="date" aria-label="Periodo de fin" value={periodoFin}
-          onChange={(e) => setPeriodoFin(e.target.value)}
-        />
-        <input
-          type="number" step="0.01" min="0" placeholder="Monto" value={monto}
-          onChange={(e) => setMonto(e.target.value)}
-        />
+    <div className={`${styles.infoPanel} ${styles.infoPanelWide}`}>
+      <h3 className="subtitle">Nueva solicitud de nómina</h3>
+      <div className={styles.payrollRow}>
+        <label className="field">
+          Periodo de inicio
+          <input type="date" value={periodoInicio} onChange={(e) => setPeriodoInicio(e.target.value)} />
+        </label>
+        <label className="field">
+          Periodo de fin
+          <input type="date" value={periodoFin} onChange={(e) => setPeriodoFin(e.target.value)} />
+        </label>
+        <label className="field">
+          Monto a pagar
+          <input
+            type="number" step="0.01" min="0" placeholder="Monto" value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+          />
+        </label>
         <BotonPrimario type="button" onClick={enviarSolicitud} disabled={crear.isPending}>
           {crear.isPending ? 'Enviando…' : 'Solicitar'}
         </BotonPrimario>
       </div>
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {confirmacion && <p className={styles.ayuda}>{confirmacion}</p>}
+      {error && <p className="errorMessage" role="alert">{error}</p>}
+      {confirmacion && <p className="fieldHint">{confirmacion}</p>}
     </div>
   )
 }
@@ -1023,64 +1109,81 @@ function ContactosYDependientes({ empleadoId }: { empleadoId: number }) {
   }
 
   return (
-    <div className={styles.seccionAnexos}>
-      <div>
-        <h3 className={styles.subtituloAnexo}>Contactos de emergencia</h3>
-        <ul className={styles.listaAnexo}>
-          {(contactos ?? []).map((c) => (
-            <li key={c.id}>
-              <span>{c.nombre_contacto} — {c.telefono} ({c.parentesco})</span>
-              <button type="button" className={styles.enlaceAccionPeligro} onClick={() => eliminarContacto.mutate(c.id)}>
-                Eliminar
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className={styles.filaAgregarAnexo}>
+    <>
+      <div className={styles.infoPanel}>
+        <h3 className="subtitle">Contactos de emergencia</h3>
+        {(contactos ?? []).length === 0 ? (
+          <p className="emptyState">Sin contactos registrados.</p>
+        ) : (
+          <ul className={styles.infoList}>
+            {(contactos ?? []).map((c) => (
+              <li key={c.id}>
+                <span className={styles.infoItemText}>
+                  <span className={styles.infoItemName}>{c.nombre_contacto}</span>
+                  <span className={styles.infoItemMeta}>
+                    {c.telefono}
+                    {c.parentesco && ` · ${c.parentesco}`}
+                  </span>
+                </span>
+                <button type="button" className="dangerActionLink" onClick={() => eliminarContacto.mutate(c.id)}>
+                  Eliminar
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className={styles.infoAddRow}>
           <input
-            type="text" placeholder="Nombre" value={nuevoContacto.nombre_contacto}
+            type="text" placeholder="Nombre" aria-label="Nombre del contacto" value={nuevoContacto.nombre_contacto}
             onChange={(e) => setNuevoContacto((v) => ({ ...v, nombre_contacto: e.target.value }))}
           />
           <input
-            type="text" placeholder="Teléfono" value={nuevoContacto.telefono}
+            type="text" placeholder="Teléfono" aria-label="Teléfono del contacto" value={nuevoContacto.telefono}
             onChange={(e) => setNuevoContacto((v) => ({ ...v, telefono: e.target.value }))}
           />
           <input
-            type="text" placeholder="Parentesco" value={nuevoContacto.parentesco}
+            type="text" placeholder="Parentesco" aria-label="Parentesco del contacto" value={nuevoContacto.parentesco}
             onChange={(e) => setNuevoContacto((v) => ({ ...v, parentesco: e.target.value }))}
           />
-          <BotonPrimario type="button" onClick={agregarContacto} disabled={crearContacto.isPending}>
+          <BotonPrimario type="button" variante="secundario" onClick={agregarContacto} disabled={crearContacto.isPending}>
             Agregar
           </BotonPrimario>
         </div>
       </div>
 
-      <div>
-        <h3 className={styles.subtituloAnexo}>Dependientes</h3>
-        <ul className={styles.listaAnexo}>
-          {(dependientes ?? []).map((d) => (
-            <li key={d.id}>
-              <span>{d.nombre_dependiente} ({d.parentesco})</span>
-              <button type="button" className={styles.enlaceAccionPeligro} onClick={() => eliminarDependiente.mutate(d.id)}>
-                Eliminar
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className={styles.filaAgregarAnexo}>
+      <div className={styles.infoPanel}>
+        <h3 className="subtitle">Dependientes</h3>
+        {(dependientes ?? []).length === 0 ? (
+          <p className="emptyState">Sin dependientes registrados.</p>
+        ) : (
+          <ul className={styles.infoList}>
+            {(dependientes ?? []).map((d) => (
+              <li key={d.id}>
+                <span className={styles.infoItemText}>
+                  <span className={styles.infoItemName}>{d.nombre_dependiente}</span>
+                  {d.parentesco && <span className={styles.infoItemMeta}>{d.parentesco}</span>}
+                </span>
+                <button type="button" className="dangerActionLink" onClick={() => eliminarDependiente.mutate(d.id)}>
+                  Eliminar
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className={styles.infoAddRow}>
           <input
-            type="text" placeholder="Nombre" value={nuevoDependiente.nombre_dependiente}
+            type="text" placeholder="Nombre" aria-label="Nombre del dependiente" value={nuevoDependiente.nombre_dependiente}
             onChange={(e) => setNuevoDependiente((v) => ({ ...v, nombre_dependiente: e.target.value }))}
           />
           <input
-            type="text" placeholder="Parentesco" value={nuevoDependiente.parentesco}
+            type="text" placeholder="Parentesco" aria-label="Parentesco del dependiente" value={nuevoDependiente.parentesco}
             onChange={(e) => setNuevoDependiente((v) => ({ ...v, parentesco: e.target.value }))}
           />
-          <BotonPrimario type="button" onClick={agregarDependiente} disabled={crearDependiente.isPending}>
+          <BotonPrimario type="button" variante="secundario" onClick={agregarDependiente} disabled={crearDependiente.isPending}>
             Agregar
           </BotonPrimario>
         </div>
       </div>
-    </div>
+    </>
   )
 }

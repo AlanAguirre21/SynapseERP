@@ -21,7 +21,6 @@ import {
   useReactivarProveedor,
 } from '../../hooks/useProveedores'
 import { useVentas } from '../../hooks/useVentas'
-import styles from './Terceros.module.css'
 
 function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: string): string {
   const datos =
@@ -55,12 +54,12 @@ function SelectorLimite({ limite, onCambiar, etiqueta }: {
   etiqueta: string
 }) {
   return (
-    <div className={styles.selectorLimite} role="group" aria-label={etiqueta}>
+    <div className="segmented" role="group" aria-label={etiqueta}>
       {(['5', '10', 'todos'] as LimiteLista[]).map((valor) => (
         <button
           key={valor}
           type="button"
-          className={limite === valor ? `${styles.botonLimite} ${styles.botonLimiteActivo}` : styles.botonLimite}
+          className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
           onClick={() => onCambiar(valor)}
         >
           {valor === 'todos' ? 'Todos' : valor}
@@ -81,19 +80,19 @@ export function Terceros() {
   const [pestaña, setPestaña] = useState<Pestaña>('clientes')
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Terceros</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Terceros</h1>
       </div>
 
-      <div className={styles.pestañas} role="tablist">
+      <div className="tabs" role="tablist">
         {PESTAÑAS.map((p) => (
           <button
             key={p.clave}
             type="button"
             role="tab"
             aria-selected={pestaña === p.clave}
-            className={pestaña === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+            className={pestaña === p.clave ? 'tab tabActive' : 'tab'}
             onClick={() => setPestaña(p.clave)}
           >
             {p.etiqueta}
@@ -197,11 +196,11 @@ function PestañaClientes() {
       render: (fila) => (
         <button
           type="button"
-          className={styles.enlaceExpandir}
+          className="expandLink"
           onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
           aria-expanded={expandidos.has(fila.id)}
         >
-          <span className={styles.indicadorExpandir}>{expandidos.has(fila.id) ? '▾' : '▸'}</span>
+          <span className="expandIndicator">{expandidos.has(fila.id) ? '▾' : '▸'}</span>
           {fila.nombre_cliente}
         </button>
       ),
@@ -217,7 +216,7 @@ function PestañaClientes() {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activo' : 'Inactivo'}
         </span>
       ),
@@ -226,7 +225,7 @@ function PestañaClientes() {
 
   return (
     <div>
-      <div className={styles.encabezado}>
+      <div className="pageHeader">
         <span />
         <BotonPrimario onClick={abrirCrear}>Nuevo cliente</BotonPrimario>
       </div>
@@ -239,16 +238,16 @@ function PestañaClientes() {
           datos={clientes ?? []}
           mensajeVacio="Todavía no hay clientes registrados."
           renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                 Editar
               </button>
               {fila.activo ? (
-                <button type="button" className={styles.enlaceAccionPeligro} onClick={() => setADesactivar(fila)}>
+                <button type="button" className="dangerActionLink" onClick={() => setADesactivar(fila)}>
                   Desactivar
                 </button>
               ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                   Reactivar
                 </button>
               )}
@@ -267,8 +266,8 @@ function PestañaClientes() {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -278,7 +277,7 @@ function PestañaClientes() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Teléfono
             <input
               type="text"
@@ -287,7 +286,7 @@ function PestañaClientes() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Correo
             <input
               type="email"
@@ -296,7 +295,7 @@ function PestañaClientes() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Dirección
             <input
               type="text"
@@ -305,10 +304,10 @@ function PestañaClientes() {
             />
           </label>
 
-          <div className={styles.seccionFiscal}>
-            <h3 className={styles.seccionFiscalTitulo}>Datos fiscales</h3>
+          <div className="fieldGroup">
+            <h3 className="subtitle">Datos fiscales</h3>
 
-            <label className={styles.campoCasilla}>
+            <label className="fieldCheckbox">
               <input
                 type="checkbox"
                 checked={valores.datos_fiscales.requiere_factura}
@@ -324,7 +323,7 @@ function PestañaClientes() {
 
             {valores.datos_fiscales.requiere_factura && (
               <>
-                <label className={styles.campo}>
+                <label className="field">
                   RFC
                   <input
                     type="text"
@@ -335,7 +334,7 @@ function PestañaClientes() {
                   />
                 </label>
 
-                <label className={styles.campo}>
+                <label className="field">
                   Razón social
                   <input
                     type="text"
@@ -349,7 +348,7 @@ function PestañaClientes() {
                   />
                 </label>
 
-                <label className={styles.campo}>
+                <label className="field">
                   Código postal fiscal
                   <input
                     type="text"
@@ -363,7 +362,7 @@ function PestañaClientes() {
                   />
                 </label>
 
-                <label className={styles.campo}>
+                <label className="field">
                   Régimen fiscal
                   <input
                     type="text"
@@ -377,7 +376,7 @@ function PestañaClientes() {
                   />
                 </label>
 
-                <label className={styles.campo}>
+                <label className="field">
                   Uso de CFDI por defecto
                   <input
                     type="text"
@@ -395,12 +394,12 @@ function PestañaClientes() {
           </div>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -412,11 +411,11 @@ function PestañaClientes() {
       </Modal>
 
       <Modal titulo="Desactivar cliente" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar a "{aDesactivar?.nombre_cliente}"? Dejará de aparecer como opción
           seleccionable en nuevas ventas, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -427,11 +426,11 @@ function PestañaClientes() {
       </Modal>
 
       <Modal titulo="Reactivar cliente" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar a "{aReactivar?.nombre_cliente}"? Volverá a estar disponible como opción
           seleccionable en nuevas ventas.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -455,22 +454,22 @@ function VentasDeClienteSeccion({ cliente }: { cliente: Cliente }) {
   const recortadas = ordenadas.slice(0, cantidad)
 
   return (
-    <div className={styles.seccionExpandida}>
-      <div className={styles.encabezadoExpandido}>
-        <h3 className={styles.subtituloExpandido}>Ventas de {cliente.nombre_cliente}</h3>
+    <div className="expandedSection">
+      <div className="sectionHeader">
+        <h3 className="subtitle">Ventas de {cliente.nombre_cliente}</h3>
         <SelectorLimite limite={limite} onCambiar={setLimite} etiqueta="Cantidad de ventas a mostrar" />
       </div>
 
       {isLoading ? (
         <p>Cargando ventas…</p>
       ) : recortadas.length === 0 ? (
-        <p className={styles.vacio}>Este cliente todavía no tiene ventas registradas.</p>
+        <p className="emptyState">Este cliente todavía no tiene ventas registradas.</p>
       ) : (
-        <ul className={styles.listaExpandida}>
+        <ul className="expandedList">
           {recortadas.map((venta) => (
             <li key={venta.id}>
               <span>{new Date(venta.fecha).toLocaleString('es-MX')}</span>
-              <Link to={`/ventas/${venta.id}`} className={styles.enlaceAccion}>Ver detalle</Link>
+              <Link to={`/ventas/${venta.id}`} className="actionLink">Ver detalle</Link>
             </li>
           ))}
         </ul>
@@ -563,11 +562,11 @@ function PestañaProveedores() {
       render: (fila) => (
         <button
           type="button"
-          className={styles.enlaceExpandir}
+          className="expandLink"
           onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
           aria-expanded={expandidos.has(fila.id)}
         >
-          <span className={styles.indicadorExpandir}>{expandidos.has(fila.id) ? '▾' : '▸'}</span>
+          <span className="expandIndicator">{expandidos.has(fila.id) ? '▾' : '▸'}</span>
           {fila.nombre_proveedor}
         </button>
       ),
@@ -579,7 +578,7 @@ function PestañaProveedores() {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activo' : 'Inactivo'}
         </span>
       ),
@@ -588,7 +587,7 @@ function PestañaProveedores() {
 
   return (
     <div>
-      <div className={styles.encabezado}>
+      <div className="pageHeader">
         <span />
         <BotonPrimario onClick={abrirCrear}>Nuevo proveedor</BotonPrimario>
       </div>
@@ -601,16 +600,16 @@ function PestañaProveedores() {
           datos={proveedores ?? []}
           mensajeVacio="Todavía no hay proveedores registrados."
           renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                 Editar
               </button>
               {fila.activo ? (
-                <button type="button" className={styles.enlaceAccionPeligro} onClick={() => setADesactivar(fila)}>
+                <button type="button" className="dangerActionLink" onClick={() => setADesactivar(fila)}>
                   Desactivar
                 </button>
               ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                   Reactivar
                 </button>
               )}
@@ -629,8 +628,8 @@ function PestañaProveedores() {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -640,7 +639,7 @@ function PestañaProveedores() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             RFC
             <input
               type="text"
@@ -649,7 +648,7 @@ function PestañaProveedores() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Nombre de contacto
             <input
               type="text"
@@ -658,7 +657,7 @@ function PestañaProveedores() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Teléfono
             <input
               type="text"
@@ -667,7 +666,7 @@ function PestañaProveedores() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Correo
             <input
               type="email"
@@ -676,7 +675,7 @@ function PestañaProveedores() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Dirección
             <input
               type="text"
@@ -686,12 +685,12 @@ function PestañaProveedores() {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -703,11 +702,11 @@ function PestañaProveedores() {
       </Modal>
 
       <Modal titulo="Desactivar proveedor" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar a "{aDesactivar?.nombre_proveedor}"? Dejará de aparecer como opción
           seleccionable en nuevas compras, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -718,11 +717,11 @@ function PestañaProveedores() {
       </Modal>
 
       <Modal titulo="Reactivar proveedor" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar a "{aReactivar?.nombre_proveedor}"? Volverá a estar disponible como
           opción seleccionable en nuevas compras.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -746,22 +745,22 @@ function ComprasDeProveedorSeccion({ proveedor }: { proveedor: Proveedor }) {
   const recortadas = ordenadas.slice(0, cantidad)
 
   return (
-    <div className={styles.seccionExpandida}>
-      <div className={styles.encabezadoExpandido}>
-        <h3 className={styles.subtituloExpandido}>Compras a {proveedor.nombre_proveedor}</h3>
+    <div className="expandedSection">
+      <div className="sectionHeader">
+        <h3 className="subtitle">Compras a {proveedor.nombre_proveedor}</h3>
         <SelectorLimite limite={limite} onCambiar={setLimite} etiqueta="Cantidad de compras a mostrar" />
       </div>
 
       {isLoading ? (
         <p>Cargando compras…</p>
       ) : recortadas.length === 0 ? (
-        <p className={styles.vacio}>Este proveedor todavía no tiene compras registradas.</p>
+        <p className="emptyState">Este proveedor todavía no tiene compras registradas.</p>
       ) : (
-        <ul className={styles.listaExpandida}>
+        <ul className="expandedList">
           {recortadas.map((compra) => (
             <li key={compra.id}>
               <span>{new Date(compra.fecha).toLocaleString('es-MX')}</span>
-              <Link to={`/compras/${compra.id}`} className={styles.enlaceAccion}>Ver detalle</Link>
+              <Link to={`/compras/${compra.id}`} className="actionLink">Ver detalle</Link>
             </li>
           ))}
         </ul>

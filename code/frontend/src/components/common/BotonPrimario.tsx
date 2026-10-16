@@ -5,9 +5,9 @@ import styles from './BotonPrimario.module.css'
 type Variante = 'primario' | 'secundario' | 'peligro'
 
 const CLASES_POR_VARIANTE: Record<Variante, string> = {
-  primario: 'primario',
-  secundario: 'secundario',
-  peligro: 'peligro',
+  primario: 'primary',
+  secundario: 'secondary',
+  peligro: 'danger',
 }
 
 interface BotonPrimarioProps extends ButtonHTMLAttributes<HTMLButtonElement> {

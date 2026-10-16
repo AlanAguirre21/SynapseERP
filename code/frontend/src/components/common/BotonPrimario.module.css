@@ -1,37 +1,37 @@
 @reference "../../index.css";
 
-.primario {
-  @apply px-4 py-2 text-fondo bg-primario border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
+.primary,
+.secondary,
+.danger {
+  @apply px-4 py-2 rounded-control font-semibold text-[0.9rem] cursor-pointer transition-[background-color,opacity];
 }
 
-.primario:hover {
+.primary:disabled,
+.secondary:disabled,
+.danger:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+.primary {
+  @apply text-superficie bg-primario border border-primario;
+}
+
+.primary:hover:not(:disabled) {
   @apply opacity-90;
 }
 
-.primario:disabled {
-  @apply opacity-60 cursor-not-allowed;
+.secondary {
+  @apply text-primario bg-superficie border border-primario;
 }
 
-.secundario {
-  @apply px-4 py-2 text-primario bg-fondo border border-primario rounded-control font-semibold cursor-pointer text-[0.9rem];
+.secondary:hover:not(:disabled) {
+  @apply bg-primario-suave;
 }
 
-.secundario:hover {
-  @apply bg-texto/5;
+.danger {
+  @apply text-superficie bg-error border border-error;
 }
 
-.secundario:disabled {
-  @apply opacity-60 cursor-not-allowed;
-}
-
-.peligro {
-  @apply px-4 py-2 text-fondo bg-error border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
-}
-
-.peligro:hover {
+.danger:hover:not(:disabled) {
   @apply opacity-90;
-}
-
-.peligro:disabled {
-  @apply opacity-60 cursor-not-allowed;
 }

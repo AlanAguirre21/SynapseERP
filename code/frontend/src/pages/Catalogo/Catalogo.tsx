@@ -34,7 +34,6 @@ import {
   useReactivarProducto,
 } from '../../hooks/useProductos'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import styles from './Catalogo.module.css'
 
 const ETIQUETAS_TIPO: Record<TipoCategoria, string> = {
   producto: 'Producto',
@@ -78,19 +77,19 @@ export function Catalogo() {
   const [pestaña, setPestaña] = useState<Pestaña>('productos')
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Catálogo</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Catálogo</h1>
       </div>
 
-      <div className={styles.pestañas} role="tablist">
+      <div className="tabs" role="tablist">
         {PESTAÑAS.map((p) => (
           <button
             key={p.clave}
             type="button"
             role="tab"
             aria-selected={pestaña === p.clave}
-            className={pestaña === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+            className={pestaña === p.clave ? 'tab tabActive' : 'tab'}
             onClick={() => setPestaña(p.clave)}
           >
             {p.etiqueta}
@@ -197,12 +196,12 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
     { clave: 'nombre_producto', encabezado: 'Nombre' },
     { clave: 'sku', encabezado: 'SKU' },
     { clave: 'unidad_medida', encabezado: 'Unidad' },
-    { clave: 'precio_venta', encabezado: 'Precio de venta' },
+    { clave: 'precio_venta', alineacion: 'derecha', encabezado: 'Precio de venta' },
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activo' : 'Inactivo'}
         </span>
       ),
@@ -212,7 +211,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
   return (
     <div>
       {esAdmin && (
-        <div className={styles.encabezado}>
+        <div className="pageHeader">
           <span />
           <BotonPrimario onClick={abrirCrear}>Nuevo producto</BotonPrimario>
         </div>
@@ -228,20 +227,20 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
           renderAcciones={
             esAdmin
               ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+                  <div className="rowActions">
+                    <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                       Editar
                     </button>
                     {fila.activo ? (
                       <button
                         type="button"
-                        className={styles.enlaceAccionPeligro}
+                        className="dangerActionLink"
                         onClick={() => setADesactivar(fila)}
                       >
                         Desactivar
                       </button>
                     ) : (
-                      <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                      <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                         Reactivar
                       </button>
                     )}
@@ -257,8 +256,8 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -268,7 +267,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             SKU
             <input
               type="text"
@@ -278,7 +277,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Descripción
             <textarea
               value={valores.descripcion_producto}
@@ -286,7 +285,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Categoría
             <select
               value={valores.categoria}
@@ -304,7 +303,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             </select>
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Unidad de medida
             <input
               type="text"
@@ -314,7 +313,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Precio de venta
             <input
               type="number"
@@ -326,7 +325,7 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Costo de producción
             <input
               type="number"
@@ -338,12 +337,12 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -355,11 +354,11 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Desactivar producto" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar "{aDesactivar?.nombre_producto}"? Dejará de estar disponible para
           nuevas ventas o compras, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -370,11 +369,11 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Reactivar producto" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar "{aReactivar?.nombre_producto}"? Volverá a estar disponible como opción
           seleccionable en nuevas ventas o compras.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -472,12 +471,12 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
   const columnas: ColumnaTabla<MateriaPrima>[] = [
     { clave: 'nombre_item', encabezado: 'Nombre' },
     { clave: 'unidad_medida', encabezado: 'Unidad' },
-    { clave: 'costo_promedio', encabezado: 'Costo promedio' },
+    { clave: 'costo_promedio', alineacion: 'derecha', encabezado: 'Costo promedio' },
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -487,7 +486,7 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
   return (
     <div>
       {esAdmin && (
-        <div className={styles.encabezado}>
+        <div className="pageHeader">
           <span />
           <BotonPrimario onClick={abrirCrear}>Nueva materia prima</BotonPrimario>
         </div>
@@ -503,20 +502,20 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
           renderAcciones={
             esAdmin
               ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+                  <div className="rowActions">
+                    <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                       Editar
                     </button>
                     {fila.activo ? (
                       <button
                         type="button"
-                        className={styles.enlaceAccionPeligro}
+                        className="dangerActionLink"
                         onClick={() => setADesactivar(fila)}
                       >
                         Desactivar
                       </button>
                     ) : (
-                      <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                      <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                         Reactivar
                       </button>
                     )}
@@ -532,8 +531,8 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -543,7 +542,7 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Categoría
             <select
               value={valores.categoria}
@@ -561,7 +560,7 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
             </select>
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Unidad de medida
             <input
               type="text"
@@ -571,7 +570,7 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Costo promedio
             <input
               type="number"
@@ -583,12 +582,12 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -600,11 +599,11 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Desactivar materia prima" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar "{aDesactivar?.nombre_item}"? Dejará de estar disponible para nuevas
           compras o producción, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -615,11 +614,11 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Reactivar materia prima" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar "{aReactivar?.nombre_item}"? Volverá a estar disponible como opción
           seleccionable en nuevas compras o producción.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -714,7 +713,7 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -724,7 +723,7 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
   return (
     <div>
       {esAdmin && (
-        <div className={styles.encabezado}>
+        <div className="pageHeader">
           <span />
           <BotonPrimario onClick={abrirCrear}>Nueva categoría</BotonPrimario>
         </div>
@@ -740,20 +739,20 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
           renderAcciones={
             esAdmin
               ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+                  <div className="rowActions">
+                    <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                       Editar
                     </button>
                     {fila.activo ? (
                       <button
                         type="button"
-                        className={styles.enlaceAccionPeligro}
+                        className="dangerActionLink"
                         onClick={() => setADesactivar(fila)}
                       >
                         Desactivar
                       </button>
                     ) : (
-                      <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                      <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                         Reactivar
                       </button>
                     )}
@@ -769,8 +768,8 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre
             <input
               type="text"
@@ -780,7 +779,7 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Descripción
             <textarea
               value={valores.descripcion_categoria}
@@ -788,7 +787,7 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Tipo
             <select
               value={valores.tipo}
@@ -804,12 +803,12 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -821,11 +820,11 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Desactivar categoría" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar "{aDesactivar?.nombre_categoria}"? Dejará de estar disponible para
           nuevos productos o materia prima.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -836,11 +835,11 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Reactivar categoría" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar "{aReactivar?.nombre_categoria}"? Volverá a estar disponible como opción
           seleccionable para productos y materia prima.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>

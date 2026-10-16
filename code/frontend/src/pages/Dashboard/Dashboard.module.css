@@ -1,41 +1,41 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-6;
+/* Franja de marca del inicio: logotipo, saldo en caja y selector de periodo,
+   centrados sobre un degradado suave en el tono de la pantalla de inicio. */
+.hero {
+  @apply flex flex-col items-center gap-5 px-6 py-8 border border-borde rounded-tarjeta shadow-suave bg-linear-to-b from-inicio-suave to-superficie;
 }
 
-.encabezado {
-  @apply flex flex-col items-center gap-3 mb-2;
+.dashboardLogo {
+  @apply h-20 sm:h-24 w-auto object-contain;
 }
 
-.logo {
-  @apply h-36 w-auto object-contain;
+.cashBalance {
+  @apply flex flex-col items-center gap-1;
 }
 
-.saldo {
-  @apply flex flex-col items-center gap-0.5;
+.cashBalanceLabel {
+  @apply text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-texto-suave;
 }
 
-.saldoEtiqueta {
-  @apply text-[0.8rem] text-texto/60;
+.cashBalanceAmount {
+  @apply text-4xl font-titulo font-semibold text-texto tabular-nums;
 }
 
-.saldoMonto {
-  @apply text-xl font-bold text-texto;
+/* Selector de periodo como control segmentado tipo píldora. */
+.periodTabs {
+  @apply flex items-center gap-1 p-1 bg-superficie border border-borde rounded-pildora shadow-suave;
 }
 
-.pestañas {
-  @apply flex items-center gap-1 border-b border-texto/10;
+.periodTab {
+  @apply px-4 sm:px-5 py-1.5 bg-transparent border-0 rounded-pildora text-[0.9rem] text-texto-suave cursor-pointer transition-colors;
 }
 
-.pestaña {
-  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
-}
-
-.pestaña:hover {
+.periodTab:hover {
   @apply text-texto;
 }
 
-.pestañaActiva {
-  @apply text-primario border-primario font-semibold;
+.periodTabActive,
+.periodTabActive:hover {
+  @apply bg-inicio text-superficie font-semibold;
 }

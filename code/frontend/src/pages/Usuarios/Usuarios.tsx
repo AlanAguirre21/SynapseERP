@@ -16,7 +16,6 @@ import {
   useReactivarUsuario,
   useUsuarios,
 } from '../../hooks/useUsuarios'
-import styles from './Usuarios.module.css'
 
 interface ValoresFormulario {
   first_name: string
@@ -200,11 +199,11 @@ function UsuariosContenido() {
       render: (fila) => (
         <button
           type="button"
-          className={styles.enlaceExpandir}
+          className="expandLink"
           onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
           aria-expanded={expandidos.has(fila.id)}
         >
-          <span className={styles.indicadorExpandir}>{expandidos.has(fila.id) ? '▾' : '▸'}</span>
+          <span className="expandIndicator">{expandidos.has(fila.id) ? '▾' : '▸'}</span>
           {fila.username}
         </button>
       ),
@@ -224,7 +223,7 @@ function UsuariosContenido() {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activo' : 'Inactivo'}
         </span>
       ),
@@ -232,11 +231,11 @@ function UsuariosContenido() {
   ]
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Usuarios</h1>
-        <div className={styles.accionesEncabezado}>
-          <label className={styles.toggleInactivos}>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Usuarios</h1>
+        <div className="headerActions">
+          <label className="fieldCheckbox">
             <input
               type="checkbox"
               checked={mostrarInactivos}
@@ -256,14 +255,14 @@ function UsuariosContenido() {
           datos={usuariosVisibles}
           mensajeVacio="Todavía no hay usuarios registrados."
           renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                 Editar
               </button>
               {fila.activo ? (
                 <button
                   type="button"
-                  className={styles.enlaceAccionPeligro}
+                  className="dangerActionLink"
                   onClick={() => {
                     setErrorDesactivar('')
                     setADesactivar(fila)
@@ -272,7 +271,7 @@ function UsuariosContenido() {
                   Desactivar
                 </button>
               ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
+                <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
                   Reactivar
                 </button>
               )}
@@ -291,8 +290,8 @@ function UsuariosContenido() {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Nombre(s)
             <input
               type="text"
@@ -301,7 +300,7 @@ function UsuariosContenido() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Apellido(s)
             <input
               type="text"
@@ -310,7 +309,7 @@ function UsuariosContenido() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Correo electrónico
             <input
               type="email"
@@ -320,7 +319,7 @@ function UsuariosContenido() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Rol
             <select
               value={valores.rol_usuario}
@@ -331,7 +330,7 @@ function UsuariosContenido() {
             </select>
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Empleado vinculado (opcional)
             <select
               value={valores.empleado ?? ''}
@@ -359,12 +358,12 @@ function UsuariosContenido() {
           )}
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -376,16 +375,16 @@ function UsuariosContenido() {
       </Modal>
 
       <Modal titulo="Desactivar usuario" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar a "{aDesactivar?.username}"? Perderá acceso al sistema de inmediato; su
           sesión actual (si tiene una activa) queda invalidada.
         </p>
         {errorDesactivar && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {errorDesactivar}
           </p>
         )}
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -396,10 +395,10 @@ function UsuariosContenido() {
       </Modal>
 
       <Modal titulo="Reactivar usuario" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar a "{aReactivar?.username}"? Recuperará acceso al sistema.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -417,15 +416,15 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
   const { data: accesos, isLoading } = useAccesosUsuario(usuario.id, limite)
 
   return (
-    <div className={styles.seccionExpandida}>
-      <div className={styles.encabezadoExpandido}>
-        <h3 className={styles.subtituloExpandido}>Historial de accesos de {usuario.username}</h3>
-        <div className={styles.selectorLimite} role="group" aria-label="Cantidad de accesos a mostrar">
+    <div className="expandedSection">
+      <div className="sectionHeader">
+        <h3 className="subtitle">Historial de accesos de {usuario.username}</h3>
+        <div className="segmented" role="group" aria-label="Cantidad de accesos a mostrar">
           {(['5', '10', 'todos'] as LimiteAccesos[]).map((valor) => (
             <button
               key={valor}
               type="button"
-              className={limite === valor ? `${styles.botonLimite} ${styles.botonLimiteActivo}` : styles.botonLimite}
+              className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
               onClick={() => setLimite(valor)}
             >
               {valor === 'todos' ? 'Todos' : valor}
@@ -437,9 +436,9 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
       {isLoading ? (
         <p>Cargando accesos…</p>
       ) : !accesos || accesos.length === 0 ? (
-        <p className={styles.vacio}>Este usuario todavía no tiene accesos registrados.</p>
+        <p className="emptyState">Este usuario todavía no tiene accesos registrados.</p>
       ) : (
-        <ul className={styles.listaExpandida}>
+        <ul className="expandedList">
           {accesos.map((registro) => (
             <li key={registro.id}>
               <span>{ETIQUETAS_TIPO_ACCESO[registro.tipo] ?? registro.tipo}</span>

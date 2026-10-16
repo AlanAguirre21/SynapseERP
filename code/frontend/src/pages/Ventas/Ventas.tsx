@@ -8,7 +8,7 @@ import { useClientes } from '../../hooks/useClientes'
 import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useVentas } from '../../hooks/useVentas'
-import styles from './Ventas.module.css'
+import { formatearMoneda } from '../../utils/moneda'
 
 const ETIQUETAS_ESTADO: Record<EstadoVenta, string> = {
   pendiente: 'Pendiente',
@@ -17,9 +17,9 @@ const ETIQUETAS_ESTADO: Record<EstadoVenta, string> = {
 }
 
 function claseEstado(estado: EstadoVenta) {
-  if (estado === 'entregada') return styles.estadoEntregada
-  if (estado === 'cancelada') return styles.estadoCancelada
-  return styles.estadoPendiente
+  if (estado === 'entregada') return 'status statusSuccess'
+  if (estado === 'cancelada') return 'status statusError'
+  return 'status statusWarning'
 }
 
 export function Ventas() {
@@ -45,10 +45,11 @@ export function Ventas() {
   })
 
   const columnas: ColumnaTabla<Venta>[] = [
+    { clave: 'id', encabezado: 'Folio', render: (fila) => `#${fila.id}` },
     { clave: 'fecha', encabezado: 'Fecha', render: (fila) => new Date(fila.fecha).toLocaleDateString('es-MX') },
     { clave: 'cliente_nombre', encabezado: 'Cliente' },
     { clave: 'sucursal_nombre', encabezado: 'Sucursal' },
-    { clave: 'total', encabezado: 'Total' },
+    { clave: 'total', alineacion: 'derecha', encabezado: 'Total', render: (fila) => formatearMoneda(fila.total) },
     {
       clave: 'estado',
       encabezado: 'Estado',
@@ -56,15 +57,57 @@ export function Ventas() {
     },
   ]
 
+  // Indicadores sobre la lista ya filtrada por el backend; el importe no cuenta las canceladas.
+  const lista = ventas ?? []
+  const vigentes = lista.filter((venta) => venta.estado !== 'cancelada')
+  const importe = vigentes.reduce((acumulado, venta) => acumulado + Number(venta.total), 0)
+  const pendientes = lista.filter((venta) => venta.estado === 'pendiente').length
+  const entregadas = lista.filter((venta) => venta.estado === 'entregada').length
+
+  const hayFiltros = Boolean(
+    sucursalFiltro || estadoFiltro || clienteFiltro || productoFiltro || fechaDesde || fechaHasta,
+  )
+
+  function limpiarFiltros() {
+    setSucursalFiltro('')
+    setEstadoFiltro('')
+    setClienteFiltro('')
+    setProductoFiltro('')
+    setFechaDesde('')
+    setFechaHasta('')
+  }
+
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Ventas</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <div className="pageHeading">
+          <h1 className="pageTitle">Ventas</h1>
+          <p className="pageHint">Consulta las ventas registradas y da seguimiento a sus entregas.</p>
+        </div>
         <BotonPrimario onClick={() => navigate('/ventas/nueva')}>Nueva venta</BotonPrimario>
       </div>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="statRow">
+        <div className="statTile">
+          <span className="statLabel">Ventas</span>
+          <span className="statValue">{ventas ? lista.length : '…'}</span>
+        </div>
+        <div className="statTile statTileSale">
+          <span className="statLabel">Importe vendido</span>
+          <span className="statValue">{ventas ? formatearMoneda(importe) : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Pendientes de entrega</span>
+          <span className="statValue">{ventas ? pendientes : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Entregadas</span>
+          <span className="statValue">{ventas ? entregadas : '…'}</span>
+        </div>
+      </div>
+
+      <div className="filters">
+        <label className="filterField">
           Sucursal
           <select
             value={sucursalFiltro}
@@ -79,7 +122,7 @@ export function Ventas() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoVenta | '')}>
             <option value="">Todos</option>
@@ -91,7 +134,7 @@ export function Ventas() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Cliente
           <select
             value={clienteFiltro}
@@ -106,7 +149,7 @@ export function Ventas() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Producto
           <select
             value={productoFiltro}
@@ -121,15 +164,21 @@ export function Ventas() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -138,9 +187,9 @@ export function Ventas() {
         <Tabla
           columnas={columnas}
           datos={ventas ?? []}
-          mensajeVacio="Todavía no hay ventas registradas."
+          mensajeVacio={hayFiltros ? 'Ninguna venta coincide con los filtros.' : 'Todavía no hay ventas registradas.'}
           renderAcciones={(fila) => (
-            <button type="button" className={styles.enlaceAccion} onClick={() => navigate(`/ventas/${fila.id}`)}>
+            <button type="button" className="actionLink" onClick={() => navigate(`/ventas/${fila.id}`)}>
               Ver detalle
             </button>
           )}

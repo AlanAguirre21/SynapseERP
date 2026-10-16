@@ -100,25 +100,25 @@ export function InformacionUsuario() {
   const rolTexto = usuario?.rol === 'admin' ? 'Administrador' : 'Operador'
 
   return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Información de Usuario</h1>
+    <div className={styles.profileCard}>
+      <h1 className="pageTitle">Información de Usuario</h1>
 
       {isLoading ? (
         <p>Cargando información…</p>
       ) : (
         <>
-          <div className={styles.identidad}>
-            <span className={styles.avatar} aria-hidden="true">
+          <div className={styles.identity}>
+            <span className={styles.profileAvatar} aria-hidden="true">
               {obtenerIniciales(usuario?.nombre)}
             </span>
             <div>
-              <p className={styles.nombreCompleto}>{usuario?.nombre}</p>
-              <p className={styles.usernameEtiqueta}>@{usuario?.username}</p>
+              <p className={styles.fullName}>{usuario?.nombre}</p>
+              <p className={styles.usernameLabel}>@{usuario?.username}</p>
             </div>
           </div>
 
-          <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-            <label className={styles.campo}>
+          <form className="form" onSubmit={alEnviar} noValidate>
+            <label className="field">
               Nombre de usuario
               <input
                 type="text"
@@ -128,7 +128,7 @@ export function InformacionUsuario() {
               />
             </label>
 
-            <label className={styles.campo}>
+            <label className="field">
               Correo electrónico
               <input
                 type="email"
@@ -138,12 +138,12 @@ export function InformacionUsuario() {
               />
             </label>
 
-            <Link to="/recuperar-contrasena" className={styles.enlace}>
+            <Link to="/recuperar-contrasena" className="link">
               <Icono nombre="candado" tamano={14} />
               Cambiar contraseña
             </Link>
 
-            <label className={styles.campo}>
+            <label className="field">
               Nombre(s)
               <input
                 type="text"
@@ -153,7 +153,7 @@ export function InformacionUsuario() {
               />
             </label>
 
-            <label className={styles.campo}>
+            <label className="field">
               Apellidos
               <input
                 type="text"
@@ -165,7 +165,7 @@ export function InformacionUsuario() {
             </label>
 
             {esAdmin ? (
-              <label className={styles.campo}>
+              <label className="field">
                 Rol
                 <select
                   value={valores.rol_usuario}
@@ -176,25 +176,25 @@ export function InformacionUsuario() {
                 </select>
               </label>
             ) : (
-              <div className={styles.campo}>
+              <div className="field">
                 Rol
-                <p className={styles.valorSoloLectura}>{rolTexto}</p>
+                <p className={styles.readOnlyValue}>{rolTexto}</p>
               </div>
             )}
 
             {errorFormulario && (
-              <p className={styles.error} role="alert">
+              <p className="errorMessage" role="alert">
                 {errorFormulario}
               </p>
             )}
 
             {exito && (
-              <p className={styles.exito} role="status">
+              <p className="successMessage" role="status">
                 Tu información se actualizó correctamente.
               </p>
             )}
 
-            <div className={styles.accionesFormulario}>
+            <div className="formActions">
               <BotonPrimario type="submit">Guardar cambios</BotonPrimario>
             </div>
           </form>
@@ -202,17 +202,17 @@ export function InformacionUsuario() {
       )}
 
       <Modal titulo="¿Estás seguro?" abierto={confirmando} onCerrar={cancelarConfirmacion}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres guardar los cambios en tu información de usuario?
         </p>
 
         {errorConfirmacion && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {errorConfirmacion}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={cancelarConfirmacion}>
             Cancelar
           </BotonPrimario>

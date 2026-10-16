@@ -13,18 +13,18 @@ interface PaginaAuthProps {
 
 export function PaginaAuth({ titulo, subtitulo, children }: PaginaAuthProps) {
   return (
-    <div className={styles.pagina}>
-      <div className={styles.panelMarca} aria-hidden="true">
-        <img src={marcaAgua} alt="" className={styles.marcaAgua} />
-        <img src={logoFlebosil} alt="" className={styles.logoGrande} />
+    <div className={styles.authPage}>
+      <div className={styles.brandPanel} aria-hidden="true">
+        <img src={marcaAgua} alt="" className={styles.watermark} />
+        <img src={logoFlebosil} alt="" className={styles.brandLogo} />
       </div>
 
-      <div className={styles.panelFormulario}>
-        <div className={styles.contenedor}>
-          <img src={iconoFlebosil} alt="FleboSil" className={styles.logoPequeno} />
-          <div className={styles.encabezado}>
-            <h1 className={styles.titulo}>{titulo}</h1>
-            <p className={styles.subtitulo}>{subtitulo}</p>
+      <div className={styles.formPanel}>
+        <div className={styles.authContainer}>
+          <img src={iconoFlebosil} alt="FleboSil" className={styles.smallLogo} />
+          <div className={styles.authHeader}>
+            <h1 className={styles.authTitle}>{titulo}</h1>
+            <p className={styles.authSubtitle}>{subtitulo}</p>
           </div>
           {children}
         </div>

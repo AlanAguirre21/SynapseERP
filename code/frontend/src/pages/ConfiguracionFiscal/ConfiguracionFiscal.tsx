@@ -22,7 +22,6 @@ import {
   useSeriesFolio,
 } from '../../hooks/useConfiguracionFiscal'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import styles from './ConfiguracionFiscal.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
   const datos =
@@ -65,11 +64,11 @@ function ConfiguracionFiscalContenido() {
     !datosFiscalesCargando && !pacCargando && (datosFiscales?.completa === false || pac?.completa === false)
 
   return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Configuración Fiscal</h1>
+    <div className="page">
+      <h1 className="pageTitle">Configuración Fiscal</h1>
 
       {configuracionIncompleta && (
-        <p className={styles.aviso} role="alert">
+        <p className="notice" role="alert">
           Configuración incompleta — completa los datos fiscales y la conexión al PAC antes de que{' '}
           <strong>017 · Facturación</strong> pueda timbrar.
         </p>
@@ -123,19 +122,19 @@ function DatosFiscalesForm() {
   }
 
   return (
-    <section className={styles.seccion}>
-      <h2 className={styles.subtitulo}>Datos fiscales de la empresa</h2>
+    <section className="card">
+      <h2 className="sectionTitle">Datos fiscales de la empresa</h2>
 
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
+          <label className="field">
             RFC
             <input type="text" value={valores.rfc} onChange={(e) => actualizarCampo('rfc', e.target.value)} />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Razón social
             <input
               type="text"
@@ -144,7 +143,7 @@ function DatosFiscalesForm() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Régimen fiscal
             <input
               type="text"
@@ -153,7 +152,7 @@ function DatosFiscalesForm() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Código postal fiscal
             <input
               type="text"
@@ -163,17 +162,17 @@ function DatosFiscalesForm() {
           </label>
 
           {error && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {error}
             </p>
           )}
           {exito && (
-            <p className={styles.exito} role="status">
+            <p className="successMessage" role="status">
               Datos fiscales actualizados.
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="submit" disabled={actualizar.isPending}>
               {actualizar.isPending ? 'Guardando…' : 'Guardar'}
             </BotonPrimario>
@@ -220,14 +219,14 @@ function ConfiguracionPACForm() {
   }
 
   return (
-    <section className={styles.seccion}>
-      <h2 className={styles.subtitulo}>Conexión al PAC</h2>
+    <section className="card">
+      <h2 className="sectionTitle">Conexión al PAC</h2>
 
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Proveedor
             <input
               type="text"
@@ -239,7 +238,7 @@ function ConfiguracionPACForm() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Endpoint de la API
             <input
               type="text"
@@ -251,7 +250,7 @@ function ConfiguracionPACForm() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             API key
             <input
               type="password"
@@ -265,7 +264,7 @@ function ConfiguracionPACForm() {
             />
           </label>
 
-          <label className={styles.campoCheckbox}>
+          <label className="fieldCheckbox">
             <input
               type="checkbox"
               checked={activo}
@@ -278,17 +277,17 @@ function ConfiguracionPACForm() {
           </label>
 
           {error && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {error}
             </p>
           )}
           {exito && (
-            <p className={styles.exito} role="status">
+            <p className="successMessage" role="status">
               Conexión al PAC actualizada.
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="submit" disabled={actualizar.isPending}>
               {actualizar.isPending ? 'Guardando…' : 'Guardar'}
             </BotonPrimario>
@@ -390,7 +389,7 @@ function SeriesFolioSeccion() {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -398,9 +397,9 @@ function SeriesFolioSeccion() {
   ]
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.subtitulo}>Series de facturación</h2>
+    <section className="card">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Series de facturación</h2>
         <BotonPrimario onClick={abrirCrear}>Nueva serie</BotonPrimario>
       </div>
 
@@ -412,20 +411,20 @@ function SeriesFolioSeccion() {
           datos={series ?? []}
           mensajeVacio="Todavía no hay series registradas."
           renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                 Editar
               </button>
               {fila.activo ? (
                 <button
                   type="button"
-                  className={styles.enlaceAccionPeligro}
+                  className="dangerActionLink"
                   onClick={() => setSerieADesactivar(fila)}
                 >
                   Desactivar
                 </button>
               ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => abrirReactivar(fila)}>
+                <button type="button" className="actionLink" onClick={() => abrirReactivar(fila)}>
                   Reactivar
                 </button>
               )}
@@ -439,8 +438,8 @@ function SeriesFolioSeccion() {
         abierto={formularioAbierto}
         onCerrar={cerrarFormulario}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Serie
             <input
               type="text"
@@ -450,7 +449,7 @@ function SeriesFolioSeccion() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Folio actual
             <input
               type="number"
@@ -461,12 +460,12 @@ function SeriesFolioSeccion() {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={cerrarFormulario}>
               Cancelar
             </BotonPrimario>
@@ -478,11 +477,11 @@ function SeriesFolioSeccion() {
       </Modal>
 
       <Modal titulo="Desactivar serie" abierto={Boolean(serieADesactivar)} onCerrar={() => setSerieADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar la serie "{serieADesactivar?.serie}"? Dejará de estar disponible para
           nuevas facturas, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setSerieADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -493,18 +492,18 @@ function SeriesFolioSeccion() {
       </Modal>
 
       <Modal titulo="Reactivar serie" abierto={Boolean(serieAReactivar)} onCerrar={cerrarReactivar}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar la serie "{serieAReactivar?.serie}"? Volverá a estar disponible para
           nuevas facturas.
         </p>
 
         {errorReactivar && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {errorReactivar}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={cerrarReactivar}>
             Cancelar
           </BotonPrimario>

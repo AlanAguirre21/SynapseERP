@@ -21,7 +21,6 @@ import {
 } from '../../hooks/useRecetas'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import styles from './Produccion.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
   const datos =
@@ -52,19 +51,19 @@ export function Produccion() {
   const [pestaña, setPestaña] = useState<Pestaña>('producciones')
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Producción</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <h1 className="pageTitle">Producción</h1>
       </div>
 
-      <div className={styles.pestañas} role="tablist">
+      <div className="tabs" role="tablist">
         {PESTAÑAS.map((p) => (
           <button
             key={p.clave}
             type="button"
             role="tab"
             aria-selected={pestaña === p.clave}
-            className={pestaña === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+            className={pestaña === p.clave ? 'tab tabActive' : 'tab'}
             onClick={() => setPestaña(p.clave)}
           >
             {p.etiqueta}
@@ -103,19 +102,19 @@ function PestañaProducciones() {
     { clave: 'fecha', encabezado: 'Fecha', render: (fila) => new Date(fila.fecha).toLocaleString('es-MX') },
     { clave: 'producto_nombre', encabezado: 'Producto' },
     { clave: 'sucursal_nombre', encabezado: 'Sucursal' },
-    { clave: 'cantidad_producida', encabezado: 'Cantidad producida' },
-    { clave: 'costo_total', encabezado: 'Costo total' },
+    { clave: 'cantidad_producida', alineacion: 'derecha', encabezado: 'Cantidad producida' },
+    { clave: 'costo_total', alineacion: 'derecha', encabezado: 'Costo total' },
   ]
 
   return (
     <div>
-      <div className={styles.encabezado}>
+      <div className="pageHeader">
         <span />
         <BotonPrimario onClick={() => setFormularioAbierto(true)}>Nueva producción</BotonPrimario>
       </div>
 
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
+      <div className="filters">
+        <label className="filterField">
           Sucursal
           <select
             value={sucursalFiltro}
@@ -130,7 +129,7 @@ function PestañaProducciones() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Producto
           <select
             value={productoFiltro}
@@ -145,12 +144,12 @@ function PestañaProducciones() {
           </select>
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-        <label className={styles.campoFiltro}>
+        <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
@@ -164,7 +163,7 @@ function PestañaProducciones() {
           datos={producciones ?? []}
           mensajeVacio="Todavía no hay producciones registradas."
           renderAcciones={(fila) => (
-            <button type="button" className={styles.enlaceAccion} onClick={() => setIdDetalle(fila.id)}>
+            <button type="button" className="actionLink" onClick={() => setIdDetalle(fila.id)}>
               Ver detalle
             </button>
           )}
@@ -250,8 +249,8 @@ function NuevaProduccionModal({ abierto, onCerrar }: { abierto: boolean; onCerra
 
   return (
     <Modal titulo="Nueva producción" abierto={abierto} onCerrar={cerrarYLimpiar}>
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
+      <form className="form" onSubmit={alGuardar} noValidate>
+        <label className="field">
           Producto
           <select value={producto} onChange={(e) => setProducto(e.target.value ? Number(e.target.value) : '')}>
             <option value="" disabled>
@@ -265,7 +264,7 @@ function NuevaProduccionModal({ abierto, onCerrar }: { abierto: boolean; onCerra
           </select>
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Sucursal
           <select value={sucursal} onChange={(e) => setSucursal(e.target.value ? Number(e.target.value) : '')}>
             <option value="" disabled>
@@ -279,7 +278,7 @@ function NuevaProduccionModal({ abierto, onCerrar }: { abierto: boolean; onCerra
           </select>
         </label>
 
-        <label className={styles.campo}>
+        <label className="field">
           Cantidad a producir
           <input
             type="number"
@@ -291,43 +290,45 @@ function NuevaProduccionModal({ abierto, onCerrar }: { abierto: boolean; onCerra
         </label>
 
         {producto && sucursal && (
-          <div className={styles.seccionPrevia}>
-            <h3 className={styles.tituloPrevia}>Materia prima requerida</h3>
+          <div className="fieldGroup">
+            <h3 className="subtitle">Materia prima requerida</h3>
 
             {recetaActiva.length === 0 ? (
-              <p className={styles.aviso}>Este producto no tiene una receta activa configurada.</p>
+              <p className="notice">Este producto no tiene una receta activa configurada.</p>
             ) : (
-              <table className={styles.tablaPrevia}>
-                <thead>
-                  <tr>
-                    <th>Materia prima</th>
-                    <th>Requerido</th>
-                    <th>Disponible</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {previa.map(({ linea, requerido, disponible, suficiente }) => (
-                    <tr key={linea.id}>
-                      <td>{linea.materia_prima_nombre}</td>
-                      <td>{requerido.toFixed(2)}</td>
-                      <td className={suficiente ? styles.disponibleSuficiente : styles.disponibleInsuficiente}>
-                        {disponible.toFixed(2)}
-                      </td>
+              <div className="tableScroll">
+                <table className="linesTable">
+                  <thead>
+                    <tr>
+                      <th>Materia prima</th>
+                      <th>Requerido</th>
+                      <th>Disponible</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {previa.map(({ linea, requerido, disponible, suficiente }) => (
+                      <tr key={linea.id}>
+                        <td>{linea.materia_prima_nombre}</td>
+                        <td>{requerido.toFixed(2)}</td>
+                        <td className={suficiente ? 'textSuccess' : 'textError'}>
+                          {disponible.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {error}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario type="button" variante="secundario" onClick={cerrarYLimpiar}>
             Cancelar
           </BotonPrimario>
@@ -349,46 +350,48 @@ function DetalleProduccionModal({ id, onCerrar }: { id: number | null; onCerrar:
         <p>Cargando…</p>
       ) : (
         <>
-          <div className={styles.datosGenerales}>
-            <span className={styles.etiqueta}>Producto</span>
+          <div className="detailData">
+            <span className="label">Producto</span>
             <span>{produccion.producto_nombre}</span>
 
-            <span className={styles.etiqueta}>Sucursal</span>
+            <span className="label">Sucursal</span>
             <span>{produccion.sucursal_nombre}</span>
 
-            <span className={styles.etiqueta}>Fecha</span>
+            <span className="label">Fecha</span>
             <span>{new Date(produccion.fecha).toLocaleString('es-MX')}</span>
 
-            <span className={styles.etiqueta}>Registrada por</span>
+            <span className="label">Registrada por</span>
             <span>{produccion.usuario_nombre}</span>
 
-            <span className={styles.etiqueta}>Cantidad producida</span>
+            <span className="label">Cantidad producida</span>
             <span>{produccion.cantidad_producida}</span>
 
-            <span className={styles.etiqueta}>Costo total</span>
+            <span className="label">Costo total</span>
             <span>{produccion.costo_total}</span>
           </div>
 
-          <table className={styles.tablaPrevia}>
-            <thead>
-              <tr>
-                <th>Materia prima consumida</th>
-                <th>Cantidad</th>
-                <th>Costo unitario</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {produccion.detalles.map((detalle) => (
-                <tr key={detalle.id}>
-                  <td>{detalle.materia_prima_nombre}</td>
-                  <td>{detalle.cantidad_consumida}</td>
-                  <td>{detalle.costo_unitario_momento}</td>
-                  <td>{detalle.subtotal}</td>
+          <div className="tableScroll">
+            <table className="linesTable">
+              <thead>
+                <tr>
+                  <th>Materia prima consumida</th>
+                  <th>Cantidad</th>
+                  <th>Costo unitario</th>
+                  <th>Subtotal</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {produccion.detalles.map((detalle) => (
+                  <tr key={detalle.id}>
+                    <td>{detalle.materia_prima_nombre}</td>
+                    <td>{detalle.cantidad_consumida}</td>
+                    <td>{detalle.costo_unitario_momento}</td>
+                    <td>{detalle.subtotal}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </Modal>
@@ -472,12 +475,12 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
   const columnas: ColumnaTabla<NonNullable<typeof recetas>[number]>[] = [
     { clave: 'producto_nombre', encabezado: 'Producto' },
     { clave: 'materia_prima_nombre', encabezado: 'Materia prima' },
-    { clave: 'cantidad_requerida', encabezado: 'Cantidad requerida' },
+    { clave: 'cantidad_requerida', alineacion: 'derecha', encabezado: 'Cantidad requerida' },
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -487,7 +490,7 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
   return (
     <div>
       {esAdmin && (
-        <div className={styles.encabezado}>
+        <div className="pageHeader">
           <span />
           <BotonPrimario onClick={abrirCrear}>Nueva línea de receta</BotonPrimario>
         </div>
@@ -503,14 +506,14 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
           renderAcciones={
             esAdmin
               ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+                  <div className="rowActions">
+                    <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                       Editar
                     </button>
                     {fila.activo ? (
                       <button
                         type="button"
-                        className={styles.enlaceAccionPeligro}
+                        className="dangerActionLink"
                         onClick={() =>
                           setADesactivar({ id: fila.id, etiqueta: `${fila.materia_prima_nombre} en ${fila.producto_nombre}` })
                         }
@@ -520,7 +523,7 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
                     ) : (
                       <button
                         type="button"
-                        className={styles.enlaceAccion}
+                        className="actionLink"
                         onClick={() =>
                           setAReactivar({ id: fila.id, etiqueta: `${fila.materia_prima_nombre} en ${fila.producto_nombre}` })
                         }
@@ -540,8 +543,8 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Producto
             <select
               value={valores.producto || ''}
@@ -558,7 +561,7 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
             </select>
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Materia prima
             <select
               value={valores.materia_prima || ''}
@@ -575,7 +578,7 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
             </select>
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Cantidad requerida (por unidad producida)
             <input
               type="number"
@@ -587,12 +590,12 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -604,11 +607,11 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Desactivar línea de receta" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar "{aDesactivar?.etiqueta}"? Dejará de consumirse en nuevas producciones,
           pero el historial ya registrado no cambia.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -619,8 +622,8 @@ function PestañaRecetas({ esAdmin }: { esAdmin: boolean }) {
       </Modal>
 
       <Modal titulo="Reactivar línea de receta" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-        <p className={styles.textoConfirmacion}>¿Confirmas que quieres reactivar "{aReactivar?.etiqueta}"?</p>
-        <div className={styles.accionesFormulario}>
+        <p className="confirmText">¿Confirmas que quieres reactivar "{aReactivar?.etiqueta}"?</p>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
