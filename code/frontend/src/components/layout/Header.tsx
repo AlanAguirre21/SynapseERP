@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState, type FocusEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
 import { useAuth } from '../../context/AuthContext'
@@ -10,13 +10,15 @@ import {
   useSolicitudesNominaPendientes,
 } from '../../hooks/useSolicitudesNomina'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-import { obtenerIniciales } from '../../utils/texto'
+import { Avatar } from '../common/Avatar'
 import { Icono } from '../common/Icono'
 import styles from './Header.module.css'
 
 interface HeaderProps {
   onToggleSidebar: () => void
 }
+
+type Desplegable = 'notificaciones' | 'usuario'
 
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { data: usuario } = useUsuarioActual()
@@ -28,10 +30,64 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const { data: solicitudesNomina, isLoading: solicitudesCargando } = useSolicitudesNominaPendientes(esAdmin)
   const aprobar = useAprobarSolicitudNomina()
   const rechazar = useRechazarSolicitudNomina()
-  const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false)
-  const [menuAbierto, setMenuAbierto] = useState(false)
+  // Un solo estado para los dos desplegables: abrir uno cierra el otro.
+  const [desplegable, setDesplegable] = useState<Desplegable | null>(null)
+  const notificacionesAbiertas = desplegable === 'notificaciones'
+  const menuAbierto = desplegable === 'usuario'
+  const contenedorNotificaciones = useRef<HTMLDivElement>(null)
+  const contenedorUsuario = useRef<HTMLDivElement>(null)
+  const botonNotificaciones = useRef<HTMLButtonElement>(null)
+  const botonUsuario = useRef<HTMLButtonElement>(null)
   const { logout } = useAuth()
   const navigate = useNavigate()
+
+  // Cierra el desplegable al cambiar de ruta (el Header no se vuelve a montar
+  // al navegar). Se ajusta durante el render, sin un efecto extra.
+  const { pathname } = useLocation()
+  const [rutaActual, setRutaActual] = useState(pathname)
+  if (pathname !== rutaActual) {
+    setRutaActual(pathname)
+    setDesplegable(null)
+  }
+
+  // Con un desplegable abierto: clic o toque fuera de él (y de su botón) lo
+  // cierra sin bloquear ese clic, y Escape lo cierra devolviendo el foco a
+  // su botón. Los oyentes solo existen mientras hay uno abierto.
+  useEffect(() => {
+    if (!desplegable) return
+    const contenedorAbierto = (desplegable === 'notificaciones' ? contenedorNotificaciones : contenedorUsuario).current
+    const botonAbierto = (desplegable === 'notificaciones' ? botonNotificaciones : botonUsuario).current
+
+    function alPulsar(evento: PointerEvent) {
+      if (!contenedorAbierto?.contains(evento.target as Node)) setDesplegable(null)
+    }
+    function alTeclear(evento: KeyboardEvent) {
+      if (evento.key !== 'Escape') return
+      setDesplegable(null)
+      botonAbierto?.focus()
+    }
+
+    document.addEventListener('pointerdown', alPulsar)
+    document.addEventListener('keydown', alTeclear)
+    return () => {
+      document.removeEventListener('pointerdown', alPulsar)
+      document.removeEventListener('keydown', alTeclear)
+    }
+  }, [desplegable])
+
+  function alternar(cual: Desplegable) {
+    setDesplegable((actual) => (actual === cual ? null : cual))
+  }
+
+  // Cierre al salir el foco con el teclado. Sin `relatedTarget` (clic en una
+  // zona sin controles, o el botón de una solicitud que desaparece al
+  // aprobarla) no se cierra: el clic fuera ya lo cubre el oyente de arriba.
+  function alPerderFoco(cual: Desplegable, evento: FocusEvent<HTMLDivElement>) {
+    const siguiente = evento.relatedTarget
+    if (siguiente && !evento.currentTarget.contains(siguiente)) {
+      setDesplegable((actual) => (actual === cual ? null : actual))
+    }
+  }
 
   const totalAlertas = alertas?.length ?? 0
   const totalSolicitudes = esAdmin ? solicitudesNomina?.length ?? 0 : 0
@@ -59,11 +115,16 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       </div>
 
       <div className={styles.headerRight}>
-        <div className={styles.notifications}>
+        <div
+          ref={contenedorNotificaciones}
+          className={styles.notifications}
+          onBlur={(evento) => alPerderFoco('notificaciones', evento)}
+        >
           <button
+            ref={botonNotificaciones}
             type="button"
             className={styles.notificationsButton}
-            onClick={() => setNotificacionesAbiertas((abierto) => !abierto)}
+            onClick={() => alternar('notificaciones')}
             aria-label="Alertas de stock"
             aria-haspopup="menu"
             aria-expanded={notificacionesAbiertas}
@@ -138,17 +199,20 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           )}
         </div>
 
-        <div className={styles.userMenu}>
+        <div
+          ref={contenedorUsuario}
+          className={styles.userMenu}
+          onBlur={(evento) => alPerderFoco('usuario', evento)}
+        >
           <button
+            ref={botonUsuario}
             type="button"
             className={styles.userButton}
-            onClick={() => setMenuAbierto((abierto) => !abierto)}
+            onClick={() => alternar('usuario')}
             aria-haspopup="menu"
             aria-expanded={menuAbierto}
           >
-            <span className={styles.avatar} aria-hidden="true">
-              {obtenerIniciales(usuario?.nombre)}
-            </span>
+            <Avatar nombre={usuario?.nombre} foto={usuario?.foto_usuario} />
             <span className={styles.userData}>
               <span className={styles.userName}>{usuario?.nombre ?? '…'}</span>
               <span className={styles.userRole}>{usuario?.rol ?? ''}</span>

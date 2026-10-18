@@ -62,10 +62,6 @@
   @apply bg-fondo;
 }
 
-.avatar {
-  @apply flex items-center justify-center w-9 h-9 shrink-0 rounded-pildora bg-primario-suave text-primario font-titulo font-semibold text-[0.8rem];
-}
-
 .userData {
   @apply hidden sm:flex flex-col items-start leading-tight;
 }

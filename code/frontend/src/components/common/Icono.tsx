@@ -16,6 +16,7 @@ export type NombreIcono =
   | 'catalogo'
   | 'rrhh'
   | 'personas'
+  | 'persona'
   | 'sucursales'
   | 'contabilidad'
   | 'configuracionFiscal'
@@ -117,6 +118,13 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M9 8V6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v2" />
       <line x1="3" y1="13" x2="21" y2="13" />
       <rect x="10.5" y="11.7" width="3" height="2.6" rx="0.5" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Una sola persona: avatar sin fotografía ni nombre todavía.
+  persona: (
+    <>
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
     </>
   ),
   personas: (

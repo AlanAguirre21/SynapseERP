@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useCrearTraslado, useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
@@ -298,5 +298,47 @@ describe('Inventario', () => {
 
     expect(motivo).toHaveValue('')
     expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+  })
+})
+
+describe('Inventario — sucursal inicial desde la URL', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+  })
+
+  function abrirCon(busqueda: string) {
+    window.history.replaceState(null, '', `/inventario${busqueda}`)
+    render(<Inventario />)
+  }
+
+  it('usa la sucursal de ?sucursal=ID si está activa', () => {
+    mockearHooks()
+    abrirCon('?sucursal=2')
+
+    expect(useStockMock).toHaveBeenLastCalledWith('producto', 2)
+    expect(primero(screen.getAllByLabelText('Sucursal'))).toHaveValue('2')
+  })
+
+  it('ignora el parámetro si la sucursal está inactiva', () => {
+    mockearHooks()
+    useSucursalesMock.mockReturnValue({
+      data: [...SUCURSALES, { id: 3, nombre_sucursal: 'Cerrada', ubicacion_sucursal: '', telefono_sucursal: '', activo: false }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useSucursales>)
+    abrirCon('?sucursal=3')
+
+    expect(useStockMock).toHaveBeenLastCalledWith('producto', 1)
+  })
+
+  it('ignora un id inexistente', () => {
+    mockearHooks()
+    abrirCon('?sucursal=99')
+    expect(useStockMock).toHaveBeenLastCalledWith('producto', 1)
+  })
+
+  it('ignora un valor no numérico', () => {
+    mockearHooks()
+    abrirCon('?sucursal=abc')
+    expect(useStockMock).toHaveBeenLastCalledWith('producto', 1)
   })
 })

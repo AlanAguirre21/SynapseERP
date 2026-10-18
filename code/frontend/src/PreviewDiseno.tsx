@@ -16,6 +16,7 @@ const USUARIO_PREVIEW: Usuario = {
   last_name: 'Pérez López',
   nombre: 'Juan Pérez López',
   rol: 'operador',
+  foto_usuario: null,
   modulos: [
     { slug: 'ventas', nombre: 'Ventas', ruta: '/ventas' },
     { slug: 'compras', nombre: 'Compras', ruta: '/compras' },
