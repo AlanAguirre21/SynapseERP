@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from apps.catalogo.models import MateriaPrima, Producto
 from apps.sucursales.models import Sucursal
@@ -37,6 +38,15 @@ class RecetaSerializer(serializers.ModelSerializer):
             'cantidad_requerida', 'activo',
         ]
         read_only_fields = ['id', 'activo']
+        # Mensaje propio en español: el de DRF por defecto sale en inglés
+        # (`LANGUAGE_CODE = 'en-us'`) y el frontend lo muestra tal cual.
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Receta.objects.all(),
+                fields=['producto', 'materia_prima'],
+                message='Esta materia prima ya forma parte de la receta de este producto.',
+            ),
+        ]
 
 
 class DetalleProduccionSerializer(serializers.ModelSerializer):

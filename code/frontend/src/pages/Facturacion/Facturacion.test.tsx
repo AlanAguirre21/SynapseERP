@@ -41,6 +41,13 @@ function renderFacturacion() {
   )
 }
 
+// Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
+function indicador(etiqueta: string): HTMLElement {
+  const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
+  if (!recuadro) throw new Error(`Indicador "${etiqueta}" sin contenedor`)
+  return recuadro
+}
+
 describe('Facturacion', () => {
   it('muestra las facturas en la tabla', () => {
     mockearHooks()
@@ -87,5 +94,69 @@ describe('Facturacion', () => {
     renderFacturacion()
 
     expect(screen.getByText(/todavía no hay facturas/i)).toBeInTheDocument()
+  })
+
+  it('muestra el total con formato de moneda y el enlace a la venta de origen', () => {
+    mockearHooks()
+    renderFacturacion()
+
+    const fila = screen.getByRole('cell', { name: 'Hospital San Rafael' }).closest('tr')
+    expect(fila).toHaveTextContent('$90.00')
+    expect(screen.getByRole('button', { name: 'Venta #10' })).toBeInTheDocument()
+  })
+
+  it('los indicadores cuentan solo facturas vigentes en el importe y tiñen las alertas con valor', () => {
+    const conEstado = (id: number, estado: Factura['estado'], total: string): Factura => ({
+      ...(FACTURAS[0] as Factura), id, venta: 10 + id, estado, venta_total: total,
+    })
+    mockearHooks()
+    vi.mocked(useFacturas).mockReturnValue({
+      data: [
+        conEstado(1, 'timbrada', '100.00'),
+        conEstado(2, 'pendiente_cancelacion', '50.00'),
+        conEstado(3, 'cancelada', '999.00'),
+        conEstado(4, 'error', '999.00'),
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useFacturas>)
+    renderFacturacion()
+
+    expect(indicador('Facturas')).toHaveTextContent('4')
+    // Timbrada + pendiente de cancelación; cancelada y con error no cuentan.
+    expect(indicador('Importe facturado')).toHaveTextContent('$150.00')
+    expect(indicador('Con error')).toHaveTextContent('1')
+    expect(indicador('Con error')).toHaveClass('statTileDanger')
+    expect(indicador('Pendientes de cancelación')).toHaveClass('statTileWarning')
+  })
+
+  it('sin alertas, los indicadores de error y cancelación no se tiñen', () => {
+    mockearHooks()
+    renderFacturacion()
+
+    expect(indicador('Con error')).not.toHaveClass('statTileDanger')
+    expect(indicador('Pendientes de cancelación')).not.toHaveClass('statTileWarning')
+  })
+
+  it('"Limpiar filtros" aparece con un filtro aplicado y lo restablece', () => {
+    mockearHooks()
+    renderFacturacion()
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+
+    const estado = screen.getByLabelText('Estado')
+    fireEvent.change(estado, { target: { value: 'error' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+
+    expect(estado).toHaveValue('')
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+  })
+
+  it('con filtros y sin resultados, el mensaje lo distingue de "todavía no hay facturas"', () => {
+    mockearHooks()
+    vi.mocked(useFacturas).mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<typeof useFacturas>)
+    renderFacturacion()
+
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'error' } })
+
+    expect(screen.getByText('Ninguna factura coincide con los filtros.')).toBeInTheDocument()
   })
 })

@@ -1,0 +1,81 @@
+@reference "../../index.css";
+
+/* Estilos propios de Producción: documento dentro del modal de detalle y
+   lista de recetas agrupada por producto, con filas desplegables. Lo demás
+   usa las clases globales. Si otra pantalla necesita filas desplegables,
+   este patrón se promueve a index.css. */
+
+/* --- Detalle de producción ---------------------------------------------- */
+
+/* Las clases de documento (`documentHeader`, `documentSection`) están pensadas
+   para ir de borde a borde; aquí se anula el relleno del cuerpo del modal
+   (`px-6 py-5` en Modal.module.css) para que la cabecera teñida llegue a los
+   bordes. La última sección no necesita su separador inferior. */
+.modalDocument {
+  @apply flex flex-col -mx-6 -my-5;
+}
+
+.modalDocument > :last-child {
+  @apply border-b-0;
+}
+
+/* --- Recetas ------------------------------------------------------------- */
+
+.recipeList {
+  @apply m-0 p-0 list-none flex flex-col gap-3;
+}
+
+.recipeItem {
+  @apply bg-superficie border border-borde rounded-tarjeta shadow-suave overflow-hidden;
+}
+
+/* Botón de despliegue y botón "+" sobre una misma línea. */
+.recipeHeader {
+  @apply flex items-center gap-2 pr-3;
+}
+
+/* El fondo de hover cubre toda la fila, incluido el botón "+". */
+.recipeHeader:hover {
+  @apply bg-fondo;
+}
+
+.recipeToggle {
+  @apply flex-1 min-w-0 flex items-center gap-3 flex-wrap px-4 py-3 bg-transparent border-0 text-left text-texto cursor-pointer;
+}
+
+.recipeToggle:focus-visible {
+  @apply outline-none shadow-foco;
+}
+
+.chevron {
+  @apply shrink-0 text-texto-suave transition-transform duration-150;
+}
+
+.chevronOpen {
+  @apply rotate-90 text-primario;
+}
+
+.recipeName {
+  @apply font-semibold;
+}
+
+.recipeCount {
+  @apply text-[0.85rem] text-texto-suave;
+}
+
+.addButton {
+  @apply shrink-0 inline-flex items-center justify-center w-9 h-9 p-0 bg-primario-suave border-0 text-primario rounded-pildora cursor-pointer;
+}
+
+.addButton:hover {
+  @apply bg-primario text-superficie;
+}
+
+.addButton:focus-visible {
+  @apply outline-none shadow-foco;
+}
+
+/* La tabla de líneas trae su propia superficie; aquí solo se separa del encabezado. */
+.recipeDetail {
+  @apply px-4 pb-4 pt-1 border-t border-borde;
+}

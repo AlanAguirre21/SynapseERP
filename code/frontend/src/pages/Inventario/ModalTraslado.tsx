@@ -186,8 +186,8 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
                 <tr>
                   <th>Tipo</th>
                   <th>Ítem</th>
-                  <th>Cantidad</th>
-                  <th>Disponible en origen</th>
+                  <th className="numeric">Cantidad</th>
+                  <th className="numeric">Disponible en origen</th>
                   <th aria-label="Acciones" />
                 </tr>
               </thead>
@@ -236,20 +236,22 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
                           ))}
                         </select>
                       </td>
-                      <td>
+                      <td className="numeric">
                         <input
                           type="number"
                           min="0.01"
                           step="0.01"
                           aria-label={`Cantidad de la línea ${numero}`}
-                          className="inputCompact"
+                          className="inputCompact numeric"
                           value={linea.cantidad}
                           onChange={(e) => actualizarLinea(linea.clave, { cantidad: e.target.value })}
                         />
                       </td>
-                      <td>
-                        <span data-testid={`disponible-linea-${numero}`}>{item ? item.stock_actual : '—'}</span>
-                        {excede && <span className="fieldWarning">Supera el disponible</span>}
+                      <td className="numeric">
+                        <div className="cellStack">
+                          <span data-testid={`disponible-linea-${numero}`}>{item ? item.stock_actual : '—'}</span>
+                          {excede && <span className="fieldWarning">Supera el disponible</span>}
+                        </div>
                       </td>
                       <td>
                         <button
@@ -294,13 +296,31 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
             <strong>{nombreSucursal(destino)}</strong>?
           </p>
 
+          {/* Ruta del traslado: lo primero que hay que verificar antes de confirmar. */}
+          <div className="fieldGroup">
+            <dl className="factGrid factGridThree">
+              <div>
+                <dt>Sucursal origen</dt>
+                <dd>{nombreSucursal(origen)}</dd>
+              </div>
+              <div>
+                <dt>Sucursal destino</dt>
+                <dd>→ {nombreSucursal(destino)}</dd>
+              </div>
+              <div>
+                <dt>Ítems a trasladar</dt>
+                <dd>{lineas.length}</dd>
+              </div>
+            </dl>
+          </div>
+
           <div className="tableScroll">
             <table className="linesTable">
               <thead>
                 <tr>
                   <th>Tipo</th>
                   <th>Ítem</th>
-                  <th>Cantidad</th>
+                  <th className="numeric">Cantidad</th>
                 </tr>
               </thead>
               <tbody>
@@ -308,7 +328,7 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
                   <tr key={linea.clave}>
                     <td>{ETIQUETAS_TIPO[linea.tipo]}</td>
                     <td>{itemDe(linea)?.nombre ?? `#${linea.itemId}`}</td>
-                    <td>{linea.cantidad}</td>
+                    <td className="numeric">{linea.cantidad}</td>
                   </tr>
                 ))}
               </tbody>

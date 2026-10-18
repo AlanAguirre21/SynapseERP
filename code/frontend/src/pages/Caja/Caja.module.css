@@ -1,48 +1,49 @@
 @reference "../../index.css";
 
-/* Tarjetas de saldo (actual + adicional = total): solo existen en Caja. */
-.balanceRow {
-  @apply flex flex-wrap items-stretch gap-3;
+/* Panel de saldo: solo existe en Caja. "Saldo de la caja" es la cifra
+   principal y "actual" + "adicional" su desglose, porque son dos categorías
+   del mismo efectivo, no cuentas separadas. */
+.balancePanel {
+  @apply grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-6 px-6 md:px-8 py-6 bg-linear-to-br from-primario-suave to-superficie border border-borde rounded-tarjeta shadow-suave;
 }
 
-.balanceCard {
-  @apply flex flex-col justify-center gap-1 flex-1 min-w-[220px] px-6 py-5 rounded-tarjeta;
-}
-
-.balanceCurrent {
-  @apply bg-primario-suave text-primario;
-}
-
-.balanceExtra {
-  @apply bg-inicio-suave text-inicio;
-}
-
-.balanceTotal {
-  @apply flex-[2.5] min-w-[260px] px-8 py-7 bg-primario text-superficie shadow-marcada;
+.balanceMain {
+  @apply flex flex-col gap-1 min-w-0;
 }
 
 .balanceLabel {
-  @apply text-[0.85rem] opacity-80;
+  @apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-primario;
 }
 
-.balanceAmount {
-  @apply text-3xl font-bold tabular-nums;
+.balanceFigure {
+  @apply text-4xl md:text-5xl font-titulo font-semibold text-primario tabular-nums break-words;
 }
 
-.balanceTotal .balanceLabel {
-  @apply text-base;
+.balanceHint {
+  @apply m-0 text-[0.85rem] text-texto-suave;
 }
 
-.balanceTotal .balanceAmount {
-  @apply text-4xl;
+/* Desglose: separado de la cifra principal por un borde (a la izquierda en
+   pantallas anchas, arriba en angostas). */
+.balanceBreakdown {
+  @apply flex flex-col justify-center gap-3 pt-5 md:pt-0 md:pl-6 border-t md:border-t-0 md:border-l border-borde;
 }
 
-.balanceOperator {
-  @apply hidden sm:flex items-center justify-center text-2xl font-semibold text-texto-suave select-none;
+.balanceItem {
+  @apply flex items-baseline justify-between gap-4 text-[0.9rem] text-texto-suave;
+}
+
+.balanceItemAmount {
+  @apply text-lg font-titulo font-semibold text-texto tabular-nums whitespace-nowrap;
+}
+
+/* Etiqueta de motivo y enlace al documento de origen en una sola línea. */
+.reasonCell {
+  @apply flex items-center gap-2 whitespace-nowrap;
 }
 
 .referenceLink {
-  @apply block mt-1 text-primario text-[0.8rem] no-underline;
+  @apply text-primario text-[0.8rem] no-underline;
 }
 
 .referenceLink:hover {

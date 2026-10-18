@@ -20,6 +20,8 @@ export type NombreIcono =
   | 'contabilidad'
   | 'configuracionFiscal'
   | 'usuarios'
+  | 'mas'
+  | 'desplegar'
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   menu: (
@@ -161,6 +163,14 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M14 10h5M14 13h5M14 16h3" />
     </>
   ),
+  mas: (
+    <>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </>
+  ),
+  // Chevrón hacia la derecha; las filas desplegadas lo giran 90° con CSS.
+  desplegar: <path d="M9 6l6 6-6 6" />,
 }
 
 interface IconoProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

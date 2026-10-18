@@ -168,24 +168,29 @@
     @apply m-0 text-texto text-[0.95rem] font-base font-semibold;
   }
 
-  /* Indicadores de resumen sobre un listado. */
+  /* Indicadores de resumen sobre un listado. En pantallas angostas van de dos
+     en dos (uno por fila ocupaba más de una pantalla), con cifra y relleno
+     algo menores para que quepan importes de varios dígitos. */
   .statRow {
-    @apply grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3;
+    @apply grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3;
   }
 
   .statTile {
-    @apply flex flex-col gap-1 min-w-0 px-5 py-4 bg-superficie border border-borde rounded-tarjeta shadow-suave;
+    @apply flex flex-col gap-1 min-w-0 px-4 md:px-5 py-4 bg-superficie border border-borde rounded-tarjeta shadow-suave;
   }
 
   .statLabel {
     @apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-texto-suave;
   }
 
+  /* La cifra nunca se parte (un importe cortado en dos líneas se lee mal);
+     en pantallas muy angostas baja de tamaño para que quepan dos por fila. */
   .statValue {
-    @apply text-3xl font-titulo font-semibold text-texto tabular-nums;
+    @apply text-xl sm:text-2xl md:text-3xl font-titulo font-semibold text-texto tabular-nums whitespace-nowrap;
   }
 
-  /* Indicador destacado con el tono del documento: ventas en primario, compras en secundario. */
+  /* Indicador destacado con el tono del documento: ventas en primario, compras
+     en secundario, producción en inicio. */
   .statTileSale {
     @apply bg-primario-suave border-primario-suave;
   }
@@ -200,6 +205,32 @@
 
   .statTilePurchase .statValue {
     @apply text-secundario-texto;
+  }
+
+  .statTileProduction {
+    @apply bg-inicio-suave border-inicio-suave;
+  }
+
+  .statTileProduction .statValue {
+    @apply text-inicio;
+  }
+
+  /* Indicadores de alerta (stock bajo, agotados): se aplican solo cuando hay
+     algo que atender, nunca a un valor en cero. */
+  .statTileWarning {
+    @apply bg-advertencia-suave border-advertencia-suave;
+  }
+
+  .statTileWarning .statValue {
+    @apply text-advertencia-texto;
+  }
+
+  .statTileDanger {
+    @apply bg-error-suave border-error-suave;
+  }
+
+  .statTileDanger .statValue {
+    @apply text-error;
   }
 
   /* Recuadro punteado para "todavía no hay nada que mostrar aquí". */
@@ -231,6 +262,11 @@
 
   .tabActive:hover {
     @apply text-primario;
+  }
+
+  /* Contenido de una pestaña: misma separación entre bloques que `.page`. */
+  .tabPanel {
+    @apply flex flex-col gap-5;
   }
 
   /* --- Selector segmentado (5 / 10 / todos, más / menos) ----------------- */
@@ -348,6 +384,11 @@
 
   .cellStack {
     @apply flex flex-col gap-1;
+  }
+
+  /* En una columna numérica, control y mensaje se alinean a la derecha. */
+  .numeric .cellStack {
+    @apply items-end;
   }
 
   /* --- Mensajes ---------------------------------------------------------- */
@@ -490,6 +531,11 @@
     @apply text-right;
   }
 
+  /* Contenido de celda que no debe partirse en dos líneas (fechas, folios). */
+  .cellNoWrap {
+    @apply whitespace-nowrap;
+  }
+
   /* --- Cabecera-detalle -------------------------------------------------- */
 
   .detailData {
@@ -522,12 +568,20 @@
     @apply from-secundario-suave;
   }
 
+  .documentHeaderProduction {
+    @apply from-inicio-suave;
+  }
+
   .documentEyebrow {
     @apply text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-primario;
   }
 
   .documentHeaderPurchase .documentEyebrow {
     @apply text-secundario-texto;
+  }
+
+  .documentHeaderProduction .documentEyebrow {
+    @apply text-inicio;
   }
 
   .documentTitle {
@@ -597,6 +651,11 @@
     @apply md:grid-cols-3;
   }
 
+  /* Dato que ocupa toda la fila de la ficha (ej. un folio fiscal largo). */
+  .factGridFull {
+    @apply col-span-full;
+  }
+
   .factGrid dt {
     @apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-texto-suave;
   }
@@ -614,12 +673,26 @@
     @apply flex items-baseline justify-between gap-4 text-[0.9rem] text-texto-suave tabular-nums;
   }
 
+  /* El importe (con su signo) nunca se parte; la etiqueta sí puede. */
+  .summaryRow > :last-child {
+    @apply whitespace-nowrap;
+  }
+
   .summaryTotal {
     @apply mt-1 pt-3 border-t border-borde text-texto text-xl font-titulo font-semibold;
   }
 
+  /* Un resumen de una sola fila (solo el total) no necesita separador. */
+  .summaryTotal:first-child {
+    @apply mt-0 pt-0 border-t-0;
+  }
+
   .summaryTotal > :last-child {
     @apply text-primario;
+  }
+
+  .documentHeaderProduction ~ * .summaryTotal > :last-child {
+    @apply text-inicio;
   }
 
   .documentFooter {
