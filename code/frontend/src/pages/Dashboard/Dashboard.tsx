@@ -24,9 +24,9 @@ function SaldoCajaAdmin() {
   const { data: saldos, isLoading } = useSaldoCaja()
 
   return (
-    <div className={styles.saldo}>
-      <span className={styles.saldoEtiqueta}>Saldo actual de la caja</span>
-      <span className={styles.saldoMonto}>
+    <div className={styles.cashBalance}>
+      <span className={styles.cashBalanceLabel}>Saldo actual de la caja</span>
+      <span className={styles.cashBalanceAmount}>
         {isLoading || !saldos ? '…' : formatearMoneda(saldos.saldo_actual)}
       </span>
     </div>
@@ -43,20 +43,20 @@ export function Dashboard() {
   const pestañasDisponibles = esAdmin ? ETIQUETAS_PERIODO : ETIQUETAS_PERIODO.filter((p) => p.clave === 'dia')
 
   return (
-    <div className={styles.pagina}>
-      <header className={styles.encabezado}>
-        <img src={logoFlebosil} alt="FleboSil" className={styles.logo} />
+    <div className="page">
+      <header className={styles.hero}>
+        <img src={logoFlebosil} alt="FleboSil" className={styles.dashboardLogo} />
 
         {esAdmin && <SaldoCajaAdmin />}
 
-        <div className={styles.pestañas} role="tablist" aria-label="Periodo">
+        <div className={styles.periodTabs} role="tablist" aria-label="Periodo">
           {pestañasDisponibles.map((p) => (
             <button
               key={p.clave}
               type="button"
               role="tab"
               aria-selected={periodo === p.clave}
-              className={periodo === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
+              className={periodo === p.clave ? `${styles.periodTab} ${styles.periodTabActive}` : styles.periodTab}
               onClick={() => setPeriodo(p.clave)}
             >
               {p.etiqueta}

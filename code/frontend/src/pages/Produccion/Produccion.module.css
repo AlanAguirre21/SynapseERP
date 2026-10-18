@@ -1,132 +1,81 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-4;
+/* Estilos propios de Producción: documento dentro del modal de detalle y
+   lista de recetas agrupada por producto, con filas desplegables. Lo demás
+   usa las clases globales. Si otra pantalla necesita filas desplegables,
+   este patrón se promueve a index.css. */
+
+/* --- Detalle de producción ---------------------------------------------- */
+
+/* Las clases de documento (`documentHeader`, `documentSection`) están pensadas
+   para ir de borde a borde; aquí se anula el relleno del cuerpo del modal
+   (`px-6 py-5` en Modal.module.css) para que la cabecera teñida llegue a los
+   bordes. La última sección no necesita su separador inferior. */
+.modalDocument {
+  @apply flex flex-col -mx-6 -my-5;
 }
 
-.encabezado {
-  @apply flex items-center justify-between mb-4;
+.modalDocument > :last-child {
+  @apply border-b-0;
 }
 
-.titulo {
-  @apply m-0 text-texto text-xl font-semibold;
+/* --- Recetas ------------------------------------------------------------- */
+
+.recipeList {
+  @apply m-0 p-0 list-none flex flex-col gap-3;
 }
 
-.pestañas {
-  @apply flex items-center gap-1 border-b border-texto/10;
+.recipeItem {
+  @apply bg-superficie border border-borde rounded-tarjeta shadow-suave overflow-hidden;
 }
 
-.pestaña {
-  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+/* Botón de despliegue y botón "+" sobre una misma línea. */
+.recipeHeader {
+  @apply flex items-center gap-2 pr-3;
 }
 
-.pestaña:hover {
-  @apply text-texto;
+/* El fondo de hover cubre toda la fila, incluido el botón "+". */
+.recipeHeader:hover {
+  @apply bg-fondo;
 }
 
-.pestañaActiva {
-  @apply text-primario border-primario font-semibold;
+.recipeToggle {
+  @apply flex-1 min-w-0 flex items-center gap-3 flex-wrap px-4 py-3 bg-transparent border-0 text-left text-texto cursor-pointer;
 }
 
-.filtros {
-  @apply flex flex-wrap items-end gap-4 mb-4;
+.recipeToggle:focus-visible {
+  @apply outline-none shadow-foco;
 }
 
-.campoFiltro {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+.chevron {
+  @apply shrink-0 text-texto-suave transition-transform duration-150;
 }
 
-.campoFiltro select,
-.campoFiltro input {
-  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
+.chevronOpen {
+  @apply rotate-90 text-primario;
 }
 
-.estadoActivo {
-  @apply text-exito text-[0.8rem] font-semibold;
+.recipeName {
+  @apply font-semibold;
 }
 
-.estadoInactivo {
-  @apply text-error text-[0.8rem] font-semibold;
+.recipeCount {
+  @apply text-[0.85rem] text-texto-suave;
 }
 
-.acciones {
-  @apply flex items-center gap-3;
+.addButton {
+  @apply shrink-0 inline-flex items-center justify-center w-9 h-9 p-0 bg-primario-suave border-0 text-primario rounded-pildora cursor-pointer;
 }
 
-.enlaceAccion {
-  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+.addButton:hover {
+  @apply bg-primario text-superficie;
 }
 
-.enlaceAccion:hover {
-  @apply underline;
+.addButton:focus-visible {
+  @apply outline-none shadow-foco;
 }
 
-.enlaceAccionPeligro {
-  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
-}
-
-.enlaceAccionPeligro:hover {
-  @apply underline;
-}
-
-.formulario {
-  @apply flex flex-col gap-4;
-}
-
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campo input,
-.campo select {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
-}
-
-.seccionPrevia {
-  @apply flex flex-col gap-2 p-4 border border-texto/10 rounded-md;
-}
-
-.tituloPrevia {
-  @apply m-0 text-[0.9rem] font-semibold text-texto;
-}
-
-.tablaPrevia {
-  @apply w-full text-left text-[0.85rem];
-}
-
-.tablaPrevia th,
-.tablaPrevia td {
-  @apply px-2 py-1.5 border-b border-texto/10;
-}
-
-.disponibleSuficiente {
-  @apply text-exito font-semibold;
-}
-
-.disponibleInsuficiente {
-  @apply text-error font-semibold;
-}
-
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.aviso {
-  @apply m-0 px-3 py-2 text-advertencia rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-advertencia)_12%,transparent)];
-}
-
-.textoConfirmacion {
-  @apply text-texto text-[0.9rem] mb-4;
-}
-
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
-}
-
-.datosGenerales {
-  @apply grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] text-texto p-4 border border-texto/10 rounded-md mb-4;
-}
-
-.etiqueta {
-  @apply text-texto/60;
+/* La tabla de líneas trae su propia superficie; aquí solo se separa del encabezado. */
+.recipeDetail {
+  @apply px-4 pb-4 pt-1 border-t border-borde;
 }

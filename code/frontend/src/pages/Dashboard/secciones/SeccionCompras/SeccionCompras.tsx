@@ -24,13 +24,13 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
   const datosConteo = (resumen?.conteo_estado ?? []).map((fila) => ({ etiqueta: fila.tipo, valor: fila.cantidad }))
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.tituloSeccion}>Resumen de compras</h2>
-        <div className={styles.accionesSeccion}>
-          <span className={styles.indicadorSeccion}>
-            <span className={styles.indicadorEtiqueta}>Gasto en compras</span>
-            <span className={styles.indicadorMonto}>
+    <section className="card">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Resumen de compras</h2>
+        <div className="headerActions">
+          <span className={styles.indicator}>
+            <span className={styles.indicatorLabel}>Gasto en compras</span>
+            <span className={styles.indicatorAmount}>
               {resumenGeneral ? formatearMoneda(resumenGeneral.compras_total) : '…'}
             </span>
           </span>
@@ -44,12 +44,12 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
         <p>Cargando resumen de compras…</p>
       ) : (
         <>
-          <div className={styles.filaTresGraficas}>
+          <div className={styles.chartRowThree}>
             <GraficaLinea titulo="Todas las compras" datos={mapear(resumen.todas)} color="var(--color-primario)" />
             <GraficaLinea titulo="Compras de productos" datos={mapear(resumen.productos)} color="var(--color-secundario)" />
-            <GraficaLinea titulo="Compras de insumos" datos={mapear(resumen.insumos)} color="var(--color-advertencia)" />
+            <GraficaLinea titulo="Compras de insumos" datos={mapear(resumen.insumos)} color="var(--color-inicio)" />
           </div>
-          <div className={styles.filaUnaGrafica}>
+          <div className={styles.chartRowOne}>
             <GraficaBarras
               titulo="Compras pendientes y recibidas"
               datos={datosConteo}

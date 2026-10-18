@@ -230,4 +230,114 @@ describe('Terceros', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Todos' }))
     expect(screen.getAllByText('Ver detalle')).toHaveLength(12)
   })
+
+  it('la acción del encabezado corresponde a la pestaña activa y abre su formulario', () => {
+    mockearHooks()
+    renderTerceros()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
+    expect(screen.getByRole('dialog', { name: 'Nuevo cliente' })).toBeInTheDocument()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }))
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Proveedores' }))
+    expect(screen.queryByRole('button', { name: 'Nuevo cliente' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo proveedor' }))
+    expect(screen.getByRole('dialog', { name: 'Nuevo proveedor' })).toBeInTheDocument()
+  })
+
+  it('el historial se despliega justo debajo de la fila del cliente', () => {
+    mockearHooks({ ventas: ventasDePrueba(2) })
+    renderTerceros()
+
+    fireEvent.click(screen.getByRole('button', { name: /hospital san rafael/i }))
+
+    const filaCliente = screen.getByRole('button', { name: /hospital san rafael/i }).closest('tr') as HTMLElement
+    const filaSiguiente = filaCliente.nextElementSibling as HTMLElement
+    expect(filaSiguiente).toHaveTextContent('Ventas de Hospital San Rafael')
+    expect(filaSiguiente.nextElementSibling).toHaveTextContent('Farmacia del Centro')
+  })
+
+  it('el estado de cuenta resume documentos e importe sin contar cancelados, y lista folio, total y estado', () => {
+    const ventas = ventasDePrueba(3).map((v, i) => (i === 2 ? { ...v, estado: 'cancelada' as const } : v))
+    mockearHooks({ ventas })
+    renderTerceros()
+
+    fireEvent.click(screen.getByRole('button', { name: /hospital san rafael/i }))
+
+    const seccion = screen.getByText('Ventas de Hospital San Rafael').closest('.expandedSection') as HTMLElement
+    const resumen = within(seccion.querySelector('dl') as HTMLElement)
+    expect(resumen.getByText('Ventas').closest('div')).toHaveTextContent('3')
+    // 90 + 90; la venta cancelada no cuenta.
+    expect(resumen.getByText('Importe (sin cancelados)').closest('div')).toHaveTextContent('$180.00')
+
+    const filaVenta = within(seccion).getByText('#1').closest('tr') as HTMLElement
+    expect(filaVenta).toHaveTextContent('$90.00')
+    expect(filaVenta).toHaveTextContent('Entregada')
+    expect(within(seccion).getByText('Cancelada')).toBeInTheDocument()
+  })
+
+  it('busca clientes por nombre o RFC y filtra por factura y estado', () => {
+    mockearHooks()
+    renderTerceros()
+
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'xaxx0101' } })
+    expect(screen.getByText('Farmacia del Centro')).toBeInTheDocument()
+    expect(screen.queryByText('Hospital San Rafael')).not.toBeInTheDocument()
+    expect(screen.getByText('Mostrando 1 de 2')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    fireEvent.change(screen.getByLabelText('Factura'), { target: { value: 'no_requiere' } })
+    expect(screen.getByText('Hospital San Rafael')).toBeInTheDocument()
+    expect(screen.queryByText('Farmacia del Centro')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Factura'), { target: { value: '' } })
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'inactivos' } })
+    expect(screen.getByText('Farmacia del Centro')).toBeInTheDocument()
+    expect(screen.queryByText('Hospital San Rafael')).not.toBeInTheDocument()
+  })
+
+  it('la columna Factura muestra el RFC de quien requiere factura', () => {
+    mockearHooks()
+    renderTerceros()
+
+    expect(screen.getByText('Farmacia del Centro').closest('tr')).toHaveTextContent('XAXX010101000')
+    const filaHospital = screen.getByText('Hospital San Rafael').closest('tr') as HTMLElement
+    expect(within(filaHospital).getAllByRole('cell').map((c) => c.textContent)).toContain('—')
+  })
+
+  it('los proveedores muestran su RFC y se buscan también por contacto', () => {
+    mockearHooks()
+    useProveedoresMock.mockReturnValue({
+      data: [
+        ...PROVEEDORES,
+        { id: 2, nombre_proveedor: 'Químicos del Bajío', rfc: 'QBA010101AB1', contacto_nombre: 'Lucía Pérez', telefono: '', email: '', direccion: '', activo: true },
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useProveedores>)
+    renderTerceros()
+    fireEvent.click(screen.getByRole('tab', { name: 'Proveedores' }))
+
+    expect(screen.getByText('Químicos del Bajío').closest('tr')).toHaveTextContent('QBA010101AB1')
+
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'lucia' } })
+    expect(screen.getByText('Químicos del Bajío')).toBeInTheDocument()
+    expect(screen.queryByText('Distribuidora Médica')).not.toBeInTheDocument()
+  })
+
+  it('el formulario de cliente describe el régimen fiscal y el uso de CFDI sin cambiar el nombre de los campos', () => {
+    mockearHooks()
+    renderTerceros()
+
+    const filaFarmacia = screen.getByText('Farmacia del Centro').closest('tr') as HTMLElement
+    fireEvent.click(within(filaFarmacia).getByRole('button', { name: 'Editar' }))
+    const dialogo = within(screen.getByRole('dialog', { name: 'Editar cliente' }))
+
+    expect(dialogo.getByLabelText('Régimen fiscal')).toHaveValue('601')
+    expect(dialogo.getByText('601 — General de Ley Personas Morales')).toBeInTheDocument()
+    expect(dialogo.getByLabelText('Uso de CFDI por defecto')).toHaveValue('G03')
+    expect(dialogo.getByText('G03 — Gastos en general')).toBeInTheDocument()
+
+    fireEvent.change(dialogo.getByLabelText('Régimen fiscal'), { target: { value: '999' } })
+    expect(dialogo.queryByText(/^601 —/)).not.toBeInTheDocument()
+  })
 })

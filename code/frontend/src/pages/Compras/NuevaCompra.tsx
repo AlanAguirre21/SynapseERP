@@ -8,7 +8,6 @@ import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useProductos } from '../../hooks/useProductos'
 import { useProveedores } from '../../hooks/useProveedores'
 import { useSucursales } from '../../hooks/useSucursales'
-import styles from './NuevaCompra.module.css'
 
 type TipoLinea = 'producto' | 'materia_prima'
 
@@ -140,161 +139,206 @@ export function NuevaCompra() {
     }
   }
 
+
   return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Nueva compra</h1>
+    <div className="documentPage">
+      <form className="document" onSubmit={alGuardar} noValidate>
+        <header className="documentHeader documentHeaderPurchase">
+          <span className="documentEyebrow">Compras</span>
+          <h1 className="documentTitle">Nueva compra</h1>
+          <p className="documentHint">
+            Elige proveedor y sucursal destino, agrega las líneas y revisa el total antes de guardar.
+          </p>
+        </header>
 
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <div className={styles.filaCampos}>
-          <label className={styles.campo}>
-            Proveedor
-            <select value={proveedor} onChange={(e) => setProveedor(e.target.value ? Number(e.target.value) : '')}>
-              <option value="" disabled>
-                Selecciona un proveedor
-              </option>
-              {proveedoresActivos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre_proveedor}
-                </option>
-              ))}
-            </select>
-          </label>
+        <section className="step">
+          <span className="stepNumber" aria-hidden="true">
+            1
+          </span>
+          <h2 className="stepTitle">Datos de la compra</h2>
 
-          <label className={styles.campo}>
-            Sucursal destino
-            <select value={sucursal} onChange={(e) => setSucursal(e.target.value ? Number(e.target.value) : '')}>
-              <option value="" disabled>
-                Selecciona una sucursal
-              </option>
-              {sucursalesActivas.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.nombre_sucursal}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Fecha de entrega estimada (opcional)
-            <input type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} />
-          </label>
-        </div>
-
-        <div className={styles.seccionLineas}>
-          <h2 className={styles.tituloSeccion}>Líneas de la compra</h2>
-
-          <div className={styles.filaAgregarLinea}>
-            <label className={styles.campo}>
-              Tipo
-              <select
-                value={tipoNuevaLinea}
-                onChange={(e) => {
-                  setTipoNuevaLinea(e.target.value as TipoLinea)
-                  setItemNuevaLinea('')
-                }}
-              >
-                <option value="producto">Producto</option>
-                <option value="materia_prima">Materia prima</option>
-              </select>
-            </label>
-
-            <label className={styles.campo}>
-              Ítem
-              <select
-                value={itemNuevaLinea}
-                onChange={(e) => setItemNuevaLinea(e.target.value ? Number(e.target.value) : '')}
-              >
-                <option value="">Selecciona un ítem</option>
-                {opcionesItemNuevaLinea.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.nombre}
+          <div className="stepContent">
+            <div className="fieldRow">
+              <label className="field">
+                Proveedor
+                <select value={proveedor} onChange={(e) => setProveedor(e.target.value ? Number(e.target.value) : '')}>
+                  <option value="" disabled>
+                    Selecciona un proveedor
                   </option>
-                ))}
-              </select>
-            </label>
+                  {proveedoresActivos.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre_proveedor}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className={styles.campo}>
-              Cantidad
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={cantidadNuevaLinea}
-                onChange={(e) => setCantidadNuevaLinea(e.target.value)}
-              />
-            </label>
+              <label className="field">
+                Sucursal destino
+                <select value={sucursal} onChange={(e) => setSucursal(e.target.value ? Number(e.target.value) : '')}>
+                  <option value="" disabled>
+                    Selecciona una sucursal
+                  </option>
+                  {sucursalesActivas.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre_sucursal}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className={styles.campo}>
-              Costo unitario
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={costoNuevaLinea}
-                onChange={(e) => setCostoNuevaLinea(e.target.value)}
-              />
-            </label>
-
-            <BotonPrimario type="button" variante="secundario" onClick={agregarLinea}>
-              Agregar línea
-            </BotonPrimario>
+              <label className="field">
+                Fecha de entrega estimada (opcional)
+                <input type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} />
+              </label>
+            </div>
           </div>
+        </section>
 
-          {lineas.length > 0 && (
-            <table className={styles.tablaLineas}>
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Ítem</th>
-                  <th>Cantidad</th>
-                  <th>Costo unitario</th>
-                  <th>Subtotal</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lineas.map((linea) => (
-                  <tr key={linea.clave}>
-                    <td>{linea.tipo === 'producto' ? 'Producto' : 'Materia prima'}</td>
-                    <td>{linea.itemNombre}</td>
-                    <td>{linea.cantidad}</td>
-                    <td>{linea.costoUnitario}</td>
-                    <td>{subtotalDe(linea).toFixed(2)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.enlaceAccionPeligro}
-                        onClick={() => quitarLinea(linea.clave)}
-                      >
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <section className="step">
+          <span className="stepNumber" aria-hidden="true">
+            2
+          </span>
+          <h2 className="stepTitle">Líneas de la compra</h2>
+
+          <div className="stepContent">
+            <div className="addLineRow">
+              <label className="field">
+                Tipo
+                <select
+                  value={tipoNuevaLinea}
+                  onChange={(e) => {
+                    setTipoNuevaLinea(e.target.value as TipoLinea)
+                    setItemNuevaLinea('')
+                  }}
+                >
+                  <option value="producto">Producto</option>
+                  <option value="materia_prima">Materia prima</option>
+                </select>
+              </label>
+
+              <label className="field">
+                Ítem
+                <select
+                  value={itemNuevaLinea}
+                  onChange={(e) => setItemNuevaLinea(e.target.value ? Number(e.target.value) : '')}
+                >
+                  <option value="">Selecciona un ítem</option>
+                  {opcionesItemNuevaLinea.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="field">
+                Cantidad
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={cantidadNuevaLinea}
+                  onChange={(e) => setCantidadNuevaLinea(e.target.value)}
+                />
+              </label>
+
+              <label className="field">
+                Costo unitario
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={costoNuevaLinea}
+                  onChange={(e) => setCostoNuevaLinea(e.target.value)}
+                />
+              </label>
+
+              <BotonPrimario type="button" variante="secundario" onClick={agregarLinea}>
+                Agregar línea
+              </BotonPrimario>
+            </div>
+
+            {lineas.length === 0 ? (
+              <div className="placeholderBox">
+                <span className="placeholderTitle">Todavía no hay líneas</span>
+                <span>Elige un ítem, su cantidad y su costo unitario para agregar la primera línea.</span>
+              </div>
+            ) : (
+              <div className="tableScroll">
+                <table className="linesTable">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Ítem</th>
+                      <th className="numeric">Cantidad</th>
+                      <th className="numeric">Costo unitario</th>
+                      <th className="numeric">Subtotal</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lineas.map((linea) => (
+                      <tr key={linea.clave}>
+                        <td>{linea.tipo === 'producto' ? 'Producto' : 'Materia prima'}</td>
+                        <td>{linea.itemNombre}</td>
+                        <td className="numeric">{linea.cantidad}</td>
+                        <td className="numeric">{linea.costoUnitario}</td>
+                        <td className="numeric">{subtotalDe(linea).toFixed(2)}</td>
+                        <td className="numeric">
+                          <button
+                            type="button"
+                            className="dangerActionLink"
+                            onClick={() => quitarLinea(linea.clave)}
+                          >
+                            Quitar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="step">
+          <span className="stepNumber" aria-hidden="true">
+            3
+          </span>
+          <h2 className="stepTitle">Total</h2>
+
+          <div className="stepContent">
+            <div className="summary">
+              <div className="summaryRow">
+                <span>Líneas</span>
+                <span>{lineas.length}</span>
+              </div>
+              <div className="summaryRow summaryTotal">
+                <span>Total</span>
+                <span data-testid="total-compra">{total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="documentFooter">
+          {errorFormulario && (
+            <p className="errorMessage" role="alert">
+              {errorFormulario}
+            </p>
           )}
 
-          <div className={styles.total}>
-            <span>Total:</span>
-            <span data-testid="total-compra">{total.toFixed(2)}</span>
+          <div className="formActions">
+            <BotonPrimario type="button" variante="secundario" onClick={() => navigate('/compras')}>
+              Cancelar
+            </BotonPrimario>
+            <BotonPrimario type="submit" disabled={crear.isPending}>
+              {crear.isPending ? 'Guardando…' : 'Guardar compra'}
+            </BotonPrimario>
           </div>
-        </div>
-
-        {errorFormulario && (
-          <p className={styles.error} role="alert">
-            {errorFormulario}
-          </p>
-        )}
-
-        <div className={styles.accionesFormulario}>
-          <BotonPrimario type="button" variante="secundario" onClick={() => navigate('/compras')}>
-            Cancelar
-          </BotonPrimario>
-          <BotonPrimario type="submit" disabled={crear.isPending}>
-            {crear.isPending ? 'Guardando…' : 'Guardar compra'}
-          </BotonPrimario>
-        </div>
+        </footer>
       </form>
     </div>
   )

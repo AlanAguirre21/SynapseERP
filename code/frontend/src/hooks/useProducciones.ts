@@ -9,10 +9,12 @@ export function useProducciones(filtros: FiltrosProducciones) {
   })
 }
 
-export function useProduccion(id: number) {
+// `null` mientras la modal de detalle está cerrada: no se consulta nada.
+export function useProduccion(id: number | null) {
   return useQuery({
     queryKey: ['produccion', id],
-    queryFn: () => getProduccion(id),
+    queryFn: () => getProduccion(id as number),
+    enabled: id !== null,
   })
 }
 

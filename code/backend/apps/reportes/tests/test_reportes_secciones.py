@@ -157,11 +157,11 @@ def test_resumen_compras_requiere_autenticacion():
 def test_resumen_compras_desglosa_productos_e_insumos(api_client, sucursal, proveedor, usuario, producto, materia_prima):
     compra = _crear_compra(sucursal, proveedor, usuario, total=Decimal('300.00'))
     DetalleCompraProducto.objects.create(
-        compra=compra, producto=producto, cantidad=Decimal('2'), costo_unitario=Decimal('100.00'),
+        compra=compra, producto=producto, cantidad=Decimal(2), costo_unitario=Decimal('100.00'),
         subtotal=Decimal('200.00'),
     )
     DetalleCompraMateriaPrima.objects.create(
-        compra=compra, materia_prima=materia_prima, cantidad=Decimal('10'), costo_unitario=Decimal('10.00'),
+        compra=compra, materia_prima=materia_prima, cantidad=Decimal(10), costo_unitario=Decimal('10.00'),
         subtotal=Decimal('100.00'),
     )
 
@@ -178,7 +178,7 @@ def test_resumen_compras_incluye_pendientes_en_las_series_de_monto(
 ):
     compra = _crear_compra(sucursal, proveedor, usuario, total=Decimal('200.00'), estado=Compra.ESTADO_PENDIENTE)
     DetalleCompraProducto.objects.create(
-        compra=compra, producto=producto, cantidad=Decimal('1'), costo_unitario=Decimal('200.00'),
+        compra=compra, producto=producto, cantidad=Decimal(1), costo_unitario=Decimal('200.00'),
         subtotal=Decimal('200.00'),
     )
 
@@ -193,7 +193,7 @@ def test_resumen_compras_excluye_canceladas_de_las_series_de_monto(
 ):
     compra = _crear_compra(sucursal, proveedor, usuario, total=Decimal('200.00'), estado=Compra.ESTADO_CANCELADA)
     DetalleCompraProducto.objects.create(
-        compra=compra, producto=producto, cantidad=Decimal('1'), costo_unitario=Decimal('200.00'),
+        compra=compra, producto=producto, cantidad=Decimal(1), costo_unitario=Decimal('200.00'),
         subtotal=Decimal('200.00'),
     )
 
@@ -218,14 +218,14 @@ def test_resumen_compras_conteo_por_estado(api_client, sucursal, proveedor, usua
 @pytest.mark.django_db
 def test_productos_top_mas_vendidos_ordena_descendente(api_client, sucursal, usuario, categoria):
     producto_a = Producto.objects.create(
-        nombre_producto='A', sku='SKU-A', unidad_medida='pza', categoria=categoria, precio_venta=Decimal('10'),
+        nombre_producto='A', sku='SKU-A', unidad_medida='pza', categoria=categoria, precio_venta=Decimal(10),
     )
     producto_b = Producto.objects.create(
-        nombre_producto='B', sku='SKU-B', unidad_medida='pza', categoria=categoria, precio_venta=Decimal('10'),
+        nombre_producto='B', sku='SKU-B', unidad_medida='pza', categoria=categoria, precio_venta=Decimal(10),
     )
     venta = _crear_venta(sucursal, usuario, total=Decimal('0.00'))
-    DetalleVenta.objects.create(venta=venta, producto=producto_a, cantidad=Decimal('3'), precio_unitario=Decimal('10'), subtotal=Decimal('30'))
-    DetalleVenta.objects.create(venta=venta, producto=producto_b, cantidad=Decimal('7'), precio_unitario=Decimal('10'), subtotal=Decimal('70'))
+    DetalleVenta.objects.create(venta=venta, producto=producto_a, cantidad=Decimal(3), precio_unitario=Decimal(10), subtotal=Decimal(30))
+    DetalleVenta.objects.create(venta=venta, producto=producto_b, cantidad=Decimal(7), precio_unitario=Decimal(10), subtotal=Decimal(70))
 
     response = api_client.get('/api/reportes/productos-top/', {'periodo': 'mes', 'orden': 'mas'})
 

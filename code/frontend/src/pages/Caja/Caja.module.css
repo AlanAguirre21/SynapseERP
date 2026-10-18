@@ -1,116 +1,55 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-4;
+/* Panel de saldo: solo existe en Caja. "Saldo de la caja" es la cifra
+   principal y "actual" + "adicional" su desglose, porque son dos categorías
+   del mismo efectivo, no cuentas separadas. */
+.balancePanel {
+  @apply grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-6 px-6 md:px-8 py-6 bg-linear-to-br from-primario-suave to-superficie border border-borde rounded-tarjeta shadow-suave;
 }
 
-.encabezado {
-  @apply flex items-center justify-between mb-4;
+.balanceMain {
+  @apply flex flex-col gap-1 min-w-0;
 }
 
-.titulo {
-  @apply m-0 text-texto text-xl font-semibold;
+.balanceLabel {
+  @apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-primario;
 }
 
-.saldosFila {
-  @apply flex flex-wrap items-stretch gap-3 mb-2;
+.balanceFigure {
+  @apply text-4xl md:text-5xl font-titulo font-semibold text-primario tabular-nums break-words;
 }
 
-.tarjetaSaldo {
-  @apply flex flex-col justify-center gap-1 px-6 py-5 rounded-xl min-w-[220px] flex-1;
+.balanceHint {
+  @apply m-0 text-[0.85rem] text-texto-suave;
 }
 
-.saldoActual {
-  @apply bg-primario-suave text-primario;
+/* Desglose: separado de la cifra principal por un borde (a la izquierda en
+   pantallas anchas, arriba en angostas). */
+.balanceBreakdown {
+  @apply flex flex-col justify-center gap-3 pt-5 md:pt-0 md:pl-6 border-t md:border-t-0 md:border-l border-borde;
 }
 
-.saldoAdicional {
-  @apply bg-inicio-suave text-inicio;
+.balanceItem {
+  @apply flex items-baseline justify-between gap-4 text-[0.9rem] text-texto-suave;
 }
 
-.saldoTotal {
-  @apply bg-primario text-fondo shadow-lg shadow-primario/20 flex-[2.5] min-w-[340px] px-8 py-7;
+.balanceItemAmount {
+  @apply text-lg font-titulo font-semibold text-texto tabular-nums whitespace-nowrap;
 }
 
-.saldoTotal .saldoEtiqueta {
-  @apply text-base;
+/* Etiqueta de motivo y enlace al documento de origen en una sola línea. */
+.reasonCell {
+  @apply flex items-center gap-2 whitespace-nowrap;
 }
 
-.saldoTotal .saldoMonto {
-  @apply text-4xl;
+.referenceLink {
+  @apply text-primario text-[0.8rem] no-underline;
 }
 
-.operador {
-  @apply hidden sm:flex items-center justify-center text-2xl font-semibold text-texto/30 select-none;
-}
-
-.saldoEtiqueta {
-  @apply text-[0.85rem] opacity-80;
-}
-
-.saldoMonto {
-  @apply text-3xl font-bold;
-}
-
-.filtros {
-  @apply flex flex-wrap items-end gap-4 mb-4;
-}
-
-.campoFiltro {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campoFiltro select,
-.campoFiltro input {
-  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
-}
-
-.badgeIngreso {
-  @apply text-exito text-[0.8rem] font-semibold;
-}
-
-.badgeRetiro {
-  @apply text-error text-[0.8rem] font-semibold;
-}
-
-.badgeMotivo {
-  @apply inline-block px-2 py-0.5 rounded-full text-[0.75rem] font-semibold bg-texto/[0.06] text-texto/80;
-}
-
-.enlaceReferencia {
-  @apply block mt-1 text-primario text-[0.8rem] no-underline;
-}
-
-.enlaceReferencia:hover {
+.referenceLink:hover {
   @apply underline;
 }
 
-.saldoResultante {
+.resultingBalance {
   @apply font-semibold text-texto;
-}
-
-.formulario {
-  @apply flex flex-col gap-4;
-}
-
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campo input,
-.campo select,
-.campo textarea {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md font-sans;
-}
-
-.campo textarea {
-  @apply resize-y min-h-[72px];
-}
-
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
 }

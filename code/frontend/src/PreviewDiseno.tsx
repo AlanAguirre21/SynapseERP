@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { Usuario } from './api/usuarios'
 import { AuthProvider } from './context/AuthContext'
 import { Header } from './components/layout/Header'
+import layout from './components/layout/MainLayout.module.css'
 import { Sidebar } from './components/layout/Sidebar'
 import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 
@@ -43,11 +44,11 @@ export function PreviewDiseno() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <div className={layout.layout}>
           <Header onToggleSidebar={() => setColapsado((v) => !v)} />
-          <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+          <div className={layout.layoutBody}>
             <Sidebar modulos={USUARIO_PREVIEW.modulos} colapsado={colapsado} />
-            <main style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+            <main className={layout.layoutContent}>
               <InformacionUsuario />
             </main>
           </div>

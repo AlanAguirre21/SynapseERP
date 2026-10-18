@@ -56,6 +56,12 @@ export type PosicionFormulario = Pick<
   'titulo_posicion' | 'departamento' | 'reporta_a' | 'salario_minimo' | 'salario_maximo'
 >
 
+// Posiciones de todos los departamentos (el endpoint sin `departamento`).
+export async function getTodasLasPosiciones(): Promise<Posicion[]> {
+  const { data } = await apiClient.get<Posicion[]>('/rrhh/posiciones/')
+  return data
+}
+
 export async function getPosiciones(departamentoId: number): Promise<Posicion[]> {
   const { data } = await apiClient.get<Posicion[]>('/rrhh/posiciones/', {
     params: { departamento: departamentoId },
@@ -199,6 +205,15 @@ export type EmpleadoPosicionFormulario = Pick<
 export async function getEmpleadoPosicionesVigentesPorPosicion(posicionId: number): Promise<EmpleadoPosicion[]> {
   const { data } = await apiClient.get<EmpleadoPosicion[]>('/rrhh/empleado-posiciones/', {
     params: { posicion: posicionId, vigente: true },
+  })
+  return data
+}
+
+// Todas las asignaciones vigentes de la empresa (sin filtro de posición):
+// alimentan el directorio y la ocupación de cada posición.
+export async function getEmpleadoPosicionesVigentes(): Promise<EmpleadoPosicion[]> {
+  const { data } = await apiClient.get<EmpleadoPosicion[]>('/rrhh/empleado-posiciones/', {
+    params: { vigente: true },
   })
   return data
 }

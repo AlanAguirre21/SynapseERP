@@ -133,6 +133,9 @@ def test_admin_no_puede_duplicar_ingrediente_en_la_misma_receta(admin_client, pr
         format='json',
     )
     assert response.status_code == 400
+    assert response.json()['non_field_errors'] == [
+        'Esta materia prima ya forma parte de la receta de este producto.',
+    ]
 
 
 @pytest.mark.django_db

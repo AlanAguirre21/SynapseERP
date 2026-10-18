@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import F
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -16,14 +16,21 @@ from .models import (
     InventarioSucursalMateriaPrima,
     InventarioSucursalProducto,
     MovimientoInventario,
+    Traslado,
 )
 from .serializers import (
     AlertaStockSerializer,
     EditarStockMinimoSerializer,
     MovimientoInventarioSerializer,
     StockItemSerializer,
+    TrasladoLecturaSerializer,
+    TrasladoSerializer,
 )
-from .services import bloquear_inventario_materia_prima, bloquear_inventario_producto
+from .services import (
+    bloquear_inventario_materia_prima,
+    bloquear_inventario_producto,
+    trasladar_stock,
+)
 
 
 class AlertasStockView(ListAPIView):
@@ -160,8 +167,9 @@ class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
     """Historial de movimientos de inventario, de solo lectura — ningún
     método de escritura existe en esta ruta a nivel de framework (no solo
     bloqueado por permisos), ver Decisiones en `plan.md` de esta feature.
-    Filtrable por `sucursal`, `tipo_item`, `item_id` y `tipo_movimiento`
-    vía query params combinables.
+    Filtrable por `sucursal`, `tipo_item`, `item_id`, `tipo_movimiento` y
+    `motivo` vía query params combinables. `motivo=traslado` agrupa
+    `traslado_salida` y `traslado_entrada`.
     """
 
     serializer_class = MovimientoInventarioSerializer
@@ -188,4 +196,55 @@ class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
         if tipo_movimiento:
             queryset = queryset.filter(tipo_movimiento=tipo_movimiento)
 
+        motivo = params.get('motivo')
+        if motivo == 'traslado':
+            queryset = queryset.filter(motivo__in=MovimientoInventario.MOTIVOS_TRASLADO)
+        elif motivo:
+            queryset = queryset.filter(motivo=motivo)
+
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        # El historial no está paginado: se evalúa el queryset una vez y se
+        # precargan en lote los `Traslado` referenciados, para que
+        # `sucursal_contraparte` no haga una consulta por fila.
+        movimientos = list(self.filter_queryset(self.get_queryset()))
+        ids_traslado = {
+            m.referencia_id for m in movimientos
+            if m.motivo in MovimientoInventario.MOTIVOS_TRASLADO and m.referencia_id is not None
+        }
+        traslados = Traslado.objects.select_related('sucursal_origen', 'sucursal_destino').in_bulk(ids_traslado)
+        serializer = self.get_serializer(
+            movimientos, many=True, context={**self.get_serializer_context(), 'traslados': traslados},
+        )
+        return Response(serializer.data)
+
+
+class TrasladoViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """POST /api/inventario/traslados/ — registra un traslado de stock
+    (una o varias líneas, productos y/o materia prima) entre dos sucursales.
+
+    Solo creación, vía mixin explícito (precedente de `015 · Caja`): no
+    existen `list`/`retrieve`/`update`/`destroy`, así que cualquier otro
+    método responde 405 a nivel de framework — un `Traslado` es
+    INSERT-only. Abierto a cualquier autenticado (admin u operador): es
+    operación diaria, no configuración administrativa.
+    """
+
+    serializer_class = TrasladoSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Traslado.objects.all()
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        datos = serializer.validated_data
+
+        traslado = trasladar_stock(
+            sucursal_origen=datos['sucursal_origen'],
+            sucursal_destino=datos['sucursal_destino'],
+            lineas=[(linea['tipo_item'], linea['item'], linea['cantidad']) for linea in datos['detalles']],
+            usuario=request.user,
+        )
+        return Response(TrasladoLecturaSerializer(traslado).data, status=201)

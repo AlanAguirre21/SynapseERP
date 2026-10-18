@@ -47,7 +47,17 @@ export async function editarStockMinimo(datos: EditarStockMinimo): Promise<Stock
 // --- Movimientos de inventario -------------------------------------------
 
 export type TipoMovimientoInventario = 'entrada' | 'salida'
-export type MotivoMovimientoInventario = 'compra' | 'venta' | 'produccion_consumo' | 'produccion_entrada' | 'ajuste'
+export type MotivoMovimientoInventario =
+  | 'compra'
+  | 'venta'
+  | 'produccion_consumo'
+  | 'produccion_entrada'
+  | 'ajuste'
+  | 'traslado_salida'
+  | 'traslado_entrada'
+
+// `traslado` es un valor agrupado del filtro (salida + entrada), no un motivo real.
+export type FiltroMotivoMovimientoInventario = MotivoMovimientoInventario | 'traslado'
 
 export interface MovimientoInventario {
   id: number
@@ -64,6 +74,8 @@ export interface MovimientoInventario {
   stock_resultante: string
   usuario: number
   usuario_nombre: string
+  // Solo en filas de traslado: la otra sucursal (destino si es salida, origen si es entrada).
+  sucursal_contraparte: string | null
 }
 
 export interface FiltrosMovimientosInventario {
@@ -71,6 +83,7 @@ export interface FiltrosMovimientosInventario {
   tipo_item?: TipoItemInventario
   item_id?: number
   tipo_movimiento?: TipoMovimientoInventario
+  motivo?: FiltroMotivoMovimientoInventario
 }
 
 export async function getMovimientosInventario(
@@ -79,5 +92,45 @@ export async function getMovimientosInventario(
   const { data } = await apiClient.get<MovimientoInventario[]>('/inventario/movimientos/', {
     params: filtros,
   })
+  return data
+}
+
+// --- Traslados -------------------------------------------------------------
+
+export interface LineaTrasladoPayload {
+  tipo_item: TipoItemInventario
+  item_id: number
+  // `string` para no perder precisión decimal en el envío.
+  cantidad: string
+}
+
+export interface CrearTrasladoPayload {
+  sucursal_origen: number
+  sucursal_destino: number
+  detalles: LineaTrasladoPayload[]
+}
+
+export interface DetalleTraslado {
+  id: number
+  tipo_item: TipoItemInventario
+  item_id: number
+  item_nombre: string
+  cantidad: string
+}
+
+export interface Traslado {
+  id: number
+  fecha: string
+  sucursal_origen: number
+  sucursal_origen_nombre: string
+  sucursal_destino: number
+  sucursal_destino_nombre: string
+  usuario: number
+  usuario_nombre: string
+  detalles: DetalleTraslado[]
+}
+
+export async function crearTraslado(datos: CrearTrasladoPayload): Promise<Traslado> {
+  const { data } = await apiClient.post<Traslado>('/inventario/traslados/', datos)
   return data
 }

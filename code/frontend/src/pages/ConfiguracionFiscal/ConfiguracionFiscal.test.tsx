@@ -278,4 +278,86 @@ describe('ConfiguracionFiscal', () => {
 
     await waitFor(() => expect(reactivarSerieMock).toHaveBeenCalledWith(2))
   })
+
+  it('el estado para timbrar marca todo listo cuando datos, PAC y series lo están', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    const estado = within(screen.getByRole('region', { name: 'Estado para timbrar' }))
+    expect(estado.getByText('Listo para timbrar')).toBeInTheDocument()
+    expect(estado.getAllByText('Listo')).toHaveLength(3)
+    expect(estado.queryByText('Pendiente')).not.toBeInTheDocument()
+  })
+
+  it('el estado para timbrar señala cada comprobación pendiente, incluida la falta de serie activa', () => {
+    mockearHooks({
+      datosFiscales: DATOS_FISCALES_VACIOS,
+      series: [{ id: 2, serie: 'B', folio_actual: 0, activo: false }],
+    })
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    const estado = within(screen.getByRole('region', { name: 'Estado para timbrar' }))
+    expect(estado.getByText('Configuración incompleta')).toBeInTheDocument()
+    const fila = (texto: string) => estado.getByText(texto).closest('li') as HTMLElement
+    expect(fila('Datos fiscales completos')).toHaveTextContent('Pendiente')
+    expect(fila('Conexión al PAC configurada y activa')).toHaveTextContent('Listo')
+    expect(fila('Al menos una serie activa')).toHaveTextContent('Pendiente')
+  })
+
+  it('el aviso de configuración incompleta ya no menciona números internos de feature', () => {
+    mockearHooks({ datosFiscales: DATOS_FISCALES_VACIOS, pac: PAC_VACIO })
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    const aviso = screen.getByRole('alert')
+    expect(aviso).toHaveTextContent(/antes de poder timbrar facturas/i)
+    expect(aviso).not.toHaveTextContent('017')
+  })
+
+  it('describe el régimen fiscal capturado y no muestra nada para un código desconocido', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    expect(screen.getByText('601 — General de Ley Personas Morales')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Régimen fiscal'), { target: { value: '626' } })
+    expect(screen.getByText('626 — Régimen Simplificado de Confianza')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Régimen fiscal'), { target: { value: '999' } })
+    expect(screen.queryByText(/^999 —/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/626 —/)).not.toBeInTheDocument()
+  })
+
+  it('las etiquetas del PAC reflejan lo guardado, no lo que se está editando', () => {
+    mockearHooks({ pac: { ...PAC_COMPLETO, activo: false, api_key_configurada: false, completa: false } })
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    const estadoPac = within(screen.getByRole('group', { name: 'Estado de la conexión guardada' }))
+    expect(estadoPac.getByText('Conexión inactiva')).toBeInTheDocument()
+    expect(estadoPac.getByText('API key sin configurar')).toBeInTheDocument()
+
+    // Marcar la casilla sin guardar no cambia la etiqueta.
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Conexión activa' }))
+    expect(estadoPac.getByText('Conexión inactiva')).toBeInTheDocument()
+  })
+
+  it('la tabla de series muestra el próximo folio que se asignará', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    renderPagina()
+
+    const tabla = within(screen.getByRole('table'))
+    expect(tabla.getByRole('cell', { name: 'A' }).closest('tr')).toHaveTextContent('A-101')
+    expect(tabla.getByRole('cell', { name: 'B' }).closest('tr')).toHaveTextContent('B-1')
+  })
 })

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
+import { useCrearTraslado, useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
@@ -40,7 +40,19 @@ const MOVIMIENTOS = [
     id: 1, fecha: '2026-08-20T10:00:00Z', sucursal: 1, sucursal_nombre: 'Matriz', tipo_item: 'producto' as const,
     item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'entrada' as const, cantidad: '20.00',
     motivo: 'compra' as const, referencia_id: null, stock_resultante: '20.00', usuario: 1,
-    usuario_nombre: 'admin1',
+    usuario_nombre: 'admin1', sucursal_contraparte: null,
+  },
+  {
+    id: 2, fecha: '2026-08-21T10:00:00Z', sucursal: 1, sucursal_nombre: 'Matriz', tipo_item: 'producto' as const,
+    item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'salida' as const, cantidad: '5.00',
+    motivo: 'traslado_salida' as const, referencia_id: 12, stock_resultante: '15.00', usuario: 1,
+    usuario_nombre: 'admin1', sucursal_contraparte: 'Norte',
+  },
+  {
+    id: 3, fecha: '2026-08-21T10:00:00Z', sucursal: 2, sucursal_nombre: 'Norte', tipo_item: 'producto' as const,
+    item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'entrada' as const, cantidad: '5.00',
+    motivo: 'traslado_entrada' as const, referencia_id: 12, stock_resultante: '5.00', usuario: 1,
+    usuario_nombre: 'admin1', sucursal_contraparte: 'Matriz',
   },
 ]
 
@@ -68,12 +80,22 @@ function mockearHooks(rol: 'admin' | 'operador' = 'operador') {
   useEditarStockMinimoMock.mockReturnValue(
     { mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useEditarStockMinimo>,
   )
+  vi.mocked(useCrearTraslado).mockReturnValue(
+    { mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCrearTraslado>,
+  )
 }
 
 function primero<T>(elementos: T[]): T {
   const elemento = elementos[0]
   if (!elemento) throw new Error('Se esperaba al menos un elemento.')
   return elemento
+}
+
+// Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
+function indicador(etiqueta: string): HTMLElement {
+  const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
+  if (!recuadro) throw new Error(`Indicador "${etiqueta}" sin contenedor`)
+  return recuadro
 }
 
 describe('Inventario', () => {
@@ -91,7 +113,7 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Inventario de materia prima' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Materia prima' }))
 
     expect(useStockMock).toHaveBeenLastCalledWith('materia_prima', expect.any(Number))
   })
@@ -105,7 +127,7 @@ describe('Inventario', () => {
     const filaGasa = tablaStock.getByText('Gasa estéril').closest('tr')
 
     expect(filaSuero).toHaveTextContent('Bajo mínimo')
-    expect(filaGasa).toHaveTextContent('OK')
+    expect(filaGasa).toHaveTextContent('En existencia')
   })
 
   it('permite filtrar el stock por sucursal', () => {
@@ -121,6 +143,8 @@ describe('Inventario', () => {
   it('el historial no tiene botones de acción', () => {
     mockearHooks()
     render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
 
     expect(screen.queryByRole('button', { name: /nuevo|crear|editar|eliminar/i })).not.toBeInTheDocument()
   })
@@ -150,5 +174,129 @@ describe('Inventario', () => {
     expect(screen.queryByLabelText(/Stock mínimo de/)).not.toBeInTheDocument()
     const tablaStock = within(primero(screen.getAllByRole('table')))
     expect(tablaStock.getAllByText('10.00')).toHaveLength(2)
+  })
+
+  it.each(['admin', 'operador'] as const)('un %s ve el botón "Traslado" y abre el modal', (rol) => {
+    mockearHooks(rol)
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Traslado' }))
+
+    expect(screen.getByRole('dialog', { name: 'Traslado entre sucursales' })).toBeInTheDocument()
+  })
+
+  it('precarga el modal con la sucursal y el tipo seleccionados en la tabla', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Materia prima' }))
+    fireEvent.change(primero(screen.getAllByLabelText('Sucursal')), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Traslado' }))
+
+    expect(screen.getByLabelText('Sucursal origen')).toHaveValue('2')
+    expect(screen.getByLabelText('Tipo de la línea 1')).toHaveValue('materia_prima')
+  })
+
+  it('el historial muestra las filas de traslado con número y sucursal contraparte', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
+
+    const historial = within(screen.getByRole('table'))
+    expect(historial.getByText('Traslado #12 (salida) → Norte')).toBeInTheDocument()
+    expect(historial.getByText('Traslado #12 (entrada) ← Matriz')).toBeInTheDocument()
+    expect(historial.getByText('Compra')).toBeInTheDocument()
+  })
+
+  it('permite filtrar el historial por motivo "Traslado"', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
+    fireEvent.change(screen.getByLabelText('Motivo'), { target: { value: 'traslado' } })
+
+    expect(useMovimientosInventarioMock).toHaveBeenLastCalledWith(expect.objectContaining({ motivo: 'traslado' }))
+  })
+
+  it('muestra los indicadores de existencias y tiñe solo las alertas con valor', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    expect(indicador('Ítems')).toHaveTextContent('2')
+    expect(indicador('En existencia')).toHaveTextContent('1')
+    expect(indicador('Bajo mínimo')).toHaveTextContent('1')
+    expect(indicador('Bajo mínimo')).toHaveClass('statTileWarning')
+    expect(indicador('Agotados')).toHaveTextContent('0')
+    expect(indicador('Agotados')).not.toHaveClass('statTileDanger')
+  })
+
+  it('marca como "Agotado" un ítem sin existencia aunque su mínimo sea 0', () => {
+    mockearHooks()
+    useStockMock.mockReturnValue({
+      data: [{ id: 3, nombre: 'Vendas', stock_actual: '0.00', stock_minimo: '0.00', stock_bajo: false }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useStock>)
+    render(<Inventario />)
+
+    const tablaStock = within(screen.getByRole('table'))
+    expect(tablaStock.getByText('Vendas').closest('tr')).toHaveTextContent('Agotado')
+    expect(indicador('Agotados')).toHaveTextContent('1')
+    expect(indicador('Agotados')).toHaveClass('statTileDanger')
+  })
+
+  it('el historial muestra cantidades con signo, existencia resultante e indicadores', () => {
+    mockearHooks()
+    render(<Inventario />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
+
+    const historial = within(screen.getByRole('table'))
+    const filaCompra = historial.getByText('Compra').closest('tr')
+    expect(filaCompra).toHaveTextContent('+20.00')
+    expect(filaCompra).toHaveTextContent('Entrada')
+
+    const filaSalida = historial.getByText('Traslado #12 (salida) → Norte').closest('tr')
+    // Signo menos tipográfico (U+2212) y saldo después del movimiento.
+    expect(filaSalida).toHaveTextContent('\u22125.00')
+    expect(filaSalida).toHaveTextContent('15.00')
+
+    expect(indicador('Movimientos')).toHaveTextContent('3')
+    expect(indicador('Entradas')).toHaveTextContent('2')
+    expect(indicador('Salidas')).toHaveTextContent('1')
+  })
+
+  it('limita el historial a 10 movimientos por defecto, con selector 5 / 10 / Todos', () => {
+    mockearHooks()
+    const muchos = Array.from({ length: 12 }, (_, i) => ({ ...MOVIMIENTOS[0], id: 100 + i }))
+    useMovimientosInventarioMock.mockReturnValue(
+      { data: muchos, isLoading: false } as unknown as ReturnType<typeof useMovimientosInventario>,
+    )
+    render(<Inventario />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
+
+    const filas = () => within(screen.getByRole('table')).getAllByRole('row').length - 1
+    expect(filas()).toBe(10)
+    expect(screen.getByText('Mostrando 10 de 12')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '5' }))
+    expect(filas()).toBe(5)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Todos' }))
+    expect(filas()).toBe(12)
+    expect(screen.getByText('Mostrando 12 de 12')).toBeInTheDocument()
+  })
+
+  it('"Limpiar filtros" solo aparece con algún filtro aplicado y los restablece', () => {
+    mockearHooks()
+    render(<Inventario />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+
+    const motivo = screen.getByLabelText('Motivo')
+    fireEvent.change(motivo, { target: { value: 'traslado' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+
+    expect(motivo).toHaveValue('')
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
   })
 })
