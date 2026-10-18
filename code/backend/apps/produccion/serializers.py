@@ -30,14 +30,16 @@ class RecetaSerializer(serializers.ModelSerializer):
     cantidad_requerida = serializers.DecimalField(
         max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))],
     )
+    creado_por_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = Receta
         fields = [
             'id', 'producto', 'producto_nombre', 'materia_prima', 'materia_prima_nombre',
-            'cantidad_requerida', 'activo',
+            'cantidad_requerida', 'activo', 'creado_por', 'creado_por_nombre',
         ]
-        read_only_fields = ['id', 'activo']
+        # `creado_por` lo asigna el ViewSet desde la sesión, nunca la petición.
+        read_only_fields = ['id', 'activo', 'creado_por']
         # Mensaje propio en español: el de DRF por defecto sale en inglés
         # (`LANGUAGE_CODE = 'en-us'`) y el frontend lo muestra tal cual.
         validators = [
@@ -47,6 +49,9 @@ class RecetaSerializer(serializers.ModelSerializer):
                 message='Esta materia prima ya forma parte de la receta de este producto.',
             ),
         ]
+
+    def get_creado_por_nombre(self, receta):
+        return receta.creado_por.nombre_mostrado() if receta.creado_por else None
 
 
 class DetalleProduccionSerializer(serializers.ModelSerializer):

@@ -78,7 +78,8 @@ export function Produccion() {
         {pestaña === 'producciones' && (
           <BotonPrimario onClick={() => setNuevaProduccionAbierta(true)}>Nueva producción</BotonPrimario>
         )}
-        {pestaña === 'recetas' && esAdmin && (
+        {/* Admin y operador pueden crear recetas; editar, desactivar y reactivar líneas es solo de admin. */}
+        {pestaña === 'recetas' && (
           <BotonPrimario onClick={() => setModoReceta({ tipo: 'nuevaReceta' })}>Agregar receta de producto</BotonPrimario>
         )}
       </div>
@@ -627,6 +628,10 @@ function PestañaRecetas({
         </span>
       ),
     },
+    // Solo el admin ve quién creó cada línea ("—" en las anteriores).
+    ...(esAdmin
+      ? [{ clave: 'creado_por_nombre' as const, encabezado: 'Creada por', render: (fila: Receta) => fila.creado_por_nombre ?? '—' }]
+      : []),
   ]
 
   const renderAccionesLinea = (fila: Receta) => (
@@ -708,20 +713,19 @@ function PestañaRecetas({
                       {grupo.activa ? 'Activa' : 'Inactiva'}
                     </span>
                   </button>
-                  {/* Hermano del botón de despliegue, no hijo: agregar no despliega ni contrae la fila. */}
-                  {esAdmin && (
-                    <button
-                      type="button"
-                      className={styles.addButton}
-                      aria-label={`Agregar materia prima a ${grupo.productoNombre}`}
-                      title="Agregar materia prima"
-                      onClick={() =>
-                        onCambiarModo({ tipo: 'agregarLinea', producto: grupo.producto, productoNombre: grupo.productoNombre })
-                      }
-                    >
-                      <Icono nombre="mas" tamano={18} />
-                    </button>
-                  )}
+                  {/* Hermano del botón de despliegue, no hijo: agregar no despliega ni contrae la fila.
+                      Disponible para ambos roles. */}
+                  <button
+                    type="button"
+                    className={styles.addButton}
+                    aria-label={`Agregar materia prima a ${grupo.productoNombre}`}
+                    title="Agregar materia prima"
+                    onClick={() =>
+                      onCambiarModo({ tipo: 'agregarLinea', producto: grupo.producto, productoNombre: grupo.productoNombre })
+                    }
+                  >
+                    <Icono nombre="mas" tamano={18} />
+                  </button>
                 </div>
 
                 {desplegado && (

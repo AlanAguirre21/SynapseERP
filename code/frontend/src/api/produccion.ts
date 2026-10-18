@@ -10,6 +10,9 @@ export interface Receta {
   materia_prima_nombre: string
   cantidad_requerida: string
   activo: boolean
+  // Quién creó la línea; `null` en las anteriores a que se registrara.
+  creado_por: number | null
+  creado_por_nombre: string | null
 }
 
 export type RecetaFormulario = Pick<Receta, 'producto' | 'materia_prima' | 'cantidad_requerida'>

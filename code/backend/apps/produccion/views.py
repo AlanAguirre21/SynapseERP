@@ -13,7 +13,7 @@ from apps.inventario.services import (
     bloquear_inventario_producto,
     registrar_movimiento_inventario,
 )
-from core.permissions import LecturaParaTodosEscrituraSoloAdmin
+from core.permissions import EsAdmin
 
 from .models import DetalleProduccion, Produccion, Receta
 from .serializers import ProduccionSerializer, RecetaSerializer
@@ -24,9 +24,11 @@ def _calcular_subtotal(cantidad, costo_unitario):
 
 
 class RecetaViewSet(viewsets.ModelViewSet):
-    """CRUD de líneas de receta. Lectura para cualquier usuario
-    autenticado, escritura (crear/editar/desactivar/reactivar) solo para
-    rol admin — mismo criterio que Catálogo.
+    """CRUD de líneas de receta. Consultar y **crear** (dar de alta una
+    receta o agregarle materias primas): cualquier usuario autenticado.
+    Editar, desactivar y reactivar: solo admin, porque cambian el consumo de
+    productos que ya se producen (`spec.md`, "Actualización: el operador
+    puede crear recetas").
     """
 
     queryset = (
@@ -35,7 +37,15 @@ class RecetaViewSet(viewsets.ModelViewSet):
         .order_by('producto__nombre_producto', 'materia_prima__nombre_item')
     )
     serializer_class = RecetaSerializer
-    permission_classes = [LecturaParaTodosEscrituraSoloAdmin]
+    ACCIONES_SOLO_ADMIN = {'update', 'partial_update', 'destroy', 'reactivar'}
+
+    def get_permissions(self):
+        if self.action in self.ACCIONES_SOLO_ADMIN:
+            return [EsAdmin()]
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(creado_por=self.request.user)
 
     def get_queryset(self):
         queryset = super().get_queryset()
