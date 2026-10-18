@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from apps.configuracion_fiscal.models import SerieFolio
 from apps.ventas.models import Venta
+from core.permissions import es_admin
 
 from .models import ComplementoPago, Factura
 from .serializers import ComplementoPagoSerializer, FacturaSerializer
@@ -54,6 +55,12 @@ class FacturaViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Cr
         expirar_cancelaciones_pendientes()
         queryset = super().get_queryset()
         params = self.request.query_params
+
+        # Las facturas siguen a sus ventas: el operador solo ve las de las
+        # ventas que él registró (`019`, "Actualización: el operador solo ve
+        # las facturas de sus ventas").
+        if not es_admin(self.request.user):
+            queryset = queryset.filter(venta__usuario=self.request.user)
 
         estado = params.get('estado')
         if estado:
@@ -201,6 +208,8 @@ class ComplementoPagoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, m
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        if not es_admin(self.request.user):
+            queryset = queryset.filter(factura__venta__usuario=self.request.user)
         factura_id = self.request.query_params.get('factura')
         if factura_id:
             queryset = queryset.filter(factura_id=factura_id)

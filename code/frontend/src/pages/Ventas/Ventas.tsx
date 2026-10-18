@@ -7,6 +7,8 @@ import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useClientes } from '../../hooks/useClientes'
 import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { useUsuarios } from '../../hooks/useUsuarios'
 import { useVentas } from '../../hooks/useVentas'
 import { formatearMoneda } from '../../utils/moneda'
 
@@ -21,6 +23,11 @@ export function Ventas() {
   const { data: sucursales } = useSucursales()
   const { data: clientes } = useClientes()
   const { data: productos } = useProductos()
+  // El operador solo ve las ventas que él registró (el backend las filtra);
+  // el admin ve todas y puede filtrar por quién las registró.
+  const { data: usuarioActual } = useUsuarioActual()
+  const esAdmin = usuarioActual?.rol === 'admin'
+  const { data: usuarios } = useUsuarios(esAdmin)
 
   const [sucursalFiltro, setSucursalFiltro] = useState<number | ''>('')
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoVenta | ''>('')
@@ -28,6 +35,7 @@ export function Ventas() {
   const [productoFiltro, setProductoFiltro] = useState<number | ''>('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  const [usuarioFiltro, setUsuarioFiltro] = useState<number | ''>('')
 
   const { data: ventas, isLoading } = useVentas({
     sucursal: sucursalFiltro || undefined,
@@ -36,6 +44,7 @@ export function Ventas() {
     producto: productoFiltro || undefined,
     fecha_desde: fechaDesde || undefined,
     fecha_hasta: fechaHasta || undefined,
+    usuario: (esAdmin && usuarioFiltro) || undefined,
   })
 
   const columnas: ColumnaTabla<Venta>[] = [
@@ -43,6 +52,7 @@ export function Ventas() {
     { clave: 'fecha', encabezado: 'Fecha', render: (fila) => new Date(fila.fecha).toLocaleDateString('es-MX') },
     { clave: 'cliente_nombre', encabezado: 'Cliente' },
     { clave: 'sucursal_nombre', encabezado: 'Sucursal' },
+    ...(esAdmin ? [{ clave: 'usuario_nombre' as const, encabezado: 'Registrada por' }] : []),
     { clave: 'total', alineacion: 'derecha', encabezado: 'Total', render: (fila) => formatearMoneda(fila.total) },
     {
       clave: 'estado',
@@ -59,7 +69,7 @@ export function Ventas() {
   const entregadas = lista.filter((venta) => venta.estado === 'entregada').length
 
   const hayFiltros = Boolean(
-    sucursalFiltro || estadoFiltro || clienteFiltro || productoFiltro || fechaDesde || fechaHasta,
+    sucursalFiltro || estadoFiltro || clienteFiltro || productoFiltro || fechaDesde || fechaHasta || usuarioFiltro,
   )
 
   function limpiarFiltros() {
@@ -69,6 +79,7 @@ export function Ventas() {
     setProductoFiltro('')
     setFechaDesde('')
     setFechaHasta('')
+    setUsuarioFiltro('')
   }
 
   return (
@@ -76,7 +87,11 @@ export function Ventas() {
       <div className="pageHeader">
         <div className="pageHeading">
           <h1 className="pageTitle">Ventas</h1>
-          <p className="pageHint">Consulta las ventas registradas y da seguimiento a sus entregas.</p>
+          <p className="pageHint">
+            {esAdmin
+              ? 'Consulta las ventas registradas y da seguimiento a sus entregas.'
+              : 'Tus ventas registradas: consúltalas y da seguimiento a sus entregas.'}
+          </p>
         </div>
         <BotonPrimario onClick={() => navigate('/ventas/nueva')}>Nueva venta</BotonPrimario>
       </div>
@@ -158,6 +173,23 @@ export function Ventas() {
           </select>
         </label>
 
+        {esAdmin && (
+          <label className="filterField">
+            Registrada por
+            <select
+              value={usuarioFiltro}
+              onChange={(e) => setUsuarioFiltro(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">Todos</option>
+              {(usuarios ?? []).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {`${u.first_name} ${u.last_name}`.trim() || u.username}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <label className="filterField">
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
@@ -181,7 +213,13 @@ export function Ventas() {
         <Tabla
           columnas={columnas}
           datos={ventas ?? []}
-          mensajeVacio={hayFiltros ? 'Ninguna venta coincide con los filtros.' : 'Todavía no hay ventas registradas.'}
+          mensajeVacio={
+            hayFiltros
+              ? 'Ninguna venta coincide con los filtros.'
+              : esAdmin
+                ? 'Todavía no hay ventas registradas.'
+                : 'Todavía no has registrado ventas.'
+          }
           renderAcciones={(fila) => (
             <button type="button" className="actionLink" onClick={() => navigate(`/ventas/${fila.id}`)}>
               Ver detalle

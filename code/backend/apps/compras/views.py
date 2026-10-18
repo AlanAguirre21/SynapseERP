@@ -17,6 +17,7 @@ from apps.inventario.services import (
     bloquear_inventario_producto,
     registrar_movimiento_inventario,
 )
+from core.permissions import es_admin
 
 from .models import Compra
 from .serializers import CompraSerializer
@@ -113,6 +114,16 @@ class CompraViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
+
+        # El operador solo consulta y opera las compras que él registró
+        # (`012`, "Actualización: el operador solo ve sus propias compras");
+        # listado, detalle y acciones responden 404 con una ajena.
+        if es_admin(self.request.user):
+            usuario_id = params.get('usuario')
+            if usuario_id:
+                queryset = queryset.filter(usuario_id=usuario_id)
+        else:
+            queryset = queryset.filter(usuario=self.request.user)
 
         proveedor_id = params.get('proveedor')
         if proveedor_id:

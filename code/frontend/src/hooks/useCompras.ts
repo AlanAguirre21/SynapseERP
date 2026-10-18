@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 
+import { esNoEncontrado } from '../api/errores'
 import {
   cancelarCompra,
   crearCompra,
@@ -20,6 +21,9 @@ export function useCompra(id: number) {
   return useQuery({
     queryKey: ['compra', id],
     queryFn: () => getCompra(id),
+    // Un 404 (no existe, o es de otro usuario para el operador) no se
+    // reintenta: se muestra de inmediato el estado de "no encontrada".
+    retry: (intentos, error) => !esNoEncontrado(error) && intentos < 3,
   })
 }
 

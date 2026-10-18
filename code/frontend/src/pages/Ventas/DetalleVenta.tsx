@@ -123,7 +123,21 @@ export function DetalleVenta() {
   }
 
   if (isLoading) return <p>Cargando venta…</p>
-  if (!venta) return <p>No se encontró la venta.</p>
+  if (!venta) {
+    return (
+      <div className="documentPage">
+        <div className="documentToolbar">
+          <BotonPrimario variante="secundario" onClick={() => navigate('/ventas')}>
+            Volver al listado
+          </BotonPrimario>
+        </div>
+        <div className="placeholderBox">
+          <span className="placeholderTitle">No se encontró la venta.</span>
+          <span>Puede que no exista o que no tengas acceso a ella.</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="documentPage">

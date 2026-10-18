@@ -39,6 +39,13 @@ def _es_admin(request):
     return request.user.rol_usuario == ROL_ADMIN
 
 
+def _alcance(request):
+    """`None` (toda la empresa) para el admin; el propio usuario para el
+    operador, que solo ve cifras de sus ventas, compras y facturas (`016`,
+    "Actualización: cifras propias para el operador")."""
+    return None if _es_admin(request) else request.user
+
+
 def _validar_periodo(request):
     periodo = request.query_params.get('periodo', PERIODO_DIA)
     if periodo not in PERIODOS_VALIDOS:
@@ -65,7 +72,7 @@ class ResumenDashboardView(APIView):
 
     def get(self, request):
         periodo = _validar_periodo(request)
-        resumen = calcular_resumen(periodo)
+        resumen = calcular_resumen(periodo, usuario=_alcance(request))
         serializer = ResumenDashboardSerializer if _es_admin(request) else ResumenDashboardOperadorSerializer
         return Response(serializer(resumen).data)
 
@@ -78,7 +85,7 @@ class ResumenVentasView(APIView):
 
     def get(self, request):
         periodo = _validar_periodo(request)
-        resumen = calcular_resumen_ventas(periodo)
+        resumen = calcular_resumen_ventas(periodo, usuario=_alcance(request))
         return Response(ResumenVentasSerializer(resumen).data)
 
 
@@ -90,7 +97,7 @@ class ResumenComprasView(APIView):
 
     def get(self, request):
         periodo = _validar_periodo(request)
-        resumen = calcular_resumen_compras(periodo)
+        resumen = calcular_resumen_compras(periodo, usuario=_alcance(request))
         return Response(ResumenComprasSerializer(resumen).data)
 
 
@@ -102,7 +109,7 @@ class ProductosTopView(APIView):
     def get(self, request):
         periodo = _validar_periodo(request)
         orden = _validar_orden(request)
-        resultados = calcular_top_productos(periodo, orden)
+        resultados = calcular_top_productos(periodo, orden, usuario=_alcance(request))
         return Response(ProductoTopSerializer(resultados, many=True).data)
 
 
@@ -121,7 +128,7 @@ class ClientesTopView(APIView):
         if _es_admin(request):
             resultados = calcular_top_clientes(periodo, orden, por=TOP_CLIENTES_POR_MONTO)
             return Response(ClienteTopSerializer(resultados, many=True).data)
-        resultados = calcular_top_clientes(periodo, orden, por=TOP_CLIENTES_POR_COMPRAS)
+        resultados = calcular_top_clientes(periodo, orden, por=TOP_CLIENTES_POR_COMPRAS, usuario=request.user)
         return Response(ClienteTopOperadorSerializer(resultados, many=True).data)
 
 
@@ -157,4 +164,4 @@ class ResumenFacturacionView(APIView):
 
     def get(self, request):
         periodo = _validar_periodo(request)
-        return Response(ResumenFacturacionSerializer(calcular_resumen_facturacion(periodo)).data)
+        return Response(ResumenFacturacionSerializer(calcular_resumen_facturacion(periodo, usuario=_alcance(request))).data)

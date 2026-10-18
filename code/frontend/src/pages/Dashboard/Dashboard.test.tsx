@@ -367,5 +367,16 @@ describe('Dashboard', () => {
     expect(screen.getByRole('heading', { name: 'Ganancias del periodo' })).toBeInTheDocument()
     expect(screen.getByText('Movimientos financieros del periodo')).toBeInTheDocument()
   })
-})
 
+  // 016, "Actualización: cifras propias para el operador".
+  it('el operador ve que las cifras son de sus propios registros; el admin no', () => {
+    mockearTodo({ usuario: { nombre: 'Luis', rol: 'operador' } })
+    const { unmount } = renderDashboard()
+    expect(screen.getByText('Cifras de tus propias ventas, compras y facturas.')).toBeInTheDocument()
+    unmount()
+
+    mockearTodo({ usuario: { nombre: 'Ana', rol: 'admin' } })
+    renderDashboard()
+    expect(screen.queryByText('Cifras de tus propias ventas, compras y facturas.')).not.toBeInTheDocument()
+  })
+})

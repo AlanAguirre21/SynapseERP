@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Factura } from '../../api/facturacion'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Facturacion } from './Facturacion'
 
 vi.mock('react-router-dom', async () => {
@@ -14,6 +15,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../../hooks/useFacturas')
 vi.mock('../../hooks/useClientes')
+vi.mock('../../hooks/useUsuarioActual')
 
 const CLIENTES = [
   { id: 1, nombre_cliente: 'Hospital San Rafael', telefono: '', email: '', direccion: '', activo: true, datos_fiscales: null },
@@ -28,7 +30,9 @@ const FACTURAS: Factura[] = [
   },
 ]
 
-function mockearHooks() {
+// La pantalla lee el rol para su texto (019, "el operador solo ve las facturas de sus ventas").
+function mockearHooks(rol: 'admin' | 'operador' = 'admin') {
+  vi.mocked(useUsuarioActual).mockReturnValue({ data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>)
   vi.mocked(useClientes).mockReturnValue({ data: CLIENTES, isLoading: false } as unknown as ReturnType<typeof useClientes>)
   vi.mocked(useFacturas).mockReturnValue({ data: FACTURAS, isLoading: false } as unknown as ReturnType<typeof useFacturas>)
 }
@@ -158,5 +162,13 @@ describe('Facturacion', () => {
     fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'error' } })
 
     expect(screen.getByText('Ninguna factura coincide con los filtros.')).toBeInTheDocument()
+  })
+
+  // 019: el operador solo ve las facturas de sus ventas.
+  it('para el operador el encabezado aclara que son las facturas de sus ventas', () => {
+    mockearHooks('operador')
+    renderFacturacion()
+
+    expect(screen.getByText(/facturas de tus ventas/i)).toBeInTheDocument()
   })
 })
