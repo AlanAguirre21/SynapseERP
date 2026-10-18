@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -29,11 +29,11 @@ const useEmpleadoMock = vi.mocked(useEmpleado)
 const USUARIOS: UsuarioCuenta[] = [
   {
     id: 1, username: 'ana', first_name: 'Ana', last_name: 'Torres', email: 'ana@flebosil.test',
-    rol_usuario: 'admin', empleado: 2, activo: true,
+    rol_usuario: 'admin', empleado: 2, activo: true, foto_usuario: null,
   },
   {
     id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@flebosil.test',
-    rol_usuario: 'operador', empleado: null, activo: false,
+    rol_usuario: 'operador', empleado: null, activo: false, foto_usuario: null,
   },
 ]
 
@@ -266,4 +266,42 @@ describe('Usuarios', () => {
     expect(dialogo.getByText(/acceso a todos los módulos/i)).toBeInTheDocument()
     expect(rol).toHaveAttribute('aria-describedby', 'usuario-rol-descripcion')
   })
+
+  it('la celda de identidad muestra la fotografía del usuario si la tiene', () => {
+    mockearHooks()
+    useUsuariosMock.mockReturnValue({
+      data: [{ ...USUARIOS[0], foto_usuario: 'http://servidor/fotos-usuarios/ana.png' }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useUsuarios>)
+    const { container } = renderUsuarios()
+
+    expect(container.querySelector('img[src="http://servidor/fotos-usuarios/ana.png"]')).toBeInTheDocument()
+  })
+
+  it('el alta envía la fotografía elegida; sin tocarla, la edición no la envía', async () => {
+    mockearHooks()
+    const crearMock = vi.fn().mockResolvedValue(undefined)
+    const editarMock = vi.fn().mockResolvedValue(undefined)
+    vi.mocked(useCrearUsuario).mockReturnValue({ mutateAsync: crearMock, isPending: false } as unknown as ReturnType<typeof useCrearUsuario>)
+    vi.mocked(useEditarUsuario).mockReturnValue({ mutateAsync: editarMock, isPending: false } as unknown as ReturnType<typeof useEditarUsuario>)
+    renderUsuarios()
+
+    fireEvent.click(screen.getByRole('button', { name: /nuevo usuario/i }))
+    const dialogo = within(screen.getByRole('dialog', { name: /nuevo usuario/i }))
+    const foto = new File([new Uint8Array(10)], 'foto.webp', { type: 'image/webp' })
+    fireEvent.change(dialogo.getByLabelText('Fotografía de perfil'), { target: { files: [foto] } })
+    expect(dialogo.getByRole('button', { name: 'Cambiar fotografía' })).toBeInTheDocument()
+    fireEvent.change(dialogo.getByLabelText(/correo electrónico/i), { target: { value: 'nuevo@flebosil.test' } })
+    fireEvent.change(dialogo.getByLabelText(/^contraseña$/i), { target: { value: 'Clave-segura-123' } })
+    fireEvent.click(dialogo.getByRole('button', { name: /^guardar$/i }))
+
+    await waitFor(() => expect(crearMock).toHaveBeenCalledWith(expect.objectContaining({ foto_usuario: foto })))
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^editar$/i })[0] as HTMLElement)
+    fireEvent.click(within(screen.getByRole('dialog', { name: /editar usuario/i })).getByRole('button', { name: /^guardar$/i }))
+
+    await waitFor(() => expect(editarMock).toHaveBeenCalled())
+    expect(editarMock.mock.calls[0]?.[0].datos).not.toHaveProperty('foto_usuario')
+  })
 })
+

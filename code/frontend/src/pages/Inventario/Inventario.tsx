@@ -81,6 +81,16 @@ const TIPOS_EXISTENCIAS: { clave: TipoItemInventario; etiqueta: string }[] = [
   { clave: 'materia_prima', etiqueta: 'Materia prima' },
 ]
 
+// Se lee de `window.location` y no con `useSearchParams` para que la página
+// siga funcionando sin enrutador (sus tests la renderizan así). Solo se usa
+// como valor inicial: la URL no se sincroniza al cambiar de sucursal.
+function leerSucursalInicial(): number | null {
+  const valor = new URLSearchParams(window.location.search).get('sucursal')
+  if (!valor || !/^\d+$/.test(valor)) return null
+  const id = Number(valor)
+  return id > 0 ? id : null
+}
+
 export function Inventario() {
   const { data: sucursales } = useSucursales()
   const sucursalesActivas = (sucursales ?? []).filter((s) => s.activo)
@@ -94,9 +104,14 @@ export function Inventario() {
   const [tipoStock, setTipoStock] = useState<TipoItemInventario>('producto')
   // `null` mientras el usuario no elige explícitamente: se usa la primera
   // sucursal activa como default sin necesitar un efecto para "sincronizar"
-  // el estado una vez cargan las sucursales.
-  const [sucursalStockElegida, setSucursalStockElegida] = useState<number | null>(null)
-  const sucursalStock = sucursalStockElegida ?? sucursalesActivas[0]?.id ?? null
+  // el estado una vez cargan las sucursales. El valor inicial puede venir de
+  // `?sucursal=ID` (enlace "Ver inventario" de Sucursales); solo se respeta si
+  // corresponde a una sucursal activa.
+  const [sucursalStockElegida, setSucursalStockElegida] = useState<number | null>(leerSucursalInicial)
+  const sucursalStock =
+    (sucursalesActivas.some((s) => s.id === sucursalStockElegida) ? sucursalStockElegida : null) ??
+    sucursalesActivas[0]?.id ??
+    null
 
   const [trasladoAbierto, setTrasladoAbierto] = useState(false)
 

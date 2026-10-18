@@ -2,11 +2,16 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { Avatar } from '../../components/common/Avatar'
 import { CampoContrasena } from '../../components/common/CampoContrasena'
 import { Modal } from '../../components/common/Modal'
+import { SelectorFotoPerfil } from '../../components/common/SelectorFotoPerfil'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import {
+  DESCRIPCIONES_ROL,
+  ETIQUETAS_ROL,
   generarPasswordAleatoria,
+  type CambioFoto,
   type LimiteAccesos,
   type RegistroAcceso,
   type UsuarioCuenta,
@@ -21,7 +26,7 @@ import {
   useReactivarUsuario,
   useUsuarios,
 } from '../../hooks/useUsuarios'
-import { normalizarBusqueda, obtenerIniciales } from '../../utils/texto'
+import { normalizarBusqueda } from '../../utils/texto'
 import styles from './Usuarios.module.css'
 
 interface ValoresFormulario {
@@ -64,21 +69,6 @@ const CLASES_TIPO_ACCESO: Record<string, string> = {
   exitoso: 'status statusSuccess',
   cierre_sesion: 'status statusNeutral',
   fallido: 'status statusError',
-}
-
-const ETIQUETAS_ROL: Record<UsuarioCuenta['rol_usuario'], string> = {
-  admin: 'Administrador',
-  operador: 'Operador',
-}
-
-// Qué implica cada rol, al elegirlo. Refleja `backend/core/modules.py` (la
-// fuente de verdad es el backend): si cambian los módulos de un rol, se
-// actualiza aquí a mano (checklist de mantenimiento de 021).
-const DESCRIPCIONES_ROL: Record<UsuarioCuenta['rol_usuario'], string> = {
-  admin:
-    'Acceso a todos los módulos, incluidos Caja, Recursos Humanos, Usuarios, Contabilidad y Configuración Fiscal.',
-  operador:
-    'La operación diaria (ventas, compras, producción, inventario, facturación, catálogo, terceros y sucursales), sin Caja, Recursos Humanos, Usuarios, Contabilidad ni Configuración Fiscal.',
 }
 
 function nombreCompleto(usuario: UsuarioCuenta): string {
@@ -128,6 +118,8 @@ function UsuariosContenido() {
   const [enEdicion, setEnEdicion] = useState<UsuarioCuenta | null>(null)
   const [valores, setValores] = useState<ValoresFormulario>(FORMULARIO_VACIO)
   const [errorFormulario, setErrorFormulario] = useState('')
+  // Fotografía: `undefined` sin cambio, archivo nuevo o `null` para quitarla.
+  const [cambioFoto, setCambioFoto] = useState<CambioFoto | undefined>(undefined)
   const [aDesactivar, setADesactivar] = useState<UsuarioCuenta | null>(null)
   const [errorDesactivar, setErrorDesactivar] = useState('')
   const [aReactivar, setAReactivar] = useState<UsuarioCuenta | null>(null)
@@ -157,6 +149,7 @@ function UsuariosContenido() {
   function abrirCrear() {
     setEnEdicion(null)
     setValores(FORMULARIO_VACIO)
+    setCambioFoto(undefined)
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
@@ -171,6 +164,7 @@ function UsuariosContenido() {
       empleado: usuario.empleado,
       password: '',
     })
+    setCambioFoto(undefined)
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
@@ -188,6 +182,9 @@ function UsuariosContenido() {
       return
     }
 
+    // Sin cambio de fotografía, las peticiones son las mismas de siempre.
+    const foto = cambioFoto === undefined ? {} : { foto_usuario: cambioFoto }
+
     try {
       if (enEdicion) {
         await editar.mutateAsync({
@@ -198,6 +195,7 @@ function UsuariosContenido() {
             email: valores.email,
             rol_usuario: valores.rol_usuario,
             empleado: valores.empleado,
+            ...foto,
           },
         })
       } else {
@@ -208,13 +206,14 @@ function UsuariosContenido() {
           rol_usuario: valores.rol_usuario,
           empleado: valores.empleado,
           password: valores.password,
+          ...foto,
         })
       }
       setFormularioAbierto(false)
     } catch (err) {
       setErrorFormulario(
         extraerMensajeError(
-          err, ['email', 'password', 'empleado', 'rol_usuario'],
+          err, ['email', 'password', 'empleado', 'rol_usuario', 'foto_usuario'],
           'No se pudo guardar el usuario. Intenta de nuevo.',
         ),
       )
@@ -268,9 +267,7 @@ function UsuariosContenido() {
         const nombre = nombreCompleto(fila)
         return (
           <div className={styles.identity}>
-            <span className={styles.identityAvatar} aria-hidden="true">
-              {obtenerIniciales(nombre || fila.username)}
-            </span>
+            <Avatar nombre={nombre || fila.username} foto={fila.foto_usuario} />
             <span className={styles.identityText}>
               {/* El botón lleva solo el nombre: el nombre de usuario va aparte. */}
               <button
@@ -421,6 +418,16 @@ function UsuariosContenido() {
         ancho="amplio"
       >
         <form className="form" onSubmit={alGuardar} noValidate>
+          <h3 className="subtitle">Fotografía</h3>
+          <SelectorFotoPerfil
+            nombre={`${valores.first_name} ${valores.last_name}`.trim() || valores.email}
+            fotoGuardada={enEdicion?.foto_usuario ?? null}
+            cambio={cambioFoto}
+            onCambiar={setCambioFoto}
+          >
+            <span className="fieldHint">JPG, PNG o WebP, hasta 2 MB. Opcional.</span>
+          </SelectorFotoPerfil>
+
           <h3 className="subtitle">Datos personales</h3>
           <div className="formGrid">
             <label className="field">

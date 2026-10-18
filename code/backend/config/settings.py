@@ -227,3 +227,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # momento `MEDIA_URL` llegara a conectarse.
 EMPLEADOS_FOTOS_URL = 'fotos-empleados/'
 EMPLEADOS_FOTOS_ROOT = BASE_DIR / 'media_rrhh' / 'fotos_empleados'
+
+# Fotografías de perfil de usuario (017 · Información de Usuario y 010 ·
+# Usuarios) — mismo criterio que las de empleado: carpeta y URL propias,
+# servidas como estático solo bajo `DEBUG`. En producción, el servidor web
+# debe servir `USUARIOS_FOTOS_URL` desde `USUARIOS_FOTOS_ROOT` (igual que
+# las fotos de empleado).
+USUARIOS_FOTOS_URL = 'fotos-usuarios/'
+USUARIOS_FOTOS_ROOT = BASE_DIR / 'media_usuarios' / 'fotos_usuarios'

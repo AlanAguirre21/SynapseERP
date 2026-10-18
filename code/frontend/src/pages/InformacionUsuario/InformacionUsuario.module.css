@@ -1,26 +1,60 @@
 @reference "../../index.css";
 
-/* Tarjeta de perfil centrada: única pantalla con este formato. */
-.profileCard {
-  @apply flex flex-col gap-6 w-full max-w-md mx-auto p-7 bg-superficie rounded-tarjeta shadow-marcada;
+/* Estilos propios de Información de Usuario: cabecera de perfil, fila de
+   seguridad, lista de módulos y barra de guardado. Las filas de ajustes son
+   clases globales de index.css. */
+
+/* --- Cabecera de perfil -------------------------------------------------- */
+
+/* Única superficie con color de marca de la pantalla: degradado suave de
+   primario-suave, como el panel de saldo de Caja. El avatar y sus acciones
+   son el componente común `SelectorFotoPerfil`. */
+.profileHeader {
+  @apply px-6 py-6 border border-borde rounded-tarjeta shadow-suave bg-linear-to-br from-primario-suave to-superficie;
 }
 
-.identity {
-  @apply flex items-center gap-4 pb-6 border-b border-borde;
+.profileName {
+  @apply m-0 text-texto font-titulo font-semibold text-[1.35rem] break-words;
 }
 
-.profileAvatar {
-  @apply flex items-center justify-center w-14 h-14 shrink-0 rounded-pildora bg-primario-suave text-primario font-titulo font-semibold text-lg;
+.profileMeta {
+  @apply m-0 text-texto-suave text-[0.9rem] break-words;
 }
 
-.fullName {
-  @apply m-0 text-texto font-titulo font-semibold text-base;
+/* --- Seguridad ----------------------------------------------------------- */
+
+.securityRow {
+  @apply flex items-center justify-between gap-4 flex-wrap;
 }
 
-.usernameLabel {
-  @apply m-0 text-texto-suave text-[0.8rem];
+.securityText {
+  @apply flex flex-col gap-1;
 }
 
-.readOnlyValue {
-  @apply inline-block w-fit m-0 mt-0.5 px-3 py-1 text-[0.85rem] font-medium text-secundario-texto bg-secundario-suave rounded-pildora;
+.securityTitle {
+  @apply text-[0.9rem] font-semibold text-texto;
+}
+
+/* --- Rol y acceso -------------------------------------------------------- */
+
+.moduleList {
+  @apply flex flex-wrap gap-2 m-0 p-0 list-none;
+}
+
+/* --- Guardar ------------------------------------------------------------- */
+
+.saveArea {
+  @apply flex flex-col gap-3 pt-6 border-t border-borde;
+}
+
+.saveBar {
+  @apply flex items-center justify-between gap-4 flex-wrap;
+}
+
+.saveNote {
+  @apply text-[0.85rem] font-medium text-advertencia-texto;
+}
+
+.saveActions {
+  @apply flex items-center gap-4 flex-wrap ml-auto;
 }

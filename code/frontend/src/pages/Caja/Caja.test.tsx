@@ -240,4 +240,24 @@ describe('Caja', () => {
     fireEvent.click(dialogo.getByRole('button', { name: /^registrar$/i }))
     expect(crearMock).toHaveBeenCalledWith({ tipo_movimiento: 'retiro', monto: '350', observacion: 'Retiro grande' })
   })
+
+  it('un movimiento de nómina se etiqueta "Nómina" y enlaza a la pestaña Nóminas de RRHH', () => {
+    mockearHooks()
+    vi.mocked(useMovimientosCaja).mockReturnValue({
+      data: [{
+        id: 3, fecha: '2026-08-27T10:00:00Z', tipo_movimiento: 'retiro', monto: '4500.00', motivo: 'nomina',
+        referencia_id: 21, observacion: 'Nómina de Ana Ruiz (01/08/2026 – 15/08/2026)', usuario: 1,
+        usuario_nombre: 'admin1', saldo_resultante: '0.00',
+      }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useMovimientosCaja>)
+    mockUsuarioActual('admin')
+
+    renderCaja()
+
+    const tabla = within(screen.getByRole('table'))
+    expect(tabla.getByText('Nómina')).toHaveClass('status')
+    expect(tabla.getByRole('link', { name: /ver nómina #21/i })).toHaveAttribute('href', '/rrhh?pestana=nominas')
+  })
 })
+

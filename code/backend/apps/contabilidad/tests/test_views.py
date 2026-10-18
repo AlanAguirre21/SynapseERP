@@ -104,7 +104,7 @@ def test_admin_puede_crear_editar_y_desactivar_una_cuenta(admin_client):
 
     creada = admin_client.post(
         '/api/contabilidad/cuentas/',
-        {'codigo': '5300', 'nombre': 'Depreciación', 'tipo': 'egreso', 'cuenta_padre': padre.id},
+        {'codigo': '5900', 'nombre': 'Depreciación', 'tipo': 'egreso', 'cuenta_padre': padre.id},
         format='json',
     )
     assert creada.status_code == 201

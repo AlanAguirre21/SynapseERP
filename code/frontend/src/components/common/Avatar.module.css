@@ -1,0 +1,26 @@
+@reference "../../index.css";
+
+.avatar {
+  @apply flex items-center justify-center shrink-0 overflow-hidden rounded-pildora font-titulo font-semibold;
+}
+
+.small {
+  @apply w-9 h-9 text-[0.8rem];
+}
+
+.large {
+  @apply w-16 h-16 text-[1.4rem];
+}
+
+.soft {
+  @apply bg-primario-suave text-primario;
+}
+
+.brand {
+  @apply bg-primario text-superficie;
+}
+
+/* La fotografía llena el círculo sin deformarse (sin recorte manual). */
+.photo {
+  @apply w-full h-full object-cover;
+}

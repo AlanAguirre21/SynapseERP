@@ -387,6 +387,22 @@
     @apply items-end;
   }
 
+  /* --- Filas de ajustes ------------------------------------------------- */
+
+  /* Explicación a la izquierda, tarjeta a la derecha (Configuración Fiscal,
+     Información de Usuario); por debajo de md, la explicación va encima. */
+  .settingsRow {
+    @apply grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4 md:gap-8 py-6 border-t border-borde;
+  }
+
+  .settingsIntro {
+    @apply flex flex-col gap-2;
+  }
+
+  .settingsDescription {
+    @apply m-0 text-[0.9rem] text-texto-suave;
+  }
+
   /* --- Mensajes ---------------------------------------------------------- */
 
   .errorMessage {

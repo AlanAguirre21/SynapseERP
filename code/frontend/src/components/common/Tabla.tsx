@@ -4,7 +4,8 @@ import styles from './Tabla.module.css'
 
 export interface ColumnaTabla<T> {
   clave: Extract<keyof T, string>
-  encabezado: string
+  // Texto, o un control (ej. la casilla "seleccionar todas" de Nóminas).
+  encabezado: ReactNode
   render?: (fila: T) => ReactNode
   // 'derecha' para columnas numéricas o de dinero.
   alineacion?: 'derecha'

@@ -124,10 +124,10 @@ function ConfiguracionFiscalContenido() {
 // Fila de ajustes: título y explicación a la izquierda, contenido a la derecha.
 function FilaAjustes({ titulo, descripcion, children }: { titulo: string; descripcion: string; children: ReactNode }) {
   return (
-    <section className={styles.settingsRow}>
-      <div className={styles.settingsIntro}>
+    <section className="settingsRow">
+      <div className="settingsIntro">
         <h2 className="sectionTitle">{titulo}</h2>
-        <p className={styles.settingsDescription}>{descripcion}</p>
+        <p className="settingsDescription">{descripcion}</p>
       </div>
       <div className="card">{children}</div>
     </section>

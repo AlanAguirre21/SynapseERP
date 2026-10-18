@@ -223,3 +223,16 @@
 .directoryName {
   @apply inline-flex items-center gap-3 whitespace-nowrap;
 }
+
+/* --- Nóminas -------------------------------------------------------------- */
+
+/* Barra que aparece al seleccionar solicitudes pendientes: resumen y pago en bloque. */
+.selectionBar {
+  @apply flex items-center justify-between gap-4 flex-wrap px-4 py-3 bg-primario-suave border border-borde rounded-tarjeta text-[0.9rem] font-medium text-texto;
+}
+
+/* Empleados omitidos al generar la nómina, con su motivo. */
+.skippedList {
+  @apply flex flex-col gap-1.5 m-0 pl-5 text-[0.85rem] text-texto;
+}
+
