@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import type { EstadoFactura } from './facturacion'
 
 export type PeriodoDashboard = 'dia' | 'semana' | 'mes' | 'año'
 
@@ -7,12 +8,15 @@ export interface PuntoResumenDashboard {
   ganancia: string
 }
 
+// `ganancia` y `serie` solo llegan al admin; el operador recibe los totales
+// que usan Ventas y Compras (016, "Actualización: ganancias y movimientos de
+// caja solo para admin").
 export interface ResumenDashboard {
   periodo: PeriodoDashboard
   ventas_total: string
   compras_total: string
-  ganancia: string
-  serie: PuntoResumenDashboard[]
+  ganancia?: string
+  serie?: PuntoResumenDashboard[]
 }
 
 export async function getResumenDashboard(periodo: PeriodoDashboard): Promise<ResumenDashboard> {
@@ -68,9 +72,11 @@ export async function getProductosTop(periodo: PeriodoDashboard, orden: OrdenTop
   return data
 }
 
+// Admin: monto comprado. Operador: número de compras, sin importes.
 export interface ClienteTop {
   cliente: string
-  monto: string
+  monto?: string
+  compras?: number
 }
 
 export async function getClientesTop(periodo: PeriodoDashboard, orden: OrdenTop): Promise<ClienteTop[]> {
@@ -93,5 +99,48 @@ export async function getMovimientosCajaReporte(
   const { data } = await apiClient.get<MovimientoCajaReporte[]>('/reportes/movimientos-caja/', {
     params: { periodo, limite },
   })
+  return data
+}
+
+// --- Resumen facturación (016, "Actualización: Resumen facturación con datos")
+
+export interface PuntoFacturacion {
+  fecha: string
+  total: string
+  pue: string
+  ppd: string
+}
+
+export interface ConteoEstadoFactura {
+  estado: EstadoFactura
+  tipo: string
+  cantidad: number
+}
+
+export interface FacturaPorAtender {
+  id: number
+  serie: string
+  folio_interno: number | null
+  cliente: string
+  total: string
+  estado: EstadoFactura
+  fecha: string
+}
+
+export interface ResumenFacturacion {
+  periodo: PeriodoDashboard
+  facturado_total: string
+  facturas_emitidas: number
+  por_cobrar_ppd: string
+  // `null` si no hay ventas en el periodo.
+  porcentaje_facturado: string | null
+  serie: PuntoFacturacion[]
+  conteo_estado: ConteoEstadoFactura[]
+  // Pendientes accionables (error / pendiente de cancelación): no dependen del periodo.
+  requiere_atencion: FacturaPorAtender[]
+}
+
+export async function getResumenFacturacion(periodo: PeriodoDashboard): Promise<ResumenFacturacion> {
+  const { data } = await apiClient.get<ResumenFacturacion>('/reportes/facturacion/', { params: { periodo } })
   return data
 }

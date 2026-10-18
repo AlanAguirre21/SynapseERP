@@ -6,11 +6,21 @@ modelo, solo `Sum()`/`Count()` sobre tablas ya existentes.
 from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import QuerySet, Sum
+from django.db.models import (
+    Count,
+    DecimalField,
+    OuterRef,
+    QuerySet,
+    Subquery,
+    Sum,
+    Value,
+)
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from apps.caja.models import MovimientoCaja
 from apps.compras.models import Compra, DetalleCompraMateriaPrima, DetalleCompraProducto
+from apps.facturacion.models import ComplementoPago, Factura
 from apps.ventas.models import DetalleVenta, Venta
 
 PERIODO_DIA = 'dia'
@@ -264,10 +274,15 @@ def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS) -> list:
     return [{'producto': fila['producto__nombre_producto'], 'cantidad': fila['cantidad']} for fila in query[:5]]
 
 
-def calcular_top_clientes(periodo: str, orden: str = ORDEN_MAS) -> list:
-    """Top 5 clientes por monto comprado. Excluye ventas sin cliente
-    (venta de mostrador) y, con `orden='menos'`, clientes sin compras en
-    el periodo.
+TOP_CLIENTES_POR_MONTO = 'monto'
+TOP_CLIENTES_POR_COMPRAS = 'compras'
+
+
+def calcular_top_clientes(periodo: str, orden: str = ORDEN_MAS, por: str = TOP_CLIENTES_POR_MONTO) -> list:
+    """Top 5 clientes por monto comprado (`por='monto'`, admin) o por número
+    de compras (`por='compras'`, operador: sin importes). Excluye ventas sin
+    cliente (venta de mostrador) y, con `orden='menos'`, clientes sin
+    compras en el periodo.
     """
 
     inicio, ahora, _ = _rango_periodo(periodo)
@@ -277,12 +292,14 @@ def calcular_top_clientes(periodo: str, orden: str = ORDEN_MAS) -> list:
             fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN, cliente__isnull=False,
         )
         .values('cliente__nombre_cliente')
-        .annotate(monto=Sum('total'))
-        .filter(monto__gt=0)
     )
-    query = query.order_by('monto' if orden == ORDEN_MENOS else '-monto')
+    if por == TOP_CLIENTES_POR_COMPRAS:
+        query = query.annotate(compras=Count('id')).filter(compras__gt=0)
+    else:
+        query = query.annotate(monto=Sum('total')).filter(monto__gt=0)
+    query = query.order_by(por if orden == ORDEN_MENOS else f'-{por}')
 
-    return [{'cliente': fila['cliente__nombre_cliente'], 'monto': fila['monto']} for fila in query[:5]]
+    return [{'cliente': fila['cliente__nombre_cliente'], por: fila[por]} for fila in query[:5]]
 
 
 def obtener_movimientos_caja(periodo: str, limite: str = LIMITE_10):
@@ -299,3 +316,124 @@ def obtener_movimientos_caja(periodo: str, limite: str = LIMITE_10):
         return queryset
 
     return queryset[: int(limite)]
+
+
+# --- Resumen facturación (`016`, "Actualización: Resumen facturación con datos")
+
+# Vigentes ante el SAT: timbradas y las que esperan la aceptación de su
+# cancelación. Mismo criterio que "Importe facturado" del listado de
+# Facturación (`019`).
+ESTADOS_FACTURA_VIGENTE = [Factura.ESTADO_TIMBRADA, Factura.ESTADO_PENDIENTE_CANCELACION]
+# Orden fijo de la gráfica de barras; siempre los cinco, aunque estén en cero.
+ESTADOS_FACTURA_GRAFICA = [
+    (Factura.ESTADO_TIMBRADA, 'Timbrada'),
+    (Factura.ESTADO_PENDIENTE, 'Pendiente'),
+    (Factura.ESTADO_ERROR, 'Error'),
+    (Factura.ESTADO_PENDIENTE_CANCELACION, 'Pendiente de cancelación'),
+    (Factura.ESTADO_CANCELADA, 'Cancelada'),
+]
+ESTADOS_FACTURA_REQUIEREN_ATENCION = [Factura.ESTADO_ERROR, Factura.ESTADO_PENDIENTE_CANCELACION]
+LIMITE_REQUIERE_ATENCION = 5
+CIEN = Decimal(100)
+
+
+def _pagado_con_complementos():
+    """Subconsulta: suma de los complementos de pago **timbrados** de la
+    factura (los que fallaron no cuentan), mismo cálculo que el detalle de
+    factura de `019`."""
+    pagado = (
+        ComplementoPago.objects.filter(factura=OuterRef('pk'), estado=ComplementoPago.ESTADO_TIMBRADO)
+        .values('factura')
+        .annotate(total=Sum('monto_pagado'))
+        .values('total')
+    )
+    return Coalesce(Subquery(pagado, output_field=DecimalField(max_digits=12, decimal_places=2)), Value(CERO))
+
+
+def calcular_resumen_facturacion(periodo: str) -> dict:
+    """Resumen de la sección 'Resumen facturación' del Dashboard. Una factura
+    pertenece al periodo por su fecha de timbrado (fecha fiscal del CFDI);
+    las no timbradas usan su fecha de creación, solo para el conteo por
+    estado. El importe de una factura es el total de su venta.
+    """
+
+    inicio, ahora, granularidad = _rango_periodo(periodo)
+    claves = _generar_claves(inicio, ahora, granularidad)
+
+    vigentes = Factura.objects.filter(
+        estado__in=ESTADOS_FACTURA_VIGENTE, fecha_timbrado__gte=inicio, fecha_timbrado__lte=ahora,
+    )
+
+    facturado_total = vigentes.aggregate(total=Sum('venta__total'))['total'] or CERO
+    facturas_emitidas = vigentes.count()
+
+    ppd = vigentes.filter(metodo_pago=Factura.METODO_PPD).annotate(pagado=_pagado_con_complementos())
+    por_cobrar_ppd = sum(
+        (max(total - pagado, CERO) for total, pagado in ppd.values_list('venta__total', 'pagado')), CERO,
+    )
+
+    # % del importe de las ventas del periodo (las que cuentan) que tiene
+    # una factura vigente, sin importar cuándo se timbró.
+    ventas = Venta.objects.filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN)
+    importe_ventas = ventas.aggregate(total=Sum('total'))['total'] or CERO
+    importe_facturado = (
+        ventas.filter(facturas__estado__in=ESTADOS_FACTURA_VIGENTE).distinct().aggregate(total=Sum('total'))['total']
+        or CERO
+    )
+    porcentaje_facturado = (
+        (importe_facturado * CIEN / importe_ventas).quantize(Decimal('0.1')) if importe_ventas else None
+    )
+
+    pares = list(vigentes.values_list('fecha_timbrado', 'venta__total', 'metodo_pago'))
+    pue = _agrupar_por_bucket(((f, m) for f, m, metodo in pares if metodo == Factura.METODO_PUE), granularidad)
+    ppd_bucket = _agrupar_por_bucket(((f, m) for f, m, metodo in pares if metodo == Factura.METODO_PPD), granularidad)
+    serie = [
+        {
+            'fecha': clave.isoformat(),
+            'total': pue.get(clave, CERO) + ppd_bucket.get(clave, CERO),
+            'pue': pue.get(clave, CERO),
+            'ppd': ppd_bucket.get(clave, CERO),
+        }
+        for clave in claves
+    ]
+
+    # Fecha efectiva para contar: timbrado si existe, si no, creación.
+    del_periodo_por_timbrado = Factura.objects.filter(fecha_timbrado__gte=inicio, fecha_timbrado__lte=ahora)
+    del_periodo_sin_timbrar = Factura.objects.filter(
+        fecha_timbrado__isnull=True, fecha_creacion__gte=inicio, fecha_creacion__lte=ahora,
+    )
+    conteos = {}
+    for consulta in (del_periodo_por_timbrado, del_periodo_sin_timbrar):
+        for fila in consulta.values('estado').annotate(cantidad=Count('id')):
+            conteos[fila['estado']] = conteos.get(fila['estado'], 0) + fila['cantidad']
+    conteo_estado = [
+        {'estado': estado, 'tipo': etiqueta, 'cantidad': conteos.get(estado, 0)}
+        for estado, etiqueta in ESTADOS_FACTURA_GRAFICA
+    ]
+
+    # Pendientes accionables: no dependen del periodo.
+    requiere_atencion = [
+        {
+            'id': factura.id,
+            'serie': factura.serie,
+            'folio_interno': factura.folio_interno,
+            'cliente': factura.venta.cliente.nombre_cliente if factura.venta.cliente else 'Sin cliente',
+            'total': factura.venta.total,
+            'estado': factura.estado,
+            'fecha': factura.fecha_creacion,
+        }
+        for factura in Factura.objects.filter(estado__in=ESTADOS_FACTURA_REQUIEREN_ATENCION)
+        .select_related('venta__cliente')
+        .order_by('-fecha_creacion')[:LIMITE_REQUIERE_ATENCION]
+    ]
+
+    return {
+        'periodo': periodo,
+        'facturado_total': facturado_total,
+        'facturas_emitidas': facturas_emitidas,
+        'por_cobrar_ppd': por_cobrar_ppd,
+        'porcentaje_facturado': porcentaje_facturado,
+        'serie': serie,
+        'conteo_estado': conteo_estado,
+        'requiere_atencion': requiere_atencion,
+    }

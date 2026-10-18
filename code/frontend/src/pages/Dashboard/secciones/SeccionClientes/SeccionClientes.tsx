@@ -5,6 +5,10 @@ import { formatearMoneda } from '../../compartido/formato'
 import { GraficaBarras } from '../../compartido/GraficaBarras'
 import { useClientesTop } from '../../../../hooks/useClientesTop'
 
+function formatearCompras(valor: number): string {
+  return valor === 1 ? '1 compra' : `${valor} compras`
+}
+
 interface SeccionClientesProps {
   periodo: PeriodoDashboard
 }
@@ -13,7 +17,12 @@ export function SeccionClientes({ periodo }: SeccionClientesProps) {
   const [orden, setOrden] = useState<OrdenTop>('mas')
   const { data: clientes, isLoading } = useClientesTop(periodo, orden)
 
-  const datos = (clientes ?? []).map((cliente) => ({ etiqueta: cliente.cliente, valor: Number(cliente.monto) }))
+  // El admin recibe el monto comprado; el operador, el número de compras (sin importes).
+  const porCompras = (clientes ?? []).some((cliente) => cliente.compras !== undefined)
+  const datos = (clientes ?? []).map((cliente) => ({
+    etiqueta: cliente.cliente,
+    valor: porCompras ? Number(cliente.compras ?? 0) : Number(cliente.monto ?? 0),
+  }))
 
   return (
     <section className="card">
@@ -48,8 +57,8 @@ export function SeccionClientes({ periodo }: SeccionClientesProps) {
           titulo={orden === 'mas' ? 'Top 5 clientes con más compras' : 'Top 5 clientes con menos compras'}
           datos={datos}
           colores={['var(--color-primario)']}
-          etiquetaEjeY="Monto ($)"
-          formatoValor={formatearMoneda}
+          etiquetaEjeY={porCompras ? 'Compras' : 'Monto ($)'}
+          formatoValor={porCompras ? formatearCompras : formatearMoneda}
         />
       )}
     </section>
