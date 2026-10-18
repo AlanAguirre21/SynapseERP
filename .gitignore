@@ -16,6 +16,8 @@ db.sqlite3
 staticfiles/
 .pytest_cache/
 code/backend/media/
+code/backend/media_rrhh/
+code/backend/media_usuarios/
 
 # Env / secrets
 .env

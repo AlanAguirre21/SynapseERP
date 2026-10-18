@@ -96,6 +96,11 @@ function fechaHora(iso: string | null): string {
   return new Date(iso).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 
+// Saldo con signo antes del símbolo, como en Caja: -5 -> "−$5.00".
+function formatearSaldo(valor: number): string {
+  return valor < 0 ? `−${formatearMoneda(-valor)}` : formatearMoneda(valor)
+}
+
 function sumar(solicitudes: SolicitudNomina[]): number {
   return solicitudes.reduce((total, s) => total + Number(s.monto), 0)
 }
@@ -228,7 +233,7 @@ export function PestanaNominas() {
   function renderAcciones(fila: SolicitudNomina) {
     if (fila.estado === 'pendiente') {
       return (
-        <div className="rowActions">
+        <div className="rowActions cellNoWrap">
           <button type="button" className="actionLink" onClick={() => setAEditar(fila)}>
             Editar monto
           </button>
@@ -242,7 +247,7 @@ export function PestanaNominas() {
       )
     }
     return (
-      <div className="rowActions">
+      <div className="rowActions cellNoWrap">
         <button
           type="button"
           className="actionLink"
@@ -567,57 +572,59 @@ function ModalPagar({
 
   return (
     <Modal titulo={unica ? 'Aprobar y pagar nómina' : 'Aprobar y pagar nóminas'} abierto onCerrar={cerrar}>
-      <dl className="factGrid">
-        {unica ? (
-          <>
+      <div className="form">
+        <dl className="factGrid">
+          {unica ? (
+            <>
+              <div>
+                <dt>Empleado</dt>
+                <dd>{unica.empleado_nombre}</dd>
+              </div>
+              <div>
+                <dt>Periodo</dt>
+                <dd>{textoPeriodo(unica)}</dd>
+              </div>
+            </>
+          ) : (
             <div>
-              <dt>Empleado</dt>
-              <dd>{unica.empleado_nombre}</dd>
+              <dt>Solicitudes</dt>
+              <dd>{solicitudes.length}</dd>
             </div>
-            <div>
-              <dt>Periodo</dt>
-              <dd>{textoPeriodo(unica)}</dd>
-            </div>
-          </>
-        ) : (
+          )}
           <div>
-            <dt>Solicitudes</dt>
-            <dd>{solicitudes.length}</dd>
+            <dt>{unica ? 'Monto' : 'Total'}</dt>
+            <dd>{formatearMoneda(total)}</dd>
           </div>
-        )}
-        <div>
-          <dt>{unica ? 'Monto' : 'Total'}</dt>
-          <dd>{formatearMoneda(total)}</dd>
-        </div>
-        <div>
-          <dt>Saldo de caja disponible</dt>
-          <dd>{saldoCaja === null ? '—' : formatearMoneda(saldoCaja)}</dd>
-        </div>
-        <div>
-          <dt>Saldo después del pago</dt>
-          <dd>{saldoDespues === null ? '—' : formatearMoneda(saldoDespues)}</dd>
-        </div>
-      </dl>
-      <p className="confirmText">
-        {unica
-          ? 'Se registrará un retiro de caja por este monto (motivo "Nómina") y la solicitud quedará pagada.'
-          : 'Se registrará un retiro de caja por cada solicitud (motivo "Nómina"). Si el saldo no alcanza para el total, no se pagará ninguna.'}
-      </p>
-      {saldoDespues !== null && saldoDespues < 0 && (
-        <p className="fieldWarning">El pago supera el saldo disponible; el sistema lo rechazará.</p>
-      )}
-      {error && (
-        <p className="errorMessage" role="alert">
-          {error}
+          <div>
+            <dt>Saldo de caja disponible</dt>
+            <dd>{saldoCaja === null ? '—' : formatearMoneda(saldoCaja)}</dd>
+          </div>
+          <div>
+            <dt>Saldo después del pago</dt>
+            <dd>{saldoDespues === null ? '—' : formatearSaldo(saldoDespues)}</dd>
+          </div>
+        </dl>
+        <p className="confirmText">
+          {unica
+            ? 'Se registrará un retiro de caja por este monto (motivo "Nómina") y la solicitud quedará pagada.'
+            : 'Se registrará un retiro de caja por cada solicitud (motivo "Nómina"). Si el saldo no alcanza para el total, no se pagará ninguna.'}
         </p>
-      )}
-      <div className="formActions">
-        <BotonPrimario variante="secundario" onClick={cerrar}>
-          Cancelar
-        </BotonPrimario>
-        <BotonPrimario onClick={confirmar} disabled={enProceso}>
-          {enProceso ? 'Pagando…' : 'Confirmar pago'}
-        </BotonPrimario>
+        {saldoDespues !== null && saldoDespues < 0 && (
+          <p className="fieldWarning">El pago supera el saldo disponible; el sistema lo rechazará.</p>
+        )}
+        {error && (
+          <p className="errorMessage" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="formActions">
+          <BotonPrimario variante="secundario" onClick={cerrar}>
+            Cancelar
+          </BotonPrimario>
+          <BotonPrimario onClick={confirmar} disabled={enProceso}>
+            {enProceso ? 'Pagando…' : 'Confirmar pago'}
+          </BotonPrimario>
+        </div>
       </div>
     </Modal>
   )
