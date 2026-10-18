@@ -25,6 +25,7 @@ import {
   useReactivarProveedor,
 } from '../../hooks/useProveedores'
 import { useSolicitudNuevo } from '../../hooks/useSolicitudNuevo'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { useVentas } from '../../hooks/useVentas'
 import { formatearMoneda } from '../../utils/moneda'
 import { normalizarBusqueda } from '../../utils/texto'
@@ -176,6 +177,7 @@ function EstadoDeCuenta({
   documentos,
   cargando,
   mensajeVacio,
+  ayuda,
 }: {
   titulo: string
   etiquetaSelector: string
@@ -184,6 +186,8 @@ function EstadoDeCuenta({
   documentos: DocumentoCuenta[] | undefined
   cargando: boolean
   mensajeVacio: string
+  // Aclaración bajo el título (ej. "Solo tus ventas…" para el operador).
+  ayuda?: string
 }) {
   const [limite, setLimite] = useState<LimiteLista>('5')
 
@@ -224,7 +228,10 @@ function EstadoDeCuenta({
   return (
     <div className="expandedSection">
       <div className="sectionHeader">
-        <h3 className="subtitle">{titulo}</h3>
+        <div className="pageHeading">
+          <h3 className="subtitle">{titulo}</h3>
+          {ayuda && <span className="fieldHint">{ayuda}</span>}
+        </div>
         <SelectorLimite limite={limite} onCambiar={setLimite} etiqueta={etiquetaSelector} />
       </div>
 
@@ -257,6 +264,8 @@ function EstadoDeCuenta({
 
 function VentasDeClienteSeccion({ cliente }: { cliente: Cliente }) {
   const { data: ventas, isLoading } = useVentas({ cliente: cliente.id })
+  // Para el operador, el backend devuelve solo sus propias ventas.
+  const { data: usuarioActual } = useUsuarioActual()
 
   return (
     <EstadoDeCuenta
@@ -266,6 +275,7 @@ function VentasDeClienteSeccion({ cliente }: { cliente: Cliente }) {
       etiquetaUltimo="Última venta"
       cargando={isLoading}
       mensajeVacio="Este cliente todavía no tiene ventas registradas."
+      ayuda={usuarioActual?.rol === 'admin' ? undefined : 'Solo tus ventas a este cliente.'}
       documentos={ventas?.map((v) => ({
         id: v.id,
         fecha: v.fecha,
@@ -280,6 +290,8 @@ function VentasDeClienteSeccion({ cliente }: { cliente: Cliente }) {
 
 function ComprasDeProveedorSeccion({ proveedor }: { proveedor: Proveedor }) {
   const { data: compras, isLoading } = useCompras({ proveedor: proveedor.id })
+  // Para el operador, el backend devuelve solo sus propias compras.
+  const { data: usuarioActual } = useUsuarioActual()
 
   return (
     <EstadoDeCuenta
@@ -289,6 +301,7 @@ function ComprasDeProveedorSeccion({ proveedor }: { proveedor: Proveedor }) {
       etiquetaUltimo="Última compra"
       cargando={isLoading}
       mensajeVacio="Este proveedor todavía no tiene compras registradas."
+      ayuda={usuarioActual?.rol === 'admin' ? undefined : 'Solo tus compras a este proveedor.'}
       documentos={compras?.map((c) => ({
         id: c.id,
         fecha: c.fecha,

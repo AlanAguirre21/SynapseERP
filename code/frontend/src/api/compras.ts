@@ -66,6 +66,8 @@ export interface FiltrosCompras {
   estado?: EstadoCompra
   fecha_desde?: string
   fecha_hasta?: string
+  // Solo tiene efecto para el admin; el operador siempre recibe solo las suyas.
+  usuario?: number
 }
 
 export async function getCompras(filtros: FiltrosCompras): Promise<Compra[]> {

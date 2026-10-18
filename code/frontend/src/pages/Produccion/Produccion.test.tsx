@@ -282,7 +282,9 @@ describe('Produccion', () => {
     expect(screen.queryByText('Cloruro de sodio')).not.toBeInTheDocument()
   })
 
-  it('operador ve las recetas en solo lectura, sin botones de escritura', () => {
+  // "Actualización: el operador puede crear recetas" — antes el operador no
+  // veía "Agregar receta de producto" ni "+"; ahora sí, sin las acciones por línea.
+  it('operador puede crear recetas y agregar materias primas, pero no editar, desactivar ni reactivar', () => {
     mockearRecetasAgrupadas('operador')
 
     render(<Produccion />)
@@ -290,9 +292,37 @@ describe('Produccion', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Suero fisiológico/ }))
 
     expect(screen.getByText('Cloruro de sodio')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /agregar receta de producto/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /agregar materia prima a/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Agregar receta de producto' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Agregar materia prima a Suero fisiológico' })).toBeInTheDocument()
     expect(screen.queryByText('Editar')).not.toBeInTheDocument()
+    expect(screen.queryByText('Desactivar')).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Creada por' })).not.toBeInTheDocument()
+  })
+
+  it('el operador abre el modal "Agregar receta de producto"', () => {
+    mockearRecetasAgrupadas('operador')
+
+    render(<Produccion />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Gestión de recetas' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar receta de producto' }))
+
+    expect(screen.getByRole('dialog', { name: /agregar receta de producto/i })).toBeInTheDocument()
+  })
+
+  it('el admin ve quién creó cada línea de receta ("—" en las anteriores)', () => {
+    mockearRecetasAgrupadas('admin')
+    vi.mocked(useRecetas).mockReturnValue({
+      data: RECETAS_AGRUPADAS.map((r, i) => ({ ...r, creado_por_nombre: i === 0 ? 'operador1' : null })),
+      isLoading: false,
+    } as unknown as ReturnType<typeof useRecetas>)
+
+    render(<Produccion />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Gestión de recetas' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Suero fisiológico/ }))
+
+    expect(screen.getByRole('columnheader', { name: 'Creada por' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'operador1' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: '—' })).toBeInTheDocument()
   })
 
   it('admin ve botones de escritura en recetas', () => {

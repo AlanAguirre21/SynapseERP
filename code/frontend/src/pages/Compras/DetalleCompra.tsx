@@ -65,7 +65,21 @@ export function DetalleCompra() {
   }
 
   if (isLoading) return <p>Cargando compra…</p>
-  if (!compra) return <p>No se encontró la compra.</p>
+  if (!compra) {
+    return (
+      <div className="documentPage">
+        <div className="documentToolbar">
+          <BotonPrimario variante="secundario" onClick={() => navigate('/compras')}>
+            Volver al listado
+          </BotonPrimario>
+        </div>
+        <div className="placeholderBox">
+          <span className="placeholderTitle">No se encontró la compra.</span>
+          <span>Puede que no exista o que no tengas acceso a ella.</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="documentPage">

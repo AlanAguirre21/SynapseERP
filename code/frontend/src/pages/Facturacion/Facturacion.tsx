@@ -5,6 +5,7 @@ import { ETIQUETAS_ESTADO_FACTURA, type EstadoFactura, type Factura } from '../.
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { formatearMoneda } from '../../utils/moneda'
 
 function claseEstado(estado: EstadoFactura) {
@@ -22,6 +23,9 @@ const ESTADOS_VIGENTES: EstadoFactura[] = ['timbrada', 'pendiente_cancelacion']
 export function Facturacion() {
   const navigate = useNavigate()
   const { data: clientes } = useClientes()
+  // El operador solo ve las facturas de sus propias ventas (lo filtra el backend).
+  const { data: usuarioActual } = useUsuarioActual()
+  const esAdmin = usuarioActual?.rol === 'admin'
 
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoFactura | ''>('')
   const [clienteFiltro, setClienteFiltro] = useState<number | ''>('')
@@ -99,7 +103,9 @@ export function Facturacion() {
         <div className="pageHeading">
           <h1 className="pageTitle">Facturación</h1>
           <p className="pageHint">
-            Consulta las facturas emitidas (CFDI) y su estado ante el SAT. Se generan desde el detalle de cada venta.
+            {esAdmin
+              ? 'Consulta las facturas emitidas (CFDI) y su estado ante el SAT. Se generan desde el detalle de cada venta.'
+              : 'Facturas de tus ventas (CFDI) y su estado ante el SAT. Se generan desde el detalle de cada venta.'}
           </p>
         </div>
       </div>

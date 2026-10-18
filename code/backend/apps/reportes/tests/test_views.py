@@ -27,6 +27,19 @@ def api_client(usuario):
 
 
 @pytest.fixture
+def admin_client(db):
+    # Ganancia, su serie, el monto del top de clientes y los movimientos de
+    # caja son solo de admin desde `016`, "Actualización: ganancias y
+    # movimientos de caja solo para admin".
+    admin = Usuario.objects.create_user(
+        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+    )
+    client = APIClient()
+    client.force_authenticate(user=admin)
+    return client
+
+
+@pytest.fixture
 def sucursal(db):
     return Sucursal.objects.create(nombre_sucursal='Matriz')
 
@@ -78,8 +91,8 @@ def test_periodo_por_defecto_es_dia(api_client):
 
 
 @pytest.mark.django_db
-def test_sin_movimientos_devuelve_ceros(api_client):
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'mes'})
+def test_sin_movimientos_devuelve_ceros(admin_client):
+    response = admin_client.get('/api/reportes/resumen/', {'periodo': 'mes'})
     assert response.status_code == 200
     assert response.data['ventas_total'] == '0.00'
     assert response.data['compras_total'] == '0.00'
@@ -88,11 +101,11 @@ def test_sin_movimientos_devuelve_ceros(api_client):
 
 
 @pytest.mark.django_db
-def test_ganancia_es_ventas_menos_compras_del_periodo(api_client, sucursal, proveedor, usuario):
+def test_ganancia_es_ventas_menos_compras_del_periodo(admin_client, sucursal, proveedor, usuario):
     _crear_venta(sucursal, usuario, Decimal('300.00'))
     _crear_compra(sucursal, proveedor, usuario, Decimal('120.00'))
 
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'mes'})
+    response = admin_client.get('/api/reportes/resumen/', {'periodo': 'mes'})
 
     assert response.data['ventas_total'] == '300.00'
     assert response.data['compras_total'] == '120.00'
@@ -142,12 +155,12 @@ def test_movimiento_fuera_del_periodo_seleccionado_no_cuenta(api_client, sucursa
 
 
 @pytest.mark.django_db
-def test_serie_agrupa_ventas_del_mismo_dia_para_periodo_semana(api_client, sucursal, usuario):
+def test_serie_agrupa_ventas_del_mismo_dia_para_periodo_semana(admin_client, sucursal, usuario):
     ahora = timezone.localtime()
     _crear_venta(sucursal, usuario, Decimal('100.00'), fecha=ahora)
     _crear_venta(sucursal, usuario, Decimal('50.00'), fecha=ahora)
 
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'semana'})
+    response = admin_client.get('/api/reportes/resumen/', {'periodo': 'semana'})
 
     puntos_con_ganancia = [p for p in response.data['serie'] if Decimal(p['ganancia']) != 0]
     assert len(puntos_con_ganancia) == 1
@@ -155,11 +168,11 @@ def test_serie_agrupa_ventas_del_mismo_dia_para_periodo_semana(api_client, sucur
 
 
 @pytest.mark.django_db
-def test_serie_para_periodo_dia_tiene_granularidad_horaria(api_client, sucursal, usuario):
+def test_serie_para_periodo_dia_tiene_granularidad_horaria(admin_client, sucursal, usuario):
     ahora = timezone.localtime()
     _crear_venta(sucursal, usuario, Decimal('100.00'), fecha=ahora)
 
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'dia'})
+    response = admin_client.get('/api/reportes/resumen/', {'periodo': 'dia'})
 
     # Un bucket por cada hora transcurrida hoy, no un único punto para todo el día.
     assert len(response.data['serie']) == ahora.hour + 1

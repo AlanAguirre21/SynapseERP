@@ -19,6 +19,7 @@ import {
   useProveedores,
   useReactivarProveedor,
 } from '../../hooks/useProveedores'
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { useVentas } from '../../hooks/useVentas'
 import { Terceros } from './Terceros'
 
@@ -26,6 +27,7 @@ vi.mock('../../hooks/useClientes')
 vi.mock('../../hooks/useProveedores')
 vi.mock('../../hooks/useVentas')
 vi.mock('../../hooks/useCompras')
+vi.mock('../../hooks/useUsuarioActual')
 
 const useClientesMock = vi.mocked(useClientes)
 const useProveedoresMock = vi.mocked(useProveedores)
@@ -87,7 +89,11 @@ function comprasDePrueba(cantidad: number): Compra[] {
   }))
 }
 
-function mockearHooks({ ventas = [], compras = [] }: { ventas?: Venta[]; compras?: Compra[] } = {}) {
+// El historial lee el rol para su aclaración (009, "historial propio para el operador").
+function mockearHooks({
+  ventas = [], compras = [], rol = 'admin',
+}: { ventas?: Venta[]; compras?: Compra[]; rol?: 'admin' | 'operador' } = {}) {
+  vi.mocked(useUsuarioActual).mockReturnValue({ data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>)
   useClientesMock.mockReturnValue({ data: CLIENTES, isLoading: false } as unknown as ReturnType<typeof useClientes>)
   useProveedoresMock.mockReturnValue({ data: PROVEEDORES, isLoading: false } as unknown as ReturnType<typeof useProveedores>)
   useVentasMock.mockReturnValue({ data: ventas, isLoading: false } as unknown as ReturnType<typeof useVentas>)
@@ -339,5 +345,26 @@ describe('Terceros', () => {
 
     fireEvent.change(dialogo.getByLabelText('Régimen fiscal'), { target: { value: '999' } })
     expect(dialogo.queryByText(/^601 —/)).not.toBeInTheDocument()
+  })
+
+  // 009, "Actualización: historial propio para el operador".
+  it('para el operador el historial aclara que son solo sus ventas y compras; para el admin no', () => {
+    mockearHooks({ ventas: ventasDePrueba(1), compras: comprasDePrueba(1), rol: 'operador' })
+    renderTerceros()
+
+    fireEvent.click(screen.getByRole('button', { name: /hospital san rafael/i }))
+    expect(screen.getByText('Solo tus ventas a este cliente.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: /proveedores/i }))
+    fireEvent.click(screen.getByRole('button', { name: /distribuidora médica/i }))
+    expect(screen.getByText('Solo tus compras a este proveedor.')).toBeInTheDocument()
+  })
+
+  it('para el admin el historial no lleva la aclaración', () => {
+    mockearHooks({ ventas: ventasDePrueba(1) })
+    renderTerceros()
+
+    fireEvent.click(screen.getByRole('button', { name: /hospital san rafael/i }))
+    expect(screen.queryByText('Solo tus ventas a este cliente.')).not.toBeInTheDocument()
   })
 })

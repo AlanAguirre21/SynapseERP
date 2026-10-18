@@ -43,7 +43,7 @@ export function SeccionGanancias({ periodo }: SeccionGananciasProps) {
             }`}
           >
             <span className={styles.profitLabel}>Ganancia del periodo</span>
-            <span className={styles.profitAmount}>{isLoading || !resumen ? '…' : formatearMoneda(resumen.ganancia)}</span>
+            <span className={styles.profitAmount}>{isLoading || resumen?.ganancia === undefined ? '…' : formatearMoneda(resumen.ganancia)}</span>
           </div>
 
           {isLoading || !resumen ? (

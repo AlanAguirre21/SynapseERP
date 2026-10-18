@@ -13,10 +13,13 @@ import {
 
 const CLAVE_USUARIOS = ['usuarios-cuentas']
 
-export function useUsuarios() {
+// `habilitado = false` evita pedir la lista (exclusiva de admin) desde
+// pantallas que también ve el operador, como el filtro "Registrada por".
+export function useUsuarios(habilitado = true) {
   return useQuery({
     queryKey: CLAVE_USUARIOS,
     queryFn: getUsuariosCuentas,
+    enabled: habilitado,
   })
 }
 

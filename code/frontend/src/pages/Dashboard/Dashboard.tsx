@@ -63,14 +63,17 @@ export function Dashboard() {
             </button>
           ))}
         </div>
+
+        {!esAdmin && <p className="pageHint">Cifras de tus propias ventas, compras y facturas.</p>}
       </header>
 
-      <SeccionGanancias periodo={periodo} />
+      {/* Ganancia y movimientos de caja: solo admin (el backend tampoco se los da al operador). */}
+      {esAdmin && <SeccionGanancias periodo={periodo} />}
       <SeccionVentas periodo={periodo} />
       <SeccionCompras periodo={periodo} />
       <SeccionProductos periodo={periodo} />
       <SeccionClientes periodo={periodo} />
-      <SeccionFacturacion />
+      <SeccionFacturacion periodo={periodo} />
     </div>
   )
 }
