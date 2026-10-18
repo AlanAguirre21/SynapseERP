@@ -150,20 +150,64 @@ class DependienteSerializer(serializers.ModelSerializer):
 
 
 class SolicitudNominaSerializer(serializers.ModelSerializer):
-    """`estado`/`fecha_resolucion`/`resuelto_por` son de solo lectura aquí —
-    solo cambian a través de las acciones `aprobar`/`rechazar` del ViewSet,
-    nunca directo por PATCH, para no perder el rastro de quién resolvió.
+    """El estado y los datos de pago, rechazo y reverso son de solo lectura:
+    cambian únicamente por las acciones del ViewSet (`aprobar`, `pagar-lote`,
+    `rechazar`, `revertir`), que pasan por `services/nomina.py`. Al editar
+    una solicitud (solo pendiente, lo verifica la vista) únicamente cambia
+    el monto; empleado y periodo se fijan al crearla.
     """
+
+    empleado_nombre = serializers.CharField(source='empleado.nombre_completo', read_only=True)
+    empleado_foto = serializers.ImageField(source='empleado.fotografia', read_only=True)
+    posicion_nombre = serializers.SerializerMethodField()
+    resuelto_por_nombre = serializers.SerializerMethodField()
+    revertido_por_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = SolicitudNomina
         fields = [
-            'id', 'empleado', 'periodo_inicio', 'periodo_fin', 'monto',
-            'estado', 'fecha_solicitud', 'fecha_resolucion', 'resuelto_por',
+            'id', 'empleado', 'empleado_nombre', 'empleado_foto', 'posicion_nombre',
+            'periodo_inicio', 'periodo_fin', 'monto', 'estado', 'fecha_solicitud',
+            'fecha_resolucion', 'resuelto_por', 'resuelto_por_nombre',
+            'movimiento_pago', 'movimiento_reverso', 'motivo_reverso', 'fecha_reverso',
+            'revertido_por', 'revertido_por_nombre',
         ]
-        read_only_fields = ['id', 'estado', 'fecha_solicitud', 'fecha_resolucion', 'resuelto_por']
+        read_only_fields = [
+            'id', 'estado', 'fecha_solicitud', 'fecha_resolucion', 'resuelto_por',
+            'movimiento_pago', 'movimiento_reverso', 'motivo_reverso', 'fecha_reverso', 'revertido_por',
+        ]
+
+    def get_fields(self):
+        campos = super().get_fields()
+        if self.instance is not None and not isinstance(self.instance, (list, tuple)):
+            for nombre in ('empleado', 'periodo_inicio', 'periodo_fin'):
+                campos[nombre].read_only = True
+        return campos
+
+    def get_posicion_nombre(self, solicitud):
+        # `asignaciones_vigentes` lo precarga el ViewSet; sin él, una consulta.
+        vigentes = getattr(solicitud.empleado, 'asignaciones_vigentes', None)
+        if vigentes is None:
+            vigentes = list(
+                solicitud.empleado.asignaciones.filter(fecha_termino__isnull=True)
+                .select_related('posicion').order_by('-fecha_inicio'),
+            )
+        return vigentes[0].posicion.titulo_posicion if vigentes else None
+
+    def get_resuelto_por_nombre(self, solicitud):
+        return solicitud.resuelto_por.nombre_mostrado() if solicitud.resuelto_por else None
+
+    def get_revertido_por_nombre(self, solicitud):
+        return solicitud.revertido_por.nombre_mostrado() if solicitud.revertido_por else None
+
+    def validate_monto(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('El monto debe ser mayor que cero.')
+        return value
 
     def validate(self, attrs):
+        from .services.nomina import solicitudes_que_ocupan
+
         inicio = attrs.get('periodo_inicio', getattr(self.instance, 'periodo_inicio', None))
         fin = attrs.get('periodo_fin', getattr(self.instance, 'periodo_fin', None))
 
@@ -172,4 +216,33 @@ class SolicitudNominaSerializer(serializers.ModelSerializer):
                 'periodo_fin': 'El fin del periodo no puede ser anterior a su inicio.',
             })
 
+        empleado = attrs.get('empleado', getattr(self.instance, 'empleado', None))
+        if empleado and inicio and fin:
+            duplicada = solicitudes_que_ocupan(
+                empleado.id, inicio, fin, excluir_id=getattr(self.instance, 'pk', None),
+            ).first()
+            if duplicada:
+                raise serializers.ValidationError({
+                    'periodo_inicio': (
+                        f'Este empleado ya tiene una solicitud de nómina (#{duplicada.id}) '
+                        'para un periodo que se traslapa con este.'
+                    ),
+                })
+
         return attrs
+
+
+class GenerarNominaSerializer(serializers.Serializer):
+    """Entrada de "Generar nómina": quincena 1 (1–15) o 2 (16–fin de mes)."""
+
+    anio = serializers.IntegerField(min_value=2000, max_value=2100)
+    mes = serializers.IntegerField(min_value=1, max_value=12)
+    quincena = serializers.ChoiceField(choices=[1, 2])
+
+
+class PagarLoteNominaSerializer(serializers.Serializer):
+    ids = serializers.ListField(child=serializers.IntegerField(min_value=1), allow_empty=False)
+
+
+class RevertirPagoNominaSerializer(serializers.Serializer):
+    motivo = serializers.CharField(allow_blank=False, trim_whitespace=True)

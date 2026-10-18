@@ -30,11 +30,24 @@ MOTIVOS_CAMBIO = [
     ('renuncia', 'Renuncia'),
 ]
 
+# `aprobado` solo existe en solicitudes resueltas antes de que aprobar pagara
+# desde Caja ("Actualización: nómina con pago en caja"): se conservan como
+# históricas, sin movimiento de caja. Hoy aprobar deja la solicitud `pagado`.
+ESTADO_NOMINA_PENDIENTE = 'pendiente'
+ESTADO_NOMINA_APROBADO_HISTORICO = 'aprobado'
+ESTADO_NOMINA_PAGADO = 'pagado'
+ESTADO_NOMINA_RECHAZADO = 'rechazado'
+ESTADO_NOMINA_REVERTIDO = 'revertido'
 ESTADOS_SOLICITUD_NOMINA = [
-    ('pendiente', 'Pendiente'),
-    ('aprobado', 'Aprobado'),
-    ('rechazado', 'Rechazado'),
+    (ESTADO_NOMINA_PENDIENTE, 'Pendiente'),
+    (ESTADO_NOMINA_APROBADO_HISTORICO, 'Aprobada (sin pago en caja)'),
+    (ESTADO_NOMINA_PAGADO, 'Pagada'),
+    (ESTADO_NOMINA_RECHAZADO, 'Rechazada'),
+    (ESTADO_NOMINA_REVERTIDO, 'Revertida'),
 ]
+# Estados que ocupan el periodo de un empleado: no puede haber otra solicitud
+# que se traslape con una de estas (rechazada y revertida lo liberan).
+ESTADOS_NOMINA_OCUPAN_PERIODO = (ESTADO_NOMINA_PENDIENTE, ESTADO_NOMINA_PAGADO, ESTADO_NOMINA_APROBADO_HISTORICO)
 
 
 class Departamento(models.Model):
@@ -143,9 +156,11 @@ class Dependiente(models.Model):
 
 
 class SolicitudNomina(models.Model):
-    """Registro informativo de solicitud de pago de nómina. No genera
-    movimientos de caja automáticos (ver `spec.md`, "Fuera de alcance") —
-    aprobar/rechazar solo deja constancia de la decisión y quién la tomó.
+    """Solicitud de pago de nómina de un empleado por un periodo. Aprobarla
+    la paga: registra un retiro de Caja (motivo `nomina`) y queda `pagado`;
+    revertir el pago registra el ingreso inverso y la deja `revertido`
+    ("Actualización: nómina con pago en caja" en `spec.md`). Toda la lógica
+    vive en `services/nomina.py`; nada escribe en Caja directamente.
     """
 
     empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, related_name='solicitudes_nomina')
@@ -158,6 +173,20 @@ class SolicitudNomina(models.Model):
     resuelto_por = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='solicitudes_nomina_resueltas',
+    )
+    # Movimientos de caja del pago y de su reverso (insert-only en Caja:
+    # `PROTECT` impide borrar uno que una solicitud referencia).
+    movimiento_pago = models.OneToOneField(
+        'caja.MovimientoCaja', on_delete=models.PROTECT, null=True, blank=True, related_name='nomina_pagada',
+    )
+    movimiento_reverso = models.OneToOneField(
+        'caja.MovimientoCaja', on_delete=models.PROTECT, null=True, blank=True, related_name='nomina_revertida',
+    )
+    motivo_reverso = models.TextField(blank=True)
+    fecha_reverso = models.DateTimeField(null=True, blank=True)
+    revertido_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='solicitudes_nomina_revertidas',
     )
 
     class Meta:

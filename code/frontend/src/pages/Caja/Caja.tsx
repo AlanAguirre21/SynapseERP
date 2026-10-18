@@ -43,6 +43,7 @@ const ETIQUETAS_MOTIVO: Record<MotivoMovimientoCaja, string> = {
   manual: 'Manual',
   compra: 'Compra',
   envio: 'Envío',
+  nomina: 'Nómina',
 }
 
 // Monto con signo, como en un libro de caja: "+$45.00" entra, "−$2,000.00"
@@ -160,6 +161,11 @@ function CajaContenido() {
           {fila.motivo === 'compra' && fila.referencia_id && (
             <Link to={`/compras/${fila.referencia_id}`} className={styles.referenceLink}>
               Ver compra #{fila.referencia_id}
+            </Link>
+          )}
+          {fila.motivo === 'nomina' && fila.referencia_id && (
+            <Link to="/rrhh?pestana=nominas" className={styles.referenceLink}>
+              Ver nómina #{fila.referencia_id}
             </Link>
           )}
         </div>

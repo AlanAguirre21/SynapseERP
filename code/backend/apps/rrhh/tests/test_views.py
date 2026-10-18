@@ -355,13 +355,31 @@ def test_lista_solicitudes_filtradas_por_estado(admin_client, solicitud):
     assert len(response.data) == 1
 
 
+@pytest.fixture
+def caja_con_saldo(admin):
+    # Aprobar una solicitud ahora la paga desde Caja ("Actualización: nómina
+    # con pago en caja"), así que la caja necesita saldo.
+    from decimal import Decimal
+
+    from django.db import transaction
+
+    from apps.caja.models import MovimientoCaja
+    from apps.caja.services import registrar_movimiento_caja
+
+    with transaction.atomic():
+        registrar_movimiento_caja(
+            tipo_movimiento=MovimientoCaja.INGRESO, monto=Decimal('10000.00'), motivo=MovimientoCaja.MOTIVO_MANUAL,
+            referencia_id=None, usuario=admin,
+        )
+
+
 @pytest.mark.django_db
-def test_admin_aprueba_solicitud_nomina(admin_client, admin, solicitud):
+def test_admin_aprueba_solicitud_nomina(admin_client, admin, solicitud, caja_con_saldo):
     response = admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/aprobar/')
     assert response.status_code == 200
 
     solicitud.refresh_from_db()
-    assert solicitud.estado == 'aprobado'
+    assert solicitud.estado == 'pagado'
     assert solicitud.resuelto_por_id == admin.id
     assert solicitud.fecha_resolucion is not None
 
@@ -375,7 +393,7 @@ def test_admin_rechaza_solicitud_nomina(admin_client, solicitud):
 
 
 @pytest.mark.django_db
-def test_no_se_puede_resolver_una_solicitud_ya_resuelta(admin_client, solicitud):
+def test_no_se_puede_resolver_una_solicitud_ya_resuelta(admin_client, solicitud, caja_con_saldo):
     admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/aprobar/')
     response = admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/rechazar/')
     assert response.status_code == 400

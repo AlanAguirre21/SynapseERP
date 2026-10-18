@@ -148,6 +148,11 @@ def generar_asiento_caja(movimiento_caja):
         # `recibir()` registre su contrapartida de Inventario — ver
         # "Fuera de alcance" del ajuste en `spec.md`.
         codigo_contraparte = constants.CODIGO_PROVEEDORES
+    elif movimiento_caja.motivo == MovimientoCaja.MOTIVO_NOMINA:
+        # Pago de nómina (retiro) y su reverso (ingreso) contra la misma
+        # cuenta de sueldos, para que se compensen — por eso el reverso usa
+        # este motivo y no `ajuste`, que se contabiliza contra Ventas.
+        codigo_contraparte = constants.CODIGO_SUELDOS
     else:
         # `venta` (ingreso automático), `ajuste` (reverso de una venta o
         # compra cancelada) y `envio` (saldo adicional por costo de envío)

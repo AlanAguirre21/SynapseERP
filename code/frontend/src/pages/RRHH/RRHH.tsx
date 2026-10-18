@@ -42,6 +42,7 @@ import {
 } from '../../hooks/usePosiciones'
 import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
 import { normalizarBusqueda, obtenerIniciales } from '../../utils/texto'
+import { PestanaNominas } from './PestanaNominas'
 import styles from './RRHH.module.css'
 
 function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: string): string {
@@ -112,19 +113,29 @@ function ordenarPorJerarquia(posiciones: Posicion[]): { posicion: Posicion; prof
 
 type LimiteLista = '5' | '10' | 'todos'
 
-type PestañaRRHH = 'organizacion' | 'directorio'
+type PestañaRRHH = 'organizacion' | 'directorio' | 'nominas'
 
 const PESTAÑAS_RRHH: { clave: PestañaRRHH; etiqueta: string }[] = [
   { clave: 'organizacion', etiqueta: 'Organización' },
   { clave: 'directorio', etiqueta: 'Directorio' },
+  { clave: 'nominas', etiqueta: 'Nóminas' },
 ]
+
+// `?pestana=nominas` abre directamente la pestaña (enlaces de la campana del
+// Header y de Caja). Se lee de `window.location` y no con `useSearchParams`
+// para no depender del enrutador (mismo criterio que la sucursal de
+// Inventario); solo es el valor inicial.
+function leerPestañaInicial(): PestañaRRHH {
+  const valor = new URLSearchParams(window.location.search).get('pestana')
+  return PESTAÑAS_RRHH.some((p) => p.clave === valor) ? (valor as PestañaRRHH) : 'organizacion'
+}
 
 export function RRHH() {
   const { data: departamentos, isLoading } = useDepartamentos()
   const { data: empleados } = useEmpleadosRRHH()
   const { data: todasLasPosiciones } = useTodasLasPosiciones()
   const { data: asignacionesVigentes } = useAsignacionesVigentes()
-  const [pestaña, setPestaña] = useState<PestañaRRHH>('organizacion')
+  const [pestaña, setPestaña] = useState<PestañaRRHH>(leerPestañaInicial)
 
   // Empleados con asignación vigente por posición (ocupación y vacantes).
   const ocupacion = useMemo(() => {
@@ -204,7 +215,9 @@ export function RRHH() {
         ))}
       </div>
 
-      {pestaña === 'directorio' ? (
+      {pestaña === 'nominas' ? (
+        <PestanaNominas />
+      ) : pestaña === 'directorio' ? (
         <PestañaDirectorio
           empleados={empleados}
           asignaciones={asignacionesVigentes}
@@ -1303,9 +1316,11 @@ function SolicitarNomina({ empleadoId }: { empleadoId: number }) {
       setPeriodoInicio('')
       setPeriodoFin('')
       setMonto('')
-      setConfirmacion('Solicitud registrada — aparecerá como pendiente en las notificaciones del Header.')
+      setConfirmacion('Solicitud registrada — aparecerá como pendiente en la pestaña Nóminas.')
     } catch (err) {
-      setError(extraerMensajeError(err, ['periodo_fin', 'monto'], 'No se pudo registrar la solicitud. Intenta de nuevo.'))
+      setError(
+        extraerMensajeError(err, ['periodo_inicio', 'periodo_fin', 'monto'], 'No se pudo registrar la solicitud. Intenta de nuevo.'),
+      )
     }
   }
 

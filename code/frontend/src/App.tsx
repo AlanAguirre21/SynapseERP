@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { MainLayout } from './components/layout/MainLayout'
 import { RutaModulo } from './components/layout/RutaModulo'
@@ -54,7 +54,7 @@ function App() {
                 <Route path="/catalogo" element={<Catalogo />} />
               </Route>
               <Route element={<RutaModulo slug="rrhh" />}>
-                <Route path="/rrhh" element={<RRHH />} />
+                <Route path="/rrhh" element={<RRHHPorPestana />} />
               </Route>
               <Route element={<RutaModulo slug="terceros" />}>
                 <Route path="/terceros" element={<Terceros />} />
@@ -102,3 +102,12 @@ function App() {
 }
 
 export default App
+
+// RRHH lee `?pestana=` solo al montarse (ver `leerPestañaInicial`); si ya se
+// está en /rrhh y un enlace (campana del Header, Caja) cambia solo la
+// búsqueda, la clave nueva la vuelve a montar en la pestaña pedida.
+function RRHHPorPestana() {
+  const { search } = useLocation()
+  return <RRHH key={search} />
+}
+

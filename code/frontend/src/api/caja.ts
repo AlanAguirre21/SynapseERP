@@ -1,7 +1,8 @@
 import { apiClient } from './client'
 
 export type TipoMovimientoCaja = 'ingreso' | 'retiro'
-export type MotivoMovimientoCaja = 'venta' | 'ajuste' | 'manual' | 'compra' | 'envio'
+// `nomina`: pago de nómina (retiro) o su reverso (ingreso), desde RRHH.
+export type MotivoMovimientoCaja = 'venta' | 'ajuste' | 'manual' | 'compra' | 'envio' | 'nomina'
 
 export interface MovimientoCaja {
   id: number

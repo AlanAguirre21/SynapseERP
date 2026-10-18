@@ -105,32 +105,26 @@
 }
 
 .requestList li {
-  @apply flex flex-col gap-2 px-4 py-2.5 text-[0.85rem] border-b border-borde;
+  @apply border-b border-borde;
 }
 
-.requestData {
-  @apply flex flex-col gap-0.5;
+/* Cada solicitud pendiente enlaza a la pestaña "Nóminas" de RRHH. */
+.requestLink {
+  @apply flex flex-col gap-0.5 px-4 py-2.5 text-[0.85rem] text-texto no-underline transition-colors;
 }
 
-.requestData span {
+.requestLink:hover,
+.requestLink:focus-visible {
+  @apply bg-fondo;
+}
+
+.requestLink span {
   @apply text-xs text-texto-suave;
 }
 
-.requestActions {
-  @apply flex items-center gap-2;
-}
-
-.approveButton,
-.rejectButton {
-  @apply px-3 py-1 border-0 rounded-control text-[0.8rem] font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed;
-}
-
-.approveButton {
-  @apply bg-exito-suave text-exito;
-}
-
-.rejectButton {
-  @apply bg-error-suave text-error;
+/* "Ver nóminas", al pie de las solicitudes. */
+.dropdownFooter {
+  @apply text-[0.85rem] font-semibold text-primario;
 }
 
 .menuItem {

@@ -8,7 +8,17 @@ import { useCrearDependiente, useDependientes, useEliminarDependiente } from '..
 import { useAsignacionesVigentes, useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
 import { useContratarEmpleado, useDesactivarEmpleado, useEditarEmpleado, useEmpleadosRRHH, useReactivarEmpleado } from '../../hooks/useEmpleadosRRHH'
 import { useCrearPosicion, useDesactivarPosicion, useEditarPosicion, usePosiciones, useReactivarPosicion, useTodasLasPosiciones } from '../../hooks/usePosiciones'
-import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
+import { useSaldoCaja } from '../../hooks/useMovimientosCaja'
+import {
+  useAprobarSolicitudNomina,
+  useCrearSolicitudNomina,
+  useEditarMontoNomina,
+  useGenerarNomina,
+  usePagarSolicitudesNomina,
+  useRechazarSolicitudNomina,
+  useRevertirPagoNomina,
+  useSolicitudesNomina,
+} from '../../hooks/useSolicitudesNomina'
 import { RRHH } from './RRHH'
 
 vi.mock('../../hooks/useDepartamentos')
@@ -18,6 +28,7 @@ vi.mock('../../hooks/useEmpleadoPosiciones')
 vi.mock('../../hooks/useContactosEmergencia')
 vi.mock('../../hooks/useDependientes')
 vi.mock('../../hooks/useSolicitudesNomina')
+vi.mock('../../hooks/useMovimientosCaja')
 
 const DEPARTAMENTOS: Departamento[] = [
   { id: 1, nombre_departamento: 'Ventas', departamento_padre: null, posicion_manager: null, activo: true },
@@ -368,4 +379,27 @@ describe('RRHH', () => {
     expect(within(dialogo).getByText('Vendedor')).toBeInTheDocument()
     expect(within(dialogo).getByRole('button', { name: /modificar/i })).toBeInTheDocument()
   })
+
+  it('?pestana=nominas abre directamente la pestaña Nóminas', () => {
+    mockearHooks()
+    vi.mocked(useSolicitudesNomina).mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<typeof useSolicitudesNomina>)
+    vi.mocked(useSaldoCaja).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof useSaldoCaja>)
+    for (const hook of [
+      useAprobarSolicitudNomina, usePagarSolicitudesNomina, useRechazarSolicitudNomina, useRevertirPagoNomina,
+      useEditarMontoNomina, useGenerarNomina,
+    ]) {
+      vi.mocked(hook).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as never)
+    }
+    window.history.replaceState(null, '', '/rrhh?pestana=nominas')
+
+    try {
+      render(<RRHH />)
+
+      expect(screen.getByRole('tab', { name: 'Nóminas' })).toHaveAttribute('aria-selected', 'true')
+      expect(screen.getByRole('button', { name: 'Generar nómina' })).toBeInTheDocument()
+    } finally {
+      window.history.replaceState(null, '', '/')
+    }
+  })
 })
+

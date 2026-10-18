@@ -4,12 +4,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logoFlebosil from '../../assets/flebosil_transparentbg/logo_flebosil.png'
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
-import {
-  useAprobarSolicitudNomina,
-  useRechazarSolicitudNomina,
-  useSolicitudesNominaPendientes,
-} from '../../hooks/useSolicitudesNomina'
+import { useSolicitudesNominaPendientes } from '../../hooks/useSolicitudesNomina'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { formatearMoneda } from '../../utils/moneda'
 import { Avatar } from '../common/Avatar'
 import { Icono } from '../common/Icono'
 import styles from './Header.module.css'
@@ -20,16 +17,22 @@ interface HeaderProps {
 
 type Desplegable = 'notificaciones' | 'usuario'
 
+const RUTA_NOMINAS = '/rrhh?pestana=nominas'
+
+// `AAAA-MM-DD` -> `DD/MM/AAAA`, sin pasar por `Date` (evita el corrimiento de zona horaria).
+function fechaCorta(iso: string): string {
+  const [anio, mes, dia] = iso.split('-')
+  return `${dia}/${mes}/${anio}`
+}
+
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { data: usuario } = useUsuarioActual()
   const esAdmin = usuario?.rol === 'admin'
   const { data: alertas, isLoading: alertasCargando } = useAlertasStock()
-  // Solo admin puede ver/resolver solicitudes de nómina (008 · RRHH) — ni
-  // siquiera se pide el endpoint para operador, que de todos modos lo
-  // tiene vedado en el backend.
+  // Solo admin puede ver solicitudes de nómina (008 · RRHH) — ni siquiera se
+  // pide el endpoint para operador, que de todos modos lo tiene vedado en el
+  // backend. Se resuelven en la pestaña "Nóminas" de RRHH, no aquí.
   const { data: solicitudesNomina, isLoading: solicitudesCargando } = useSolicitudesNominaPendientes(esAdmin)
-  const aprobar = useAprobarSolicitudNomina()
-  const rechazar = useRechazarSolicitudNomina()
   // Un solo estado para los dos desplegables: abrir uno cierra el otro.
   const [desplegable, setDesplegable] = useState<Desplegable | null>(null)
   const notificacionesAbiertas = desplegable === 'notificaciones'
@@ -42,11 +45,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const navigate = useNavigate()
 
   // Cierra el desplegable al cambiar de ruta (el Header no se vuelve a montar
-  // al navegar). Se ajusta durante el render, sin un efecto extra.
-  const { pathname } = useLocation()
-  const [rutaActual, setRutaActual] = useState(pathname)
-  if (pathname !== rutaActual) {
-    setRutaActual(pathname)
+  // al navegar). Se ajusta durante el render, sin un efecto extra. Cuenta
+  // también la búsqueda: un enlace a /rrhh?pestana=nominas estando ya en
+  // /rrhh también es una navegación.
+  const { pathname, search } = useLocation()
+  const ruta = pathname + search
+  const [rutaActual, setRutaActual] = useState(ruta)
+  if (ruta !== rutaActual) {
+    setRutaActual(ruta)
     setDesplegable(null)
   }
 
@@ -80,8 +86,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   }
 
   // Cierre al salir el foco con el teclado. Sin `relatedTarget` (clic en una
-  // zona sin controles, o el botón de una solicitud que desaparece al
-  // aprobarla) no se cierra: el clic fuera ya lo cubre el oyente de arriba.
+  // zona sin controles dentro del desplegable) no se cierra: el clic fuera ya
+  // lo cubre el oyente de arriba.
   function alPerderFoco(cual: Desplegable, evento: FocusEvent<HTMLDivElement>) {
     const siguiente = evento.relatedTarget
     if (siguiente && !evento.currentTarget.contains(siguiente)) {
@@ -162,37 +168,25 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                   ) : totalSolicitudes === 0 ? (
                     <p className={styles.dropdownEmpty}>Sin solicitudes pendientes</p>
                   ) : (
+                    // Pagar mueve la caja: se resuelve en la pestaña "Nóminas"
+                    // de RRHH, con el monto y el saldo a la vista y confirmación.
                     <ul className={styles.requestList}>
                       {(solicitudesNomina ?? []).map((solicitud) => (
                         <li key={solicitud.id}>
-                          <div className={styles.requestData}>
-                            <strong>Empleado #{solicitud.empleado}</strong>
+                          <Link to={RUTA_NOMINAS} className={styles.requestLink}>
+                            <strong>{solicitud.empleado_nombre}</strong>
                             <span>
-                              {solicitud.periodo_inicio} — {solicitud.periodo_fin} · ${solicitud.monto}
+                              {fechaCorta(solicitud.periodo_inicio)} – {fechaCorta(solicitud.periodo_fin)} ·{' '}
+                              {formatearMoneda(solicitud.monto)}
                             </span>
-                          </div>
-                          <div className={styles.requestActions}>
-                            <button
-                              type="button"
-                              className={styles.approveButton}
-                              onClick={() => aprobar.mutate(solicitud.id)}
-                              disabled={aprobar.isPending || rechazar.isPending}
-                            >
-                              Aprobar
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.rejectButton}
-                              onClick={() => rechazar.mutate(solicitud.id)}
-                              disabled={aprobar.isPending || rechazar.isPending}
-                            >
-                              Rechazar
-                            </button>
-                          </div>
+                          </Link>
                         </li>
                       ))}
                     </ul>
                   )}
+                  <Link to={RUTA_NOMINAS} className={`${styles.menuItem} ${styles.dropdownFooter}`}>
+                    Ver nóminas
+                  </Link>
                 </>
               )}
             </div>
