@@ -7,9 +7,10 @@
 /* --- Barra de departamentos --------------------------------------------- */
 
 /* Pestañas a la izquierda, acciones del departamento elegido a la derecha,
-   sobre una misma línea base. */
+   sobre una misma línea base. En pantallas angostas las acciones bajan a su
+   propia línea (antes se partían y el separador quedaba suelto). */
 .departmentBar {
-  @apply flex items-center justify-between gap-4 flex-wrap border-b border-borde;
+  @apply flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between md:gap-4 border-b border-borde;
 }
 
 .departmentTabs {
@@ -17,7 +18,7 @@
 }
 
 .departmentActions {
-  @apply flex items-center gap-3 divide-x divide-borde text-[0.85rem];
+  @apply flex items-center gap-3 divide-x divide-borde text-[0.85rem] pb-2 md:pb-0 whitespace-nowrap;
 }
 
 .departmentActions > button {
@@ -214,4 +215,11 @@
 
 .payrollRow > label {
   @apply flex-1 min-w-[150px];
+}
+
+/* --- Directorio --------------------------------------------------------- */
+
+/* Avatar y nombre del empleado en la primera columna del directorio. */
+.directoryName {
+  @apply inline-flex items-center gap-3 whitespace-nowrap;
 }

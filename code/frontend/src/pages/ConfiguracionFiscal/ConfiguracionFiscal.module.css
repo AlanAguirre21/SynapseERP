@@ -1,0 +1,46 @@
+@reference "../../index.css";
+
+/* Estilos propios de Configuración Fiscal: bloque "Estado para timbrar" y
+   filas de ajustes (explicación a la izquierda, tarjeta a la derecha). */
+
+/* --- Estado para timbrar ------------------------------------------------ */
+
+.readiness {
+  @apply flex flex-col gap-4 px-6 py-5 bg-superficie border border-borde rounded-tarjeta shadow-suave;
+}
+
+.readinessHeader {
+  @apply flex items-center justify-between gap-3 flex-wrap;
+}
+
+.readinessList {
+  @apply m-0 p-0 list-none grid grid-cols-1 md:grid-cols-3 gap-3;
+}
+
+.readinessItem {
+  @apply flex items-center justify-between gap-3 px-4 py-3 bg-fondo border border-borde rounded-control text-[0.9rem] text-texto;
+}
+
+/* --- Filas de ajustes --------------------------------------------------- */
+
+.settingsRow {
+  @apply grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4 md:gap-8 py-6 border-t border-borde;
+}
+
+.settingsIntro {
+  @apply flex flex-col gap-2;
+}
+
+.settingsDescription {
+  @apply m-0 text-[0.9rem] text-texto-suave;
+}
+
+/* Etiquetas de estado sobre el formulario de la conexión al PAC. */
+.statusBar {
+  @apply flex items-center gap-2 flex-wrap mb-4;
+}
+
+/* Acción de la tarjeta de series, alineada a la derecha sobre la tabla. */
+.cardActions {
+  @apply flex justify-end mb-4;
+}

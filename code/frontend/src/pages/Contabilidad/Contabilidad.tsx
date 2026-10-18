@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import {
@@ -24,6 +24,7 @@ import {
 } from '../../hooks/useCuentasContables'
 import { useExportarContabilidad, useLibroDiario } from '../../hooks/useLibroDiario'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { formatearImporte } from '../../utils/numeros'
 import styles from './Contabilidad.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
@@ -50,6 +51,24 @@ function descargarBlob(blob: Blob, nombreArchivo: string) {
   enlace.click()
   URL.revokeObjectURL(url)
 }
+
+// Dos sumas "cuadran" si difieren en menos de medio centavo: los Decimal del
+// backend llegan como texto y se suman como Number solo para mostrarlos.
+function cuadran(cargos: number, abonos: number): boolean {
+  return Math.abs(cargos - abonos) < 0.005
+}
+
+function EtiquetaCuadre({ cargos, abonos }: { cargos: number; abonos: number }) {
+  return cuadran(cargos, abonos) ? (
+    <span className="status statusSuccess">Cuadra</span>
+  ) : (
+    <span className="status statusError">Descuadre de {formatearImporte(Math.abs(cargos - abonos))}</span>
+  )
+}
+
+type LimiteLista = '5' | '10' | 'todos'
+
+const ETIQUETAS_LIMITE: Record<LimiteLista, string> = { '5': '5', '10': '10', todos: 'Todos' }
 
 type Pestaña = 'cuentas' | 'libro' | 'balance'
 
@@ -83,7 +102,12 @@ function ContabilidadContenido() {
   return (
     <div className="page">
       <div className="pageHeader">
-        <h1 className="pageTitle">Contabilidad</h1>
+        <div className="pageHeading">
+          <h1 className="pageTitle">Contabilidad</h1>
+          <p className="pageHint">
+            Catálogo de cuentas, pólizas del libro diario y balance de comprobación de la empresa.
+          </p>
+        </div>
       </div>
 
       <div className="tabs" role="tablist">
@@ -112,8 +136,67 @@ function ContabilidadContenido() {
 
 const CUENTA_VACIA: CuentaContableFormulario = { codigo: '', nombre: '', tipo: 'activo', cuenta_padre: null }
 
+// De qué lado crece el saldo de cada tipo de cuenta.
+const NATURALEZA_POR_TIPO: Record<TipoCuenta, string> = {
+  activo: 'Deudora',
+  egreso: 'Deudora',
+  pasivo: 'Acreedora',
+  capital: 'Acreedora',
+  ingreso: 'Acreedora',
+}
+
+interface CuentaEnJerarquia extends CuentaContable {
+  nivel: number
+  tieneSubcuentas: boolean
+  naturaleza: string
+}
+
+// Recorrido en profundidad por código: cada cuenta de mayor seguida de sus
+// subcuentas. Una cuenta cuyo padre no esté en la lista va al primer nivel;
+// `visitadas` evita repetir cuentas si `cuenta_padre` llegara a formar un ciclo.
+function ordenarJerarquia(cuentas: CuentaContable[]): CuentaEnJerarquia[] {
+  const porCodigo = (a: CuentaContable, b: CuentaContable) => a.codigo.localeCompare(b.codigo, 'es', { numeric: true })
+  const ids = new Set(cuentas.map((c) => c.id))
+  const hijos = new Map<number, CuentaContable[]>()
+  for (const cuenta of cuentas) {
+    if (cuenta.cuenta_padre !== null && ids.has(cuenta.cuenta_padre)) {
+      hijos.set(cuenta.cuenta_padre, [...(hijos.get(cuenta.cuenta_padre) ?? []), cuenta])
+    }
+  }
+
+  const resultado: CuentaEnJerarquia[] = []
+  const visitadas = new Set<number>()
+  function visitar(cuenta: CuentaContable, nivel: number) {
+    if (visitadas.has(cuenta.id)) return
+    visitadas.add(cuenta.id)
+    const subcuentas = (hijos.get(cuenta.id) ?? []).sort(porCodigo)
+    resultado.push({
+      ...cuenta,
+      nivel,
+      tieneSubcuentas: subcuentas.length > 0,
+      naturaleza: NATURALEZA_POR_TIPO[cuenta.tipo],
+    })
+    for (const subcuenta of subcuentas) visitar(subcuenta, nivel + 1)
+  }
+
+  const raices = cuentas.filter((c) => c.cuenta_padre === null || !ids.has(c.cuenta_padre)).sort(porCodigo)
+  for (const raiz of raices) visitar(raiz, 0)
+  // Cuentas atrapadas en un ciclo (sin raíz alcanzable): al final, en el primer nivel.
+  for (const cuenta of [...cuentas].sort(porCodigo)) visitar(cuenta, 0)
+  return resultado
+}
+
+const CLASES_NIVEL = [styles.accountLevel0, styles.accountLevel1, styles.accountLevel2, styles.accountLevel3]
+
+function claseCuenta(cuenta: CuentaEnJerarquia): string {
+  // A partir del cuarto nivel se reutiliza la última sangría.
+  const nivel = CLASES_NIVEL[Math.min(cuenta.nivel, CLASES_NIVEL.length - 1)]
+  return cuenta.tieneSubcuentas ? `${nivel} ${styles.accountGroup}` : `${nivel}`
+}
+
 function CatalogoCuentasSeccion() {
   const { data: cuentas, isLoading } = useCuentasContables()
+  const cuentasOrdenadas = useMemo(() => ordenarJerarquia(cuentas ?? []), [cuentas])
   const crear = useCrearCuentaContable()
   const editar = useEditarCuentaContable()
   const desactivar = useDesactivarCuentaContable()
@@ -178,10 +261,15 @@ function CatalogoCuentasSeccion() {
     setAReactivar(null)
   }
 
-  const columnas: ColumnaTabla<CuentaContable>[] = [
-    { clave: 'codigo', encabezado: 'Código' },
-    { clave: 'nombre', encabezado: 'Nombre' },
+  const columnas: ColumnaTabla<CuentaEnJerarquia>[] = [
+    {
+      clave: 'codigo',
+      encabezado: 'Código',
+      render: (fila) => <span className={fila.tieneSubcuentas ? styles.accountGroup : undefined}>{fila.codigo}</span>,
+    },
+    { clave: 'nombre', encabezado: 'Nombre', render: (fila) => <span className={claseCuenta(fila)}>{fila.nombre}</span> },
     { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO_CUENTA[fila.tipo] },
+    { clave: 'naturaleza', encabezado: 'Naturaleza' },
     { clave: 'cuenta_padre_codigo', encabezado: 'Cuenta padre', render: (fila) => fila.cuenta_padre_codigo ?? '—' },
     {
       clave: 'activo',
@@ -195,7 +283,7 @@ function CatalogoCuentasSeccion() {
   ]
 
   return (
-    <section className="section">
+    <section className="tabPanel">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Catálogo de cuentas contables</h2>
         <BotonPrimario onClick={abrirCrear}>Nueva cuenta</BotonPrimario>
@@ -206,7 +294,7 @@ function CatalogoCuentasSeccion() {
       ) : (
         <Tabla
           columnas={columnas}
-          datos={cuentas ?? []}
+          datos={cuentasOrdenadas}
           mensajeVacio="Todavía no hay cuentas registradas."
           renderAcciones={(fila) => (
             <div className="rowActions">
@@ -332,6 +420,16 @@ function CatalogoCuentasSeccion() {
 
 // --- Libro diario -----------------------------------------------------
 
+function sumasAsiento(asiento: AsientoContable) {
+  let cargos = 0
+  let abonos = 0
+  for (const movimiento of asiento.movimientos) {
+    if (movimiento.tipo_movimiento === 'cargo') cargos += Number(movimiento.monto)
+    else abonos += Number(movimiento.monto)
+  }
+  return { cargos, abonos }
+}
+
 function LibroDiarioSeccion() {
   const { data: cuentas } = useCuentasContables()
   const [origenFiltro, setOrigenFiltro] = useState<TipoOrigenAsiento | ''>('')
@@ -339,6 +437,7 @@ function LibroDiarioSeccion() {
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [expandidos, setExpandidos] = useState<Set<number>>(new Set())
+  const [limite, setLimite] = useState<LimiteLista>('10')
 
   const filtros = {
     tipo_origen: origenFiltro || undefined,
@@ -349,6 +448,15 @@ function LibroDiarioSeccion() {
   const { data: asientos, isLoading } = useLibroDiario(filtros)
   const exportar = useExportarContabilidad()
 
+  const hayFiltros = Boolean(origenFiltro || cuentaFiltro || fechaDesde || fechaHasta)
+
+  function limpiarFiltros() {
+    setOrigenFiltro('')
+    setCuentaFiltro('')
+    setFechaDesde('')
+    setFechaHasta('')
+  }
+
   function alternarExpandido(id: number) {
     setExpandidos((actual) => {
       const nuevo = new Set(actual)
@@ -358,13 +466,18 @@ function LibroDiarioSeccion() {
     })
   }
 
+  // El CSV exporta todo lo filtrado; el límite solo recorta lo que se ve.
   async function alExportar() {
     const blob = await exportar.mutateAsync({ tipo: 'libro_diario', filtros })
     descargarBlob(blob, 'libro-diario.csv')
   }
 
+  const lista = asientos ?? []
+  // La API ya los entrega del más reciente al más antiguo.
+  const visibles = limite === 'todos' ? lista : lista.slice(0, Number(limite))
+
   return (
-    <section className="section">
+    <section className="tabPanel">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Libro diario</h2>
         <BotonPrimario variante="secundario" onClick={alExportar} disabled={exportar.isPending}>
@@ -406,53 +519,109 @@ function LibroDiarioSeccion() {
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {isLoading ? (
         <p>Cargando asientos…</p>
-      ) : (asientos ?? []).length === 0 ? (
-        <p className="emptyState">Todavía no hay asientos contables registrados.</p>
+      ) : lista.length === 0 ? (
+        <p className="emptyState">
+          {hayFiltros
+            ? 'Ningún asiento coincide con los filtros.'
+            : 'Todavía no hay asientos contables registrados.'}
+        </p>
       ) : (
-        <div className={styles.entryList}>
-          {(asientos ?? []).map((asiento: AsientoContable) => (
-            <div key={asiento.id} className={styles.entry}>
-              <button
-                type="button"
-                className={styles.entryHeader}
-                onClick={() => alternarExpandido(asiento.id)}
-                aria-expanded={expandidos.has(asiento.id)}
-              >
-                <span>{expandidos.has(asiento.id) ? '▾' : '▸'}</span>
-                <span>{new Date(asiento.fecha).toLocaleString('es-MX')}</span>
-                <span>{asiento.concepto}</span>
-                <span className={styles.entryOrigin}>{ETIQUETAS_ORIGEN_ASIENTO[asiento.tipo_origen]}</span>
-              </button>
-
-              {expandidos.has(asiento.id) && (
-                <div className="tableScroll">
-                  <table className="linesTable">
-                    <thead>
-                      <tr>
-                        <th>Cuenta</th>
-                        <th>Cargo</th>
-                        <th>Abono</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {asiento.movimientos.map((movimiento) => (
-                        <tr key={movimiento.id}>
-                          <td>{movimiento.cuenta_codigo} — {movimiento.cuenta_nombre}</td>
-                          <td>{movimiento.tipo_movimiento === 'cargo' ? movimiento.monto : ''}</td>
-                          <td>{movimiento.tipo_movimiento === 'abono' ? movimiento.monto : ''}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+        <>
+          <div className="sectionHeader">
+            <span className="pageHint">{`Mostrando ${visibles.length} de ${lista.length}`}</span>
+            <div className="segmented" role="group" aria-label="Cantidad de pólizas a mostrar">
+              {(['5', '10', 'todos'] as LimiteLista[]).map((valor) => (
+                <button
+                  key={valor}
+                  type="button"
+                  className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
+                  aria-pressed={limite === valor}
+                  onClick={() => setLimite(valor)}
+                >
+                  {ETIQUETAS_LIMITE[valor]}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className={styles.entryList}>
+            {visibles.map((asiento: AsientoContable) => {
+              const desplegado = expandidos.has(asiento.id)
+              const { cargos, abonos } = sumasAsiento(asiento)
+
+              return (
+                <div key={asiento.id} className={styles.entry}>
+                  <button
+                    type="button"
+                    className={styles.entryHeader}
+                    onClick={() => alternarExpandido(asiento.id)}
+                    aria-expanded={desplegado}
+                  >
+                    <span aria-hidden="true">{desplegado ? '▾' : '▸'}</span>
+                    <span className={styles.entryNumber}>Póliza #{asiento.id}</span>
+                    <span className="cellNoWrap">
+                      {new Date(asiento.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}
+                    </span>
+                    <span className={styles.entryConcept}>{asiento.concepto}</span>
+                    <span className="status statusNeutral">{ETIQUETAS_ORIGEN_ASIENTO[asiento.tipo_origen]}</span>
+                    <span className={styles.entryAmount}>{formatearImporte(cargos)}</span>
+                  </button>
+
+                  {desplegado && (
+                    <div className={styles.entryDetail}>
+                      <div className="tableScroll">
+                        <table className="linesTable">
+                          <thead>
+                            <tr>
+                              <th>Cuenta</th>
+                              <th className="numeric">Cargo</th>
+                              <th className="numeric">Abono</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {asiento.movimientos.map((movimiento) => (
+                              <tr key={movimiento.id}>
+                                <td>{movimiento.cuenta_codigo} — {movimiento.cuenta_nombre}</td>
+                                <td className="numeric">
+                                  {movimiento.tipo_movimiento === 'cargo' ? formatearImporte(movimiento.monto) : ''}
+                                </td>
+                                <td className="numeric">
+                                  {movimiento.tipo_movimiento === 'abono' ? formatearImporte(movimiento.monto) : ''}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Fuera de la tabla: es el resumen de la póliza, no un movimiento más. */}
+                      <div className={styles.entryTotals}>
+                        <span>Sumas iguales</span>
+                        <span>
+                          Cargos <strong>{formatearImporte(cargos)}</strong>
+                        </span>
+                        <span>
+                          Abonos <strong>{formatearImporte(abonos)}</strong>
+                        </span>
+                        <EtiquetaCuadre cargos={cargos} abonos={abonos} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </section>
   )
@@ -468,17 +637,37 @@ function BalanceComprobacionSeccion() {
   const { data: filas, isLoading } = useBalanceComprobacion(filtros)
   const exportar = useExportarContabilidad()
 
+  const hayFiltros = Boolean(fechaDesde || fechaHasta)
+
   async function alExportar() {
     const blob = await exportar.mutateAsync({ tipo: 'balance', filtros })
     descargarBlob(blob, 'balance-comprobacion.csv')
   }
 
+  const sumas = useMemo(() => {
+    const lista = filas ?? []
+    return {
+      cargos: lista.reduce((total, fila) => total + Number(fila.total_cargos), 0),
+      abonos: lista.reduce((total, fila) => total + Number(fila.total_abonos), 0),
+    }
+  }, [filas])
+
   const columnas: ColumnaTabla<FilaBalance>[] = [
     { clave: 'codigo', encabezado: 'Código' },
     { clave: 'nombre', encabezado: 'Cuenta' },
     { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO_CUENTA[fila.tipo] },
-    { clave: 'total_cargos', alineacion: 'derecha', encabezado: 'Total cargos' },
-    { clave: 'total_abonos', alineacion: 'derecha', encabezado: 'Total abonos' },
+    {
+      clave: 'total_cargos',
+      alineacion: 'derecha',
+      encabezado: 'Total cargos',
+      render: (fila) => formatearImporte(fila.total_cargos),
+    },
+    {
+      clave: 'total_abonos',
+      alineacion: 'derecha',
+      encabezado: 'Total abonos',
+      render: (fila) => formatearImporte(fila.total_abonos),
+    },
     {
       clave: 'saldo',
       alineacion: 'derecha',
@@ -487,18 +676,21 @@ function BalanceComprobacionSeccion() {
         const saldo = Number(fila.saldo)
         if (saldo === 0) return '—'
         return saldo > 0 ? (
-          <span className={styles.debitBalance}>{fila.saldo} (deudor)</span>
+          <span className={`${styles.debitBalance} cellNoWrap`}>{formatearImporte(saldo)} (deudor)</span>
         ) : (
-          <span className={styles.creditBalance}>{Math.abs(saldo).toFixed(2)} (acreedor)</span>
+          <span className={`${styles.creditBalance} cellNoWrap`}>{formatearImporte(Math.abs(saldo))} (acreedor)</span>
         )
       },
     },
   ]
 
   return (
-    <section className="section">
+    <section className="tabPanel">
       <div className="sectionHeader">
-        <h2 className="sectionTitle">Balance de comprobación</h2>
+        <div className={styles.titleWithStatus}>
+          <h2 className="sectionTitle">Balance de comprobación</h2>
+          {filas && filas.length > 0 && <EtiquetaCuadre cargos={sumas.cargos} abonos={sumas.abonos} />}
+        </div>
         <BotonPrimario variante="secundario" onClick={alExportar} disabled={exportar.isPending}>
           {exportar.isPending ? 'Exportando…' : 'Exportar CSV'}
         </BotonPrimario>
@@ -514,12 +706,31 @@ function BalanceComprobacionSeccion() {
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
+
+        {hayFiltros && (
+          <button
+            type="button"
+            className="actionLink filtersEnd"
+            onClick={() => {
+              setFechaDesde('')
+              setFechaHasta('')
+            }}
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {isLoading ? (
         <p>Cargando balance…</p>
       ) : (
-        <Tabla columnas={columnas} datos={filas ?? []} claveFila="cuenta" mensajeVacio="No hay cuentas para mostrar." />
+        <Tabla
+          columnas={columnas}
+          datos={filas ?? []}
+          claveFila="cuenta"
+          mensajeVacio="No hay cuentas para mostrar."
+          filaPie={['Sumas', '', '', formatearImporte(sumas.cargos), formatearImporte(sumas.abonos), '']}
+        />
       )}
     </section>
   )

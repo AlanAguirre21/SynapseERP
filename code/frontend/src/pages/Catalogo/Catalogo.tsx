@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
@@ -33,7 +33,10 @@ import {
   useProductos,
   useReactivarProducto,
 } from '../../hooks/useProductos'
+import { useSolicitudNuevo } from '../../hooks/useSolicitudNuevo'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { formatearMoneda } from '../../utils/moneda'
+import { normalizarBusqueda } from '../../utils/texto'
 
 const ETIQUETAS_TIPO: Record<TipoCategoria, string> = {
   producto: 'Producto',
@@ -63,12 +66,133 @@ function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: 
   return mensajePorDefecto
 }
 
+// Margen sobre el precio de venta, en porcentaje. `null` cuando no hay costo
+// o precio capturado: un margen del 100 % por un costo en cero engañaría.
+function calcularMargen(precio: string | number, costo: string | number): number | null {
+  const p = Number(precio)
+  const c = Number(costo)
+  if (!(p > 0) || !(c > 0)) return null
+  return ((p - c) / p) * 100
+}
+
+function MargenTexto({ margen }: { margen: number | null }) {
+  if (margen === null) return <>—</>
+  const texto = `${margen.toLocaleString('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+  // Precio por debajo del costo: se marca, es algo que revisar.
+  return margen < 0 ? <span className="textError">{texto}</span> : <>{texto}</>
+}
+
+// --- Filtros comunes ---------------------------------------------------------
+
+type FiltroEstado = 'todos' | 'activos' | 'inactivos'
+
+// Filtra en pantalla una lista ya cargada: búsqueda de texto (sin acentos ni
+// mayúsculas), estado y un filtro extra por pestaña (categoría o tipo).
+function useFiltrosCatalogo<T extends { activo: boolean }>(
+  lista: T[],
+  textosDe: (item: T) => string[],
+  extraDe: (item: T) => string,
+) {
+  const [busqueda, setBusqueda] = useState('')
+  const [estado, setEstado] = useState<FiltroEstado>('todos')
+  const [extra, setExtra] = useState('')
+
+  const termino = normalizarBusqueda(busqueda)
+  const filtrados = lista.filter(
+    (item) =>
+      (estado === 'todos' || (estado === 'activos' ? item.activo : !item.activo)) &&
+      (!extra || extraDe(item) === extra) &&
+      (!termino || textosDe(item).some((texto) => normalizarBusqueda(texto).includes(termino))),
+  )
+
+  return {
+    busqueda,
+    setBusqueda,
+    estado,
+    setEstado,
+    extra,
+    setExtra,
+    filtrados,
+    hayFiltros: Boolean(busqueda.trim() || estado !== 'todos' || extra),
+    limpiar: () => {
+      setBusqueda('')
+      setEstado('todos')
+      setExtra('')
+    },
+  }
+}
+
+function BarraFiltros({
+  filtros,
+  placeholder,
+  extra,
+  total,
+}: {
+  filtros: ReturnType<typeof useFiltrosCatalogo<{ activo: boolean }>>
+  placeholder: string
+  extra: { etiqueta: string; opciones: { valor: string; etiqueta: string }[] }
+  total: number
+}) {
+  return (
+    <>
+      <div className="filters">
+        <label className="filterField">
+          Buscar
+          <input
+            type="search"
+            value={filtros.busqueda}
+            onChange={(e) => filtros.setBusqueda(e.target.value)}
+            placeholder={placeholder}
+          />
+        </label>
+
+        <label className="filterField">
+          {extra.etiqueta}
+          <select value={filtros.extra} onChange={(e) => filtros.setExtra(e.target.value)}>
+            <option value="">Todas</option>
+            {extra.opciones.map((opcion) => (
+              <option key={opcion.valor} value={opcion.valor}>
+                {opcion.etiqueta}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="filterField">
+          Estado
+          <select value={filtros.estado} onChange={(e) => filtros.setEstado(e.target.value as FiltroEstado)}>
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </label>
+
+        {filtros.hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={filtros.limpiar}>
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      <span className="pageHint">{`Mostrando ${filtros.filtrados.length} de ${total}`}</span>
+    </>
+  )
+}
+
+function opcionesCategoria(categorias: Categoria[], tipos: TipoCategoria[]) {
+  return categorias
+    .filter((c) => tipos.includes(c.tipo))
+    .map((c) => ({ valor: String(c.id), etiqueta: c.nombre_categoria }))
+}
+
+// --- Página -------------------------------------------------------------------
+
 type Pestaña = 'productos' | 'materia_prima' | 'categorias'
 
-const PESTAÑAS: { clave: Pestaña; etiqueta: string }[] = [
-  { clave: 'productos', etiqueta: 'Productos' },
-  { clave: 'materia_prima', etiqueta: 'Materia Prima' },
-  { clave: 'categorias', etiqueta: 'Categorías' },
+const PESTAÑAS: { clave: Pestaña; etiqueta: string; accion: string }[] = [
+  { clave: 'productos', etiqueta: 'Productos', accion: 'Nuevo producto' },
+  { clave: 'materia_prima', etiqueta: 'Materia Prima', accion: 'Nueva materia prima' },
+  { clave: 'categorias', etiqueta: 'Categorías', accion: 'Nueva categoría' },
 ]
 
 export function Catalogo() {
@@ -76,10 +200,28 @@ export function Catalogo() {
   const esAdmin = usuario?.rol === 'admin'
   const [pestaña, setPestaña] = useState<Pestaña>('productos')
 
+  // La acción principal vive en el encabezado, pero cada modal de alta en su
+  // pestaña: el botón incrementa el contador de la pestaña activa y esta abre
+  // su formulario al ver un valor nuevo.
+  const [solicitudes, setSolicitudes] = useState<Record<Pestaña, number>>({
+    productos: 0,
+    materia_prima: 0,
+    categorias: 0,
+  })
+  const accion = PESTAÑAS.find((p) => p.clave === pestaña)?.accion
+
   return (
     <div className="page">
       <div className="pageHeader">
-        <h1 className="pageTitle">Catálogo</h1>
+        <div className="pageHeading">
+          <h1 className="pageTitle">Catálogo</h1>
+          <p className="pageHint">Productos que se venden, materia prima que se compra y las categorías que los agrupan.</p>
+        </div>
+        {esAdmin && accion && (
+          <BotonPrimario onClick={() => setSolicitudes((s) => ({ ...s, [pestaña]: s[pestaña] + 1 }))}>
+            {accion}
+          </BotonPrimario>
+        )}
       </div>
 
       <div className="tabs" role="tablist">
@@ -97,9 +239,11 @@ export function Catalogo() {
         ))}
       </div>
 
-      {pestaña === 'productos' && <PestañaProductos esAdmin={esAdmin} />}
-      {pestaña === 'materia_prima' && <PestañaMateriaPrima esAdmin={esAdmin} />}
-      {pestaña === 'categorias' && <PestañaCategorias esAdmin={esAdmin} />}
+      {pestaña === 'productos' && <PestañaProductos esAdmin={esAdmin} solicitudNuevo={solicitudes.productos} />}
+      {pestaña === 'materia_prima' && (
+        <PestañaMateriaPrima esAdmin={esAdmin} solicitudNuevo={solicitudes.materia_prima} />
+      )}
+      {pestaña === 'categorias' && <PestañaCategorias esAdmin={esAdmin} solicitudNuevo={solicitudes.categorias} />}
     </div>
   )
 }
@@ -116,7 +260,7 @@ const PRODUCTO_VACIO: ProductoFormulario = {
   costo_produccion: '0',
 }
 
-function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
+function PestañaProductos({ esAdmin, solicitudNuevo }: { esAdmin: boolean; solicitudNuevo: number }) {
   const { data: productos, isLoading } = useProductos()
   const { data: categorias } = useCategorias()
   const crear = useCrearProducto()
@@ -126,6 +270,13 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
 
   const categoriasDisponibles = (categorias ?? []).filter(
     (c) => c.activo && (c.tipo === 'producto' || c.tipo === 'ambos'),
+  )
+  const nombreCategoria = (id: number) => (categorias ?? []).find((c) => c.id === id)?.nombre_categoria ?? '—'
+
+  const filtros = useFiltrosCatalogo(
+    productos ?? [],
+    (p) => [p.nombre_producto, p.sku],
+    (p) => String(p.categoria),
   )
 
   const [formularioAbierto, setFormularioAbierto] = useState(false)
@@ -141,6 +292,8 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
+
+  useSolicitudNuevo(solicitudNuevo, abrirCrear)
 
   function abrirEditar(producto: Producto) {
     setEnEdicion(producto)
@@ -194,9 +347,27 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
 
   const columnas: ColumnaTabla<Producto>[] = [
     { clave: 'nombre_producto', encabezado: 'Nombre' },
-    { clave: 'sku', encabezado: 'SKU' },
+    { clave: 'sku', encabezado: 'SKU', render: (fila) => <span className="cellNoWrap">{fila.sku}</span> },
+    { clave: 'categoria', encabezado: 'Categoría', render: (fila) => nombreCategoria(fila.categoria) },
     { clave: 'unidad_medida', encabezado: 'Unidad' },
-    { clave: 'precio_venta', alineacion: 'derecha', encabezado: 'Precio de venta' },
+    {
+      clave: 'precio_venta',
+      alineacion: 'derecha',
+      encabezado: 'Precio de venta',
+      render: (fila) => formatearMoneda(fila.precio_venta),
+    },
+    {
+      clave: 'costo_produccion',
+      alineacion: 'derecha',
+      encabezado: 'Costo de producción',
+      render: (fila) => formatearMoneda(fila.costo_produccion),
+    },
+    {
+      clave: 'descripcion_producto',
+      alineacion: 'derecha',
+      encabezado: 'Margen',
+      render: (fila) => <MargenTexto margen={calcularMargen(fila.precio_venta, fila.costo_produccion)} />,
+    },
     {
       clave: 'activo',
       encabezado: 'Estado',
@@ -209,21 +380,23 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
   ]
 
   return (
-    <div>
-      {esAdmin && (
-        <div className="pageHeader">
-          <span />
-          <BotonPrimario onClick={abrirCrear}>Nuevo producto</BotonPrimario>
-        </div>
-      )}
+    <div className="tabPanel">
+      <BarraFiltros
+        filtros={filtros}
+        placeholder="Nombre o SKU"
+        extra={{ etiqueta: 'Categoría', opciones: opcionesCategoria(categorias ?? [], ['producto', 'ambos']) }}
+        total={(productos ?? []).length}
+      />
 
       {isLoading ? (
         <p>Cargando productos…</p>
       ) : (
         <Tabla
           columnas={columnas}
-          datos={productos ?? []}
-          mensajeVacio="Todavía no hay productos registrados."
+          datos={filtros.filtrados}
+          mensajeVacio={
+            filtros.hayFiltros ? 'Ningún producto coincide con los filtros.' : 'Todavía no hay productos registrados.'
+          }
           renderAcciones={
             esAdmin
               ? (fila) => (
@@ -251,90 +424,106 @@ function PestañaProductos({ esAdmin }: { esAdmin: boolean }) {
         />
       )}
 
+      {/* El costo de producción se captura a mano y no se actualiza desde
+          Producción: el margen se aclara como estimado (nota fuera del
+          encabezado para no ensanchar la tabla). */}
+      <p className="pageHint">El margen se calcula con el costo de producción capturado en el catálogo.</p>
+
       <Modal
         titulo={enEdicion ? 'Editar producto' : 'Nuevo producto'}
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
+        ancho="amplio"
       >
         <form className="form" onSubmit={alGuardar} noValidate>
-          <label className="field">
-            Nombre
-            <input
-              type="text"
-              value={valores.nombre_producto}
-              onChange={(e) => setValores((v) => ({ ...v, nombre_producto: e.target.value }))}
-              required
-            />
-          </label>
+          <h3 className="subtitle">Identificación</h3>
+          <div className="formGrid">
+            <label className="field formGridFull">
+              Nombre
+              <input
+                type="text"
+                value={valores.nombre_producto}
+                onChange={(e) => setValores((v) => ({ ...v, nombre_producto: e.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field">
-            SKU
-            <input
-              type="text"
-              value={valores.sku}
-              onChange={(e) => setValores((v) => ({ ...v, sku: e.target.value }))}
-              required
-            />
-          </label>
+            <label className="field">
+              SKU
+              <input
+                type="text"
+                value={valores.sku}
+                onChange={(e) => setValores((v) => ({ ...v, sku: e.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field">
-            Descripción
-            <textarea
-              value={valores.descripcion_producto}
-              onChange={(e) => setValores((v) => ({ ...v, descripcion_producto: e.target.value }))}
-            />
-          </label>
-
-          <label className="field">
-            Categoría
-            <select
-              value={valores.categoria}
-              onChange={(e) => setValores((v) => ({ ...v, categoria: Number(e.target.value) }))}
-              required
-            >
-              <option value={0} disabled>
-                Selecciona una categoría
-              </option>
-              {categoriasDisponibles.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre_categoria}
+            <label className="field">
+              Categoría
+              <select
+                value={valores.categoria}
+                onChange={(e) => setValores((v) => ({ ...v, categoria: Number(e.target.value) }))}
+                required
+              >
+                <option value={0} disabled>
+                  Selecciona una categoría
                 </option>
-              ))}
-            </select>
-          </label>
+                {categoriasDisponibles.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre_categoria}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="field">
-            Unidad de medida
-            <input
-              type="text"
-              value={valores.unidad_medida}
-              onChange={(e) => setValores((v) => ({ ...v, unidad_medida: e.target.value }))}
-              required
-            />
-          </label>
+            <label className="field">
+              Unidad de medida
+              <input
+                type="text"
+                value={valores.unidad_medida}
+                onChange={(e) => setValores((v) => ({ ...v, unidad_medida: e.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field">
-            Precio de venta
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={valores.precio_venta}
-              onChange={(e) => setValores((v) => ({ ...v, precio_venta: e.target.value }))}
-              required
-            />
-          </label>
+            <label className="field formGridFull">
+              Descripción
+              <textarea
+                value={valores.descripcion_producto}
+                onChange={(e) => setValores((v) => ({ ...v, descripcion_producto: e.target.value }))}
+              />
+            </label>
+          </div>
 
-          <label className="field">
-            Costo de producción
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={valores.costo_produccion}
-              onChange={(e) => setValores((v) => ({ ...v, costo_produccion: e.target.value }))}
-            />
-          </label>
+          <h3 className="subtitle">Precio y costo</h3>
+          <div className="formGrid">
+            <label className="field">
+              Precio de venta
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={valores.precio_venta}
+                onChange={(e) => setValores((v) => ({ ...v, precio_venta: e.target.value }))}
+                required
+              />
+            </label>
+
+            <label className="field">
+              Costo de producción
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={valores.costo_produccion}
+                onChange={(e) => setValores((v) => ({ ...v, costo_produccion: e.target.value }))}
+              />
+            </label>
+
+            <p className="fieldHint formGridFull" data-testid="margen-vista-previa">
+              Margen estimado: <MargenTexto margen={calcularMargen(valores.precio_venta, valores.costo_produccion)} />
+            </p>
+          </div>
 
           {errorFormulario && (
             <p className="errorMessage" role="alert">
@@ -395,7 +584,7 @@ const MATERIA_PRIMA_VACIA: MateriaPrimaFormulario = {
   costo_promedio: '0',
 }
 
-function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
+function PestañaMateriaPrima({ esAdmin, solicitudNuevo }: { esAdmin: boolean; solicitudNuevo: number }) {
   const { data: items, isLoading } = useMateriaPrima()
   const { data: categorias } = useCategorias()
   const crear = useCrearMateriaPrima()
@@ -405,6 +594,13 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
 
   const categoriasDisponibles = (categorias ?? []).filter(
     (c) => c.activo && (c.tipo === 'materia_prima' || c.tipo === 'ambos'),
+  )
+  const nombreCategoria = (id: number) => (categorias ?? []).find((c) => c.id === id)?.nombre_categoria ?? '—'
+
+  const filtros = useFiltrosCatalogo(
+    items ?? [],
+    (m) => [m.nombre_item],
+    (m) => String(m.categoria),
   )
 
   const [formularioAbierto, setFormularioAbierto] = useState(false)
@@ -420,6 +616,8 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
+
+  useSolicitudNuevo(solicitudNuevo, abrirCrear)
 
   function abrirEditar(item: MateriaPrima) {
     setEnEdicion(item)
@@ -470,8 +668,14 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
 
   const columnas: ColumnaTabla<MateriaPrima>[] = [
     { clave: 'nombre_item', encabezado: 'Nombre' },
+    { clave: 'categoria', encabezado: 'Categoría', render: (fila) => nombreCategoria(fila.categoria) },
     { clave: 'unidad_medida', encabezado: 'Unidad' },
-    { clave: 'costo_promedio', alineacion: 'derecha', encabezado: 'Costo promedio' },
+    {
+      clave: 'costo_promedio',
+      alineacion: 'derecha',
+      encabezado: 'Costo promedio',
+      render: (fila) => formatearMoneda(fila.costo_promedio),
+    },
     {
       clave: 'activo',
       encabezado: 'Estado',
@@ -484,21 +688,25 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
   ]
 
   return (
-    <div>
-      {esAdmin && (
-        <div className="pageHeader">
-          <span />
-          <BotonPrimario onClick={abrirCrear}>Nueva materia prima</BotonPrimario>
-        </div>
-      )}
+    <div className="tabPanel">
+      <BarraFiltros
+        filtros={filtros}
+        placeholder="Nombre"
+        extra={{ etiqueta: 'Categoría', opciones: opcionesCategoria(categorias ?? [], ['materia_prima', 'ambos']) }}
+        total={(items ?? []).length}
+      />
 
       {isLoading ? (
         <p>Cargando materia prima…</p>
       ) : (
         <Tabla
           columnas={columnas}
-          datos={items ?? []}
-          mensajeVacio="Todavía no hay materia prima registrada."
+          datos={filtros.filtrados}
+          mensajeVacio={
+            filtros.hayFiltros
+              ? 'Ninguna materia prima coincide con los filtros.'
+              : 'Todavía no hay materia prima registrada.'
+          }
           renderAcciones={
             esAdmin
               ? (fila) => (
@@ -530,56 +738,63 @@ function PestañaMateriaPrima({ esAdmin }: { esAdmin: boolean }) {
         titulo={enEdicion ? 'Editar materia prima' : 'Nueva materia prima'}
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
+        ancho="amplio"
       >
         <form className="form" onSubmit={alGuardar} noValidate>
-          <label className="field">
-            Nombre
-            <input
-              type="text"
-              value={valores.nombre_item}
-              onChange={(e) => setValores((v) => ({ ...v, nombre_item: e.target.value }))}
-              required
-            />
-          </label>
+          <h3 className="subtitle">Identificación</h3>
+          <div className="formGrid">
+            <label className="field formGridFull">
+              Nombre
+              <input
+                type="text"
+                value={valores.nombre_item}
+                onChange={(e) => setValores((v) => ({ ...v, nombre_item: e.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field">
-            Categoría
-            <select
-              value={valores.categoria}
-              onChange={(e) => setValores((v) => ({ ...v, categoria: Number(e.target.value) }))}
-              required
-            >
-              <option value={0} disabled>
-                Selecciona una categoría
-              </option>
-              {categoriasDisponibles.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre_categoria}
+            <label className="field">
+              Categoría
+              <select
+                value={valores.categoria}
+                onChange={(e) => setValores((v) => ({ ...v, categoria: Number(e.target.value) }))}
+                required
+              >
+                <option value={0} disabled>
+                  Selecciona una categoría
                 </option>
-              ))}
-            </select>
-          </label>
+                {categoriasDisponibles.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre_categoria}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="field">
-            Unidad de medida
-            <input
-              type="text"
-              value={valores.unidad_medida}
-              onChange={(e) => setValores((v) => ({ ...v, unidad_medida: e.target.value }))}
-              required
-            />
-          </label>
+            <label className="field">
+              Unidad de medida
+              <input
+                type="text"
+                value={valores.unidad_medida}
+                onChange={(e) => setValores((v) => ({ ...v, unidad_medida: e.target.value }))}
+                required
+              />
+            </label>
+          </div>
 
-          <label className="field">
-            Costo promedio
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={valores.costo_promedio}
-              onChange={(e) => setValores((v) => ({ ...v, costo_promedio: e.target.value }))}
-            />
-          </label>
+          <h3 className="subtitle">Costo</h3>
+          <div className="formGrid">
+            <label className="field">
+              Costo promedio
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={valores.costo_promedio}
+                onChange={(e) => setValores((v) => ({ ...v, costo_promedio: e.target.value }))}
+              />
+            </label>
+          </div>
 
           {errorFormulario && (
             <p className="errorMessage" role="alert">
@@ -639,12 +854,44 @@ const CATEGORIA_VACIA: CategoriaFormulario = {
   tipo: 'ambos',
 }
 
-function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
+const OPCIONES_TIPO = (Object.keys(ETIQUETAS_TIPO) as TipoCategoria[]).map((tipo) => ({
+  valor: tipo,
+  etiqueta: ETIQUETAS_TIPO[tipo],
+}))
+
+function textoUso(productos: number, materiasPrimas: number): string {
+  const p = productos === 1 ? '1 producto' : `${productos} productos`
+  const m = materiasPrimas === 1 ? '1 materia prima' : `${materiasPrimas} materias primas`
+  return `${p} · ${m}`
+}
+
+function PestañaCategorias({ esAdmin, solicitudNuevo }: { esAdmin: boolean; solicitudNuevo: number }) {
   const { data: categorias, isLoading } = useCategorias()
+  const { data: productos } = useProductos()
+  const { data: materiaPrima } = useMateriaPrima()
   const crear = useCrearCategoria()
   const editar = useEditarCategoria()
   const desactivar = useDesactivarCategoria()
   const reactivar = useReactivarCategoria()
+
+  // Cuántos productos y materias primas usan cada categoría; `null` mientras
+  // alguna de las dos listas no esté disponible, para no mostrar ceros falsos.
+  const uso = useMemo(() => {
+    if (!productos || !materiaPrima) return null
+    const conteo = new Map<number, { productos: number; materiasPrimas: number }>()
+    const de = (id: number) => conteo.get(id) ?? { productos: 0, materiasPrimas: 0 }
+    for (const p of productos) conteo.set(p.categoria, { ...de(p.categoria), productos: de(p.categoria).productos + 1 })
+    for (const m of materiaPrima) {
+      conteo.set(m.categoria, { ...de(m.categoria), materiasPrimas: de(m.categoria).materiasPrimas + 1 })
+    }
+    return conteo
+  }, [productos, materiaPrima])
+
+  const filtros = useFiltrosCatalogo(
+    categorias ?? [],
+    (c) => [c.nombre_categoria],
+    (c) => c.tipo,
+  )
 
   const [formularioAbierto, setFormularioAbierto] = useState(false)
   const [enEdicion, setEnEdicion] = useState<Categoria | null>(null)
@@ -659,6 +906,8 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
+
+  useSolicitudNuevo(solicitudNuevo, abrirCrear)
 
   function abrirEditar(categoria: Categoria) {
     setEnEdicion(categoria)
@@ -710,6 +959,15 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
     { clave: 'nombre_categoria', encabezado: 'Nombre' },
     { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO[fila.tipo] },
     {
+      clave: 'descripcion_categoria',
+      encabezado: 'Uso',
+      render: (fila) => {
+        if (!uso) return '…'
+        const conteo = uso.get(fila.id)
+        return <span className="cellNoWrap">{textoUso(conteo?.productos ?? 0, conteo?.materiasPrimas ?? 0)}</span>
+      },
+    },
+    {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
@@ -721,21 +979,25 @@ function PestañaCategorias({ esAdmin }: { esAdmin: boolean }) {
   ]
 
   return (
-    <div>
-      {esAdmin && (
-        <div className="pageHeader">
-          <span />
-          <BotonPrimario onClick={abrirCrear}>Nueva categoría</BotonPrimario>
-        </div>
-      )}
+    <div className="tabPanel">
+      <BarraFiltros
+        filtros={filtros}
+        placeholder="Nombre"
+        extra={{ etiqueta: 'Tipo', opciones: OPCIONES_TIPO }}
+        total={(categorias ?? []).length}
+      />
 
       {isLoading ? (
         <p>Cargando categorías…</p>
       ) : (
         <Tabla
           columnas={columnas}
-          datos={categorias ?? []}
-          mensajeVacio="Todavía no hay categorías registradas."
+          datos={filtros.filtrados}
+          mensajeVacio={
+            filtros.hayFiltros
+              ? 'Ninguna categoría coincide con los filtros.'
+              : 'Todavía no hay categorías registradas.'
+          }
           renderAcciones={
             esAdmin
               ? (fila) => (

@@ -1,18 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { Compra, EstadoCompra } from '../../api/compras'
+import { ETIQUETAS_ESTADO_COMPRA, type Compra, type EstadoCompra } from '../../api/compras'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useCompras } from '../../hooks/useCompras'
 import { useProveedores } from '../../hooks/useProveedores'
 import { formatearMoneda } from '../../utils/moneda'
-
-const ETIQUETAS_ESTADO: Record<EstadoCompra, string> = {
-  pendiente: 'Pendiente',
-  recibida: 'Recibida',
-  cancelada: 'Cancelada',
-}
 
 function claseEstado(estado: EstadoCompra) {
   if (estado === 'recibida') return 'status statusSuccess'
@@ -45,7 +39,7 @@ export function Compras() {
     {
       clave: 'estado',
       encabezado: 'Estado',
-      render: (fila) => <span className={claseEstado(fila.estado)}>{ETIQUETAS_ESTADO[fila.estado]}</span>,
+      render: (fila) => <span className={claseEstado(fila.estado)}>{ETIQUETAS_ESTADO_COMPRA[fila.estado]}</span>,
     },
   ]
 
@@ -114,9 +108,9 @@ export function Compras() {
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoCompra | '')}>
             <option value="">Todos</option>
-            {(Object.keys(ETIQUETAS_ESTADO) as EstadoCompra[]).map((estado) => (
+            {(Object.keys(ETIQUETAS_ESTADO_COMPRA) as EstadoCompra[]).map((estado) => (
               <option key={estado} value={estado}>
-                {ETIQUETAS_ESTADO[estado]}
+                {ETIQUETAS_ESTADO_COMPRA[estado]}
               </option>
             ))}
           </select>

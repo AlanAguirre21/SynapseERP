@@ -2,6 +2,13 @@ import { apiClient } from './client'
 
 export type EstadoVenta = 'pendiente' | 'entregada' | 'cancelada'
 
+// Etiquetas compartidas por Ventas, DetalleVenta y el estado de cuenta de Terceros.
+export const ETIQUETAS_ESTADO_VENTA: Record<EstadoVenta, string> = {
+  pendiente: 'Pendiente',
+  entregada: 'Entregada',
+  cancelada: 'Cancelada',
+}
+
 export interface DetalleVenta {
   id: number
   producto: number

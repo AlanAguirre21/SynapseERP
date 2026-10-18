@@ -1,12 +1,17 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { CampoContrasena } from '../../components/common/CampoContrasena'
 import { Modal } from '../../components/common/Modal'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
-import { generarPasswordAleatoria, type LimiteAccesos, type UsuarioCuenta } from '../../api/usuarios'
-import { useEmpleado, useEmpleadosDisponibles } from '../../hooks/useEmpleadosRRHH'
+import {
+  generarPasswordAleatoria,
+  type LimiteAccesos,
+  type RegistroAcceso,
+  type UsuarioCuenta,
+} from '../../api/usuarios'
+import { useEmpleado, useEmpleadosDisponibles, useEmpleadosRRHH } from '../../hooks/useEmpleadosRRHH'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import {
   useAccesosUsuario,
@@ -16,6 +21,8 @@ import {
   useReactivarUsuario,
   useUsuarios,
 } from '../../hooks/useUsuarios'
+import { normalizarBusqueda, obtenerIniciales } from '../../utils/texto'
+import styles from './Usuarios.module.css'
 
 interface ValoresFormulario {
   first_name: string
@@ -53,6 +60,31 @@ const ETIQUETAS_TIPO_ACCESO: Record<string, string> = {
   fallido: 'Intento fallido',
 }
 
+const CLASES_TIPO_ACCESO: Record<string, string> = {
+  exitoso: 'status statusSuccess',
+  cierre_sesion: 'status statusNeutral',
+  fallido: 'status statusError',
+}
+
+const ETIQUETAS_ROL: Record<UsuarioCuenta['rol_usuario'], string> = {
+  admin: 'Administrador',
+  operador: 'Operador',
+}
+
+// Qué implica cada rol, al elegirlo. Refleja `backend/core/modules.py` (la
+// fuente de verdad es el backend): si cambian los módulos de un rol, se
+// actualiza aquí a mano (checklist de mantenimiento de 021).
+const DESCRIPCIONES_ROL: Record<UsuarioCuenta['rol_usuario'], string> = {
+  admin:
+    'Acceso a todos los módulos, incluidos Caja, Recursos Humanos, Usuarios, Contabilidad y Configuración Fiscal.',
+  operador:
+    'La operación diaria (ventas, compras, producción, inventario, facturación, catálogo, terceros y sucursales), sin Caja, Recursos Humanos, Usuarios, Contabilidad ni Configuración Fiscal.',
+}
+
+function nombreCompleto(usuario: UsuarioCuenta): string {
+  return `${usuario.first_name} ${usuario.last_name}`.trim()
+}
+
 function alternarEnConjunto(conjunto: Set<number>, id: number): Set<number> {
   const nuevo = new Set(conjunto)
   if (nuevo.has(id)) nuevo.delete(id)
@@ -78,6 +110,8 @@ export function Usuarios() {
   return <UsuariosContenido />
 }
 
+type FiltroRol = '' | UsuarioCuenta['rol_usuario']
+
 function UsuariosContenido() {
   const { data: usuarios, isLoading } = useUsuarios()
   const crear = useCrearUsuario()
@@ -85,8 +119,11 @@ function UsuariosContenido() {
   const desactivar = useDesactivarUsuario()
   const reactivar = useReactivarUsuario()
   const { data: empleadosDisponibles } = useEmpleadosDisponibles()
+  const { data: empleados } = useEmpleadosRRHH()
 
   const [mostrarInactivos, setMostrarInactivos] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [rolFiltro, setRolFiltro] = useState<FiltroRol>('')
   const [formularioAbierto, setFormularioAbierto] = useState(false)
   const [enEdicion, setEnEdicion] = useState<UsuarioCuenta | null>(null)
   const [valores, setValores] = useState<ValoresFormulario>(FORMULARIO_VACIO)
@@ -105,6 +142,17 @@ function UsuariosContenido() {
     }
     return lista.sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo))
   })()
+
+  const resumen = useMemo(() => {
+    const lista = usuarios ?? []
+    const activos = lista.filter((u) => u.activo)
+    return {
+      activos: activos.length,
+      administradores: activos.filter((u) => u.rol_usuario === 'admin').length,
+      operadores: activos.filter((u) => u.rol_usuario === 'operador').length,
+      inactivos: lista.length - activos.length,
+    }
+  }, [usuarios])
 
   function abrirCrear() {
     setEnEdicion(null)
@@ -190,35 +238,69 @@ function UsuariosContenido() {
     setAReactivar(null)
   }
 
-  const usuariosVisibles = (usuarios ?? []).filter((u) => mostrarInactivos || u.activo)
+  // "Mostrar inactivos" es una preferencia de vista (por defecto ocultos,
+  // según `010`); la búsqueda y el rol son los filtros que se limpian.
+  const termino = normalizarBusqueda(busqueda)
+  const lista = usuarios ?? []
+  const usuariosVisibles = lista.filter(
+    (u) =>
+      (mostrarInactivos || u.activo) &&
+      (!rolFiltro || u.rol_usuario === rolFiltro) &&
+      (!termino || [nombreCompleto(u), u.username, u.email].some((t) => normalizarBusqueda(t).includes(termino))),
+  )
+  const hayFiltros = Boolean(busqueda.trim() || rolFiltro)
+
+  function limpiarFiltros() {
+    setBusqueda('')
+    setRolFiltro('')
+  }
+
+  function nombreEmpleado(id: number | null): string {
+    if (id === null) return 'Sin vincular'
+    return empleados?.find((e) => e.id === id)?.nombre_completo ?? '…'
+  }
 
   const columnas: ColumnaTabla<UsuarioCuenta>[] = [
     {
       clave: 'username',
       encabezado: 'Usuario',
-      render: (fila) => (
-        <button
-          type="button"
-          className="expandLink"
-          onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
-          aria-expanded={expandidos.has(fila.id)}
-        >
-          <span className="expandIndicator">{expandidos.has(fila.id) ? '▾' : '▸'}</span>
-          {fila.username}
-        </button>
-      ),
+      render: (fila) => {
+        const nombre = nombreCompleto(fila)
+        return (
+          <div className={styles.identity}>
+            <span className={styles.identityAvatar} aria-hidden="true">
+              {obtenerIniciales(nombre || fila.username)}
+            </span>
+            <span className={styles.identityText}>
+              {/* El botón lleva solo el nombre: el nombre de usuario va aparte. */}
+              <button
+                type="button"
+                className="expandLink"
+                onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
+                aria-expanded={expandidos.has(fila.id)}
+              >
+                <span className="expandIndicator">{expandidos.has(fila.id) ? '▾' : '▸'}</span>
+                {nombre || fila.username}
+              </button>
+              <span className={styles.identitySecondary}>
+                <span>{fila.username}</span>
+                {fila.email && fila.email !== fila.username && <> · {fila.email}</>}
+              </span>
+            </span>
+          </div>
+        )
+      },
     },
-    {
-      clave: 'first_name',
-      encabezado: 'Nombre',
-      render: (fila) => `${fila.first_name} ${fila.last_name}`.trim() || '—',
-    },
-    { clave: 'email', encabezado: 'Correo' },
     {
       clave: 'rol_usuario',
       encabezado: 'Rol',
-      render: (fila) => (fila.rol_usuario === 'admin' ? 'Administrador' : 'Operador'),
+      render: (fila) => (
+        <span className={fila.rol_usuario === 'admin' ? 'status statusPrimary' : 'status statusNeutral'}>
+          {ETIQUETAS_ROL[fila.rol_usuario]}
+        </span>
+      ),
     },
+    { clave: 'empleado', encabezado: 'Empleado', render: (fila) => nombreEmpleado(fila.empleado) },
     {
       clave: 'activo',
       encabezado: 'Estado',
@@ -230,132 +312,198 @@ function UsuariosContenido() {
     },
   ]
 
+  const cifra = (valor: number) => (usuarios ? valor : '…')
+
   return (
     <div className="page">
       <div className="pageHeader">
-        <h1 className="pageTitle">Usuarios</h1>
-        <div className="headerActions">
-          <label className="fieldCheckbox">
-            <input
-              type="checkbox"
-              checked={mostrarInactivos}
-              onChange={(e) => setMostrarInactivos(e.target.checked)}
-            />
-            Mostrar inactivos
-          </label>
-          <BotonPrimario onClick={abrirCrear}>Nuevo usuario</BotonPrimario>
+        <div className="pageHeading">
+          <h1 className="pageTitle">Usuarios</h1>
+          <p className="pageHint">Cuentas de acceso al sistema, su rol y su vínculo con la plantilla de RRHH.</p>
         </div>
+        <BotonPrimario onClick={abrirCrear}>Nuevo usuario</BotonPrimario>
+      </div>
+
+      <div className="statRow">
+        <div className="statTile">
+          <span className="statLabel">Usuarios activos</span>
+          <span className="statValue">{cifra(resumen.activos)}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Administradores</span>
+          <span className="statValue">{cifra(resumen.administradores)}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Operadores</span>
+          <span className="statValue">{cifra(resumen.operadores)}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Inactivos</span>
+          <span className="statValue">{cifra(resumen.inactivos)}</span>
+        </div>
+      </div>
+
+      <div className="filters">
+        <label className="filterField">
+          Buscar
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Nombre, usuario o correo"
+          />
+        </label>
+
+        <label className="filterField">
+          Rol
+          <select value={rolFiltro} onChange={(e) => setRolFiltro(e.target.value as FiltroRol)}>
+            <option value="">Todos</option>
+            <option value="admin">Administrador</option>
+            <option value="operador">Operador</option>
+          </select>
+        </label>
+
+        <label className="fieldCheckbox">
+          <input type="checkbox" checked={mostrarInactivos} onChange={(e) => setMostrarInactivos(e.target.checked)} />
+          Mostrar inactivos
+        </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {isLoading ? (
         <p>Cargando usuarios…</p>
       ) : (
-        <Tabla
-          columnas={columnas}
-          datos={usuariosVisibles}
-          mensajeVacio="Todavía no hay usuarios registrados."
-          renderAcciones={(fila) => (
-            <div className="rowActions">
-              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
-                Editar
-              </button>
-              {fila.activo ? (
-                <button
-                  type="button"
-                  className="dangerActionLink"
-                  onClick={() => {
-                    setErrorDesactivar('')
-                    setADesactivar(fila)
-                  }}
-                >
-                  Desactivar
+        <>
+          <span className="pageHint">{`Mostrando ${usuariosVisibles.length} de ${lista.length}`}</span>
+          <Tabla
+            columnas={columnas}
+            datos={usuariosVisibles}
+            mensajeVacio={
+              hayFiltros ? 'Ningún usuario coincide con los filtros.' : 'Todavía no hay usuarios registrados.'
+            }
+            renderAcciones={(fila) => (
+              <div className="rowActions">
+                <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
+                  Editar
                 </button>
-              ) : (
-                <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
-                  Reactivar
-                </button>
-              )}
-            </div>
-          )}
-        />
+                {fila.activo ? (
+                  <button
+                    type="button"
+                    className="dangerActionLink"
+                    onClick={() => {
+                      setErrorDesactivar('')
+                      setADesactivar(fila)
+                    }}
+                  >
+                    Desactivar
+                  </button>
+                ) : (
+                  <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
+                    Reactivar
+                  </button>
+                )}
+              </div>
+            )}
+            renderExpandido={(fila) => (expandidos.has(fila.id) ? <AccesosDeUsuarioSeccion usuario={fila} /> : null)}
+          />
+        </>
       )}
-
-      {[...expandidos].map((id) => {
-        const usuario = usuariosVisibles.find((u) => u.id === id)
-        return usuario ? <AccesosDeUsuarioSeccion key={id} usuario={usuario} /> : null
-      })}
 
       <Modal
         titulo={enEdicion ? 'Editar usuario' : 'Nuevo usuario'}
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
+        ancho="amplio"
       >
         <form className="form" onSubmit={alGuardar} noValidate>
-          <label className="field">
-            Nombre(s)
-            <input
-              type="text"
-              value={valores.first_name}
-              onChange={(e) => setValores((v) => ({ ...v, first_name: e.target.value }))}
-            />
-          </label>
+          <h3 className="subtitle">Datos personales</h3>
+          <div className="formGrid">
+            <label className="field">
+              Nombre(s)
+              <input
+                type="text"
+                value={valores.first_name}
+                onChange={(e) => setValores((v) => ({ ...v, first_name: e.target.value }))}
+              />
+            </label>
 
-          <label className="field">
-            Apellido(s)
-            <input
-              type="text"
-              value={valores.last_name}
-              onChange={(e) => setValores((v) => ({ ...v, last_name: e.target.value }))}
-            />
-          </label>
+            <label className="field">
+              Apellido(s)
+              <input
+                type="text"
+                value={valores.last_name}
+                onChange={(e) => setValores((v) => ({ ...v, last_name: e.target.value }))}
+              />
+            </label>
+          </div>
 
-          <label className="field">
-            Correo electrónico
-            <input
-              type="email"
-              value={valores.email}
-              onChange={(e) => setValores((v) => ({ ...v, email: e.target.value }))}
-              required
-            />
-          </label>
+          <h3 className="subtitle">Acceso</h3>
+          <div className="formGrid">
+            <label className="field">
+              Correo electrónico
+              <input
+                type="email"
+                value={valores.email}
+                onChange={(e) => setValores((v) => ({ ...v, email: e.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field">
-            Rol
-            <select
-              value={valores.rol_usuario}
-              onChange={(e) => setValores((v) => ({ ...v, rol_usuario: e.target.value as 'admin' | 'operador' }))}
-            >
-              <option value="operador">Operador</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </label>
+            {/* La descripción va fuera de la etiqueta, enlazada como ayuda,
+                para que el nombre accesible del campo siga siendo "Rol". */}
+            <div className="field">
+              <label htmlFor="usuario-rol">Rol</label>
+              <select
+                id="usuario-rol"
+                value={valores.rol_usuario}
+                onChange={(e) => setValores((v) => ({ ...v, rol_usuario: e.target.value as 'admin' | 'operador' }))}
+                aria-describedby="usuario-rol-descripcion"
+              >
+                <option value="operador">Operador</option>
+                <option value="admin">Administrador</option>
+              </select>
+              <span id="usuario-rol-descripcion" className="fieldHint">
+                {DESCRIPCIONES_ROL[valores.rol_usuario]}
+              </span>
+            </div>
 
-          <label className="field">
-            Empleado vinculado (opcional)
-            <select
-              value={valores.empleado ?? ''}
-              onChange={(e) => setValores((v) => ({ ...v, empleado: e.target.value ? Number(e.target.value) : null }))}
-            >
-              <option value="">Sin vincular</option>
-              {opcionesEmpleado.map((empleado) => (
-                <option key={empleado.id} value={empleado.id}>
-                  {empleado.nombre_completo}
-                </option>
-              ))}
-            </select>
-          </label>
+            {!enEdicion && (
+              <div className="formGridFull">
+                <CampoContrasena
+                  etiqueta="Contraseña"
+                  valor={valores.password}
+                  onCambiar={(password) => setValores((v) => ({ ...v, password }))}
+                  required
+                  botonGenerar={{
+                    onClick: () => setValores((v) => ({ ...v, password: generarPasswordAleatoria() })),
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
-          {!enEdicion && (
-            <CampoContrasena
-              etiqueta="Contraseña"
-              valor={valores.password}
-              onCambiar={(password) => setValores((v) => ({ ...v, password }))}
-              required
-              botonGenerar={{
-                onClick: () => setValores((v) => ({ ...v, password: generarPasswordAleatoria() })),
-              }}
-            />
-          )}
+          <h3 className="subtitle">Vínculo con RRHH</h3>
+          <div className="formGrid">
+            <label className="field">
+              Empleado vinculado (opcional)
+              <select
+                value={valores.empleado ?? ''}
+                onChange={(e) => setValores((v) => ({ ...v, empleado: e.target.value ? Number(e.target.value) : null }))}
+              >
+                <option value="">Sin vincular</option>
+                {opcionesEmpleado.map((empleado) => (
+                  <option key={empleado.id} value={empleado.id}>
+                    {empleado.nombre_completo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {errorFormulario && (
             <p className="errorMessage" role="alert">
@@ -411,9 +559,38 @@ function UsuariosContenido() {
   )
 }
 
+function formatearFechaAcceso(fecha: string): string {
+  return new Date(fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
+}
+
 function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
   const [limite, setLimite] = useState<LimiteAccesos>('5')
   const { data: accesos, isLoading } = useAccesosUsuario(usuario.id, limite)
+
+  // Resumen de los accesos cargados (5, 10 o todos), no de todo el historial.
+  const lista = accesos ?? []
+  const ultimoExitoso = lista
+    .filter((a) => a.tipo === 'exitoso')
+    .sort((a, b) => new Date(b.creado_en).getTime() - new Date(a.creado_en).getTime())[0]
+  const fallidos = lista.filter((a) => a.tipo === 'fallido').length
+
+  const columnas: ColumnaTabla<RegistroAcceso>[] = [
+    {
+      clave: 'tipo',
+      encabezado: 'Tipo',
+      render: (fila) => (
+        <span className={CLASES_TIPO_ACCESO[fila.tipo] ?? 'status statusNeutral'}>
+          {ETIQUETAS_TIPO_ACCESO[fila.tipo] ?? fila.tipo}
+        </span>
+      ),
+    },
+    {
+      clave: 'creado_en',
+      encabezado: 'Fecha',
+      render: (fila) => <span className="cellNoWrap">{formatearFechaAcceso(fila.creado_en)}</span>,
+    },
+    { clave: 'ip', encabezado: 'IP', render: (fila) => fila.ip ?? '—' },
+  ]
 
   return (
     <div className="expandedSection">
@@ -435,18 +612,22 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
 
       {isLoading ? (
         <p>Cargando accesos…</p>
-      ) : !accesos || accesos.length === 0 ? (
+      ) : lista.length === 0 ? (
         <p className="emptyState">Este usuario todavía no tiene accesos registrados.</p>
       ) : (
-        <ul className="expandedList">
-          {accesos.map((registro) => (
-            <li key={registro.id}>
-              <span>{ETIQUETAS_TIPO_ACCESO[registro.tipo] ?? registro.tipo}</span>
-              <span>{new Date(registro.creado_en).toLocaleString('es-MX')}</span>
-              <span>{registro.ip ?? '—'}</span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <dl className="factGrid">
+            <div>
+              <dt>Último inicio de sesión (en los accesos mostrados)</dt>
+              <dd>{ultimoExitoso ? formatearFechaAcceso(ultimoExitoso.creado_en) : '—'}</dd>
+            </div>
+            <div>
+              <dt>Intentos fallidos (en los accesos mostrados)</dt>
+              <dd>{fallidos}</dd>
+            </div>
+          </dl>
+          <Tabla columnas={columnas} datos={lista} />
+        </>
       )}
     </div>
   )

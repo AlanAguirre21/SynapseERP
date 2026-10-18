@@ -1,0 +1,20 @@
+@reference "../../index.css";
+
+/* Estilos propios de Usuarios: celda de identidad (iniciales + nombre +
+   usuario y correo). Lo demás usa las clases globales. */
+
+.identity {
+  @apply flex items-center gap-3 min-w-0;
+}
+
+.identityAvatar {
+  @apply flex items-center justify-center shrink-0 w-9 h-9 rounded-pildora bg-primario-suave text-primario font-titulo font-semibold text-[0.8rem];
+}
+
+.identityText {
+  @apply flex flex-col gap-0.5 min-w-0;
+}
+
+.identitySecondary {
+  @apply text-[0.8rem] text-texto-suave break-all;
+}

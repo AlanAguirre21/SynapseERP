@@ -1,11 +1,12 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import type {
-  ConfiguracionPACFormulario,
-  DatosFiscalesEmpresaFormulario,
-  SerieFolio,
-  SerieFolioFormulario,
+import {
+  REGIMENES_FISCALES,
+  type ConfiguracionPACFormulario,
+  type DatosFiscalesEmpresaFormulario,
+  type SerieFolio,
+  type SerieFolioFormulario,
 } from '../../api/configuracionFiscal'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
@@ -22,6 +23,7 @@ import {
   useSeriesFolio,
 } from '../../hooks/useConfiguracionFiscal'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import styles from './ConfiguracionFiscal.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
   const datos =
@@ -59,25 +61,76 @@ export function ConfiguracionFiscal() {
 function ConfiguracionFiscalContenido() {
   const { data: datosFiscales, isLoading: datosFiscalesCargando } = useDatosFiscalesEmpresa()
   const { data: pac, isLoading: pacCargando } = useConfiguracionPAC()
+  const { data: series } = useSeriesFolio()
 
   const configuracionIncompleta =
     !datosFiscalesCargando && !pacCargando && (datosFiscales?.completa === false || pac?.completa === false)
 
+  // Solo informativo: las reglas para timbrar viven en el backend. La serie
+  // activa no está en ningún `completa`, pero sin ella tampoco se timbra.
+  const comprobaciones = [
+    { etiqueta: 'Datos fiscales completos', lista: datosFiscales?.completa === true },
+    { etiqueta: 'Conexión al PAC configurada y activa', lista: pac?.completa === true },
+    { etiqueta: 'Al menos una serie activa', lista: (series ?? []).some((s) => s.activo) },
+  ]
+  const todoListo = comprobaciones.every((c) => c.lista)
+  const cargando = datosFiscalesCargando || pacCargando || !series
+
   return (
     <div className="page">
-      <h1 className="pageTitle">Configuración Fiscal</h1>
+      <div className="pageHeader">
+        <div className="pageHeading">
+          <h1 className="pageTitle">Configuración Fiscal</h1>
+          <p className="pageHint">Datos de la empresa, conexión al PAC y series con los que se timbran las facturas (CFDI).</p>
+        </div>
+      </div>
 
       {configuracionIncompleta && (
         <p className="notice" role="alert">
-          Configuración incompleta — completa los datos fiscales y la conexión al PAC antes de que{' '}
-          <strong>017 · Facturación</strong> pueda timbrar.
+          Configuración incompleta — completa los datos fiscales y la conexión al PAC antes de poder timbrar facturas.
         </p>
       )}
 
-      <DatosFiscalesForm />
-      <ConfiguracionPACForm />
-      <SeriesFolioSeccion />
+      {!cargando && (
+        <section className={styles.readiness} aria-label="Estado para timbrar">
+          <div className={styles.readinessHeader}>
+            <h2 className="sectionTitle">Estado para timbrar</h2>
+            <span className={todoListo ? 'status statusSuccess' : 'status statusWarning'}>
+              {todoListo ? 'Listo para timbrar' : 'Configuración incompleta'}
+            </span>
+          </div>
+          <ul className={styles.readinessList}>
+            {comprobaciones.map((c) => (
+              <li key={c.etiqueta} className={styles.readinessItem}>
+                <span>{c.etiqueta}</span>
+                <span className={c.lista ? 'status statusSuccess' : 'status statusWarning'}>
+                  {c.lista ? 'Listo' : 'Pendiente'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div>
+        <DatosFiscalesForm />
+        <ConfiguracionPACForm />
+        <SeriesFolioSeccion />
+      </div>
     </div>
+  )
+}
+
+// Fila de ajustes: título y explicación a la izquierda, contenido a la derecha.
+function FilaAjustes({ titulo, descripcion, children }: { titulo: string; descripcion: string; children: ReactNode }) {
+  return (
+    <section className={styles.settingsRow}>
+      <div className={styles.settingsIntro}>
+        <h2 className="sectionTitle">{titulo}</h2>
+        <p className={styles.settingsDescription}>{descripcion}</p>
+      </div>
+      <div className="card">{children}</div>
+    </section>
   )
 }
 
@@ -121,45 +174,60 @@ function DatosFiscalesForm() {
     }
   }
 
-  return (
-    <section className="card">
-      <h2 className="sectionTitle">Datos fiscales de la empresa</h2>
+  // Descripción del régimen capturado; un código fuera del catálogo no muestra nada.
+  const descripcionRegimen = REGIMENES_FISCALES.find((r) => r.valor === valores.regimen_fiscal.trim())?.etiqueta
 
+  return (
+    <FilaAjustes
+      titulo="Datos fiscales de la empresa"
+      descripcion="Identifican a la empresa como emisora en cada factura. Deben coincidir con su constancia de situación fiscal del SAT."
+    >
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
-          <label className="field">
-            RFC
-            <input type="text" value={valores.rfc} onChange={(e) => actualizarCampo('rfc', e.target.value)} />
-          </label>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <div className="formGrid">
+            <label className="field">
+              RFC
+              <input type="text" value={valores.rfc} onChange={(e) => actualizarCampo('rfc', e.target.value)} />
+            </label>
 
-          <label className="field">
-            Razón social
-            <input
-              type="text"
-              value={valores.razon_social}
-              onChange={(e) => actualizarCampo('razon_social', e.target.value)}
-            />
-          </label>
+            <label className="field">
+              Código postal fiscal
+              <input
+                type="text"
+                value={valores.codigo_postal_fiscal}
+                onChange={(e) => actualizarCampo('codigo_postal_fiscal', e.target.value)}
+              />
+            </label>
 
-          <label className="field">
-            Régimen fiscal
-            <input
-              type="text"
-              value={valores.regimen_fiscal}
-              onChange={(e) => actualizarCampo('regimen_fiscal', e.target.value)}
-            />
-          </label>
+            <label className="field formGridFull">
+              Razón social
+              <input
+                type="text"
+                value={valores.razon_social}
+                onChange={(e) => actualizarCampo('razon_social', e.target.value)}
+              />
+            </label>
 
-          <label className="field">
-            Código postal fiscal
-            <input
-              type="text"
-              value={valores.codigo_postal_fiscal}
-              onChange={(e) => actualizarCampo('codigo_postal_fiscal', e.target.value)}
-            />
-          </label>
+            {/* La descripción va fuera de la etiqueta (enlazada con aria-describedby)
+                para que el nombre accesible del campo siga siendo "Régimen fiscal". */}
+            <div className="field formGridFull">
+              <label htmlFor="regimen-fiscal">Régimen fiscal</label>
+              <input
+                id="regimen-fiscal"
+                type="text"
+                value={valores.regimen_fiscal}
+                onChange={(e) => actualizarCampo('regimen_fiscal', e.target.value)}
+                aria-describedby={descripcionRegimen ? 'regimen-fiscal-descripcion' : undefined}
+              />
+              {descripcionRegimen && (
+                <span id="regimen-fiscal-descripcion" className="fieldHint">
+                  {descripcionRegimen}
+                </span>
+              )}
+            </div>
+          </div>
 
           {error && (
             <p className="errorMessage" role="alert">
@@ -179,7 +247,7 @@ function DatosFiscalesForm() {
           </div>
         </form>
       )}
-    </section>
+    </FilaAjustes>
   )
 }
 
@@ -219,50 +287,65 @@ function ConfiguracionPACForm() {
   }
 
   return (
-    <section className="card">
-      <h2 className="sectionTitle">Conexión al PAC</h2>
-
+    <FilaAjustes
+      titulo="Conexión al PAC"
+      descripcion="El Proveedor Autorizado de Certificación timbra cada factura ante el SAT. La API key nunca se muestra; déjala en blanco para conservar la guardada."
+    >
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
-          <label className="field">
-            Proveedor
-            <input
-              type="text"
-              value={proveedor}
-              onChange={(e) => {
-                setProveedor(e.target.value)
-                setExito(false)
-              }}
-            />
-          </label>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          {/* Estado de lo guardado, no de lo que se está editando. */}
+          {pac && (
+            <div className={styles.statusBar} role="group" aria-label="Estado de la conexión guardada">
+              <span className={pac.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+                {pac.activo ? 'Conexión activa' : 'Conexión inactiva'}
+              </span>
+              <span className={pac.api_key_configurada ? 'status statusSuccess' : 'status statusWarning'}>
+                {pac.api_key_configurada ? 'API key configurada' : 'API key sin configurar'}
+              </span>
+            </div>
+          )}
 
-          <label className="field">
-            Endpoint de la API
-            <input
-              type="text"
-              value={apiEndpoint}
-              onChange={(e) => {
-                setApiEndpoint(e.target.value)
-                setExito(false)
-              }}
-            />
-          </label>
+          <div className="formGrid">
+            <label className="field">
+              Proveedor
+              <input
+                type="text"
+                value={proveedor}
+                onChange={(e) => {
+                  setProveedor(e.target.value)
+                  setExito(false)
+                }}
+              />
+            </label>
 
-          <label className="field">
-            API key
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => {
-                setApiKey(e.target.value)
-                setExito(false)
-              }}
-              placeholder={pac?.api_key_configurada ? 'Configurada — deja en blanco para no cambiarla' : 'Sin configurar'}
-              autoComplete="new-password"
-            />
-          </label>
+            <label className="field">
+              Endpoint de la API
+              <input
+                type="text"
+                value={apiEndpoint}
+                onChange={(e) => {
+                  setApiEndpoint(e.target.value)
+                  setExito(false)
+                }}
+              />
+            </label>
+
+            <label className="field formGridFull">
+              API key
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value)
+                  setExito(false)
+                }}
+                placeholder={pac?.api_key_configurada ? 'Configurada — deja en blanco para no cambiarla' : 'Sin configurar'}
+                autoComplete="new-password"
+              />
+            </label>
+          </div>
 
           <label className="fieldCheckbox">
             <input
@@ -294,7 +377,7 @@ function ConfiguracionPACForm() {
           </div>
         </form>
       )}
-    </section>
+    </FilaAjustes>
   )
 }
 
@@ -384,7 +467,14 @@ function SeriesFolioSeccion() {
 
   const columnas: ColumnaTabla<SerieFolio>[] = [
     { clave: 'serie', encabezado: 'Serie' },
-    { clave: 'folio_actual', encabezado: 'Folio actual' },
+    { clave: 'folio_actual', alineacion: 'derecha', encabezado: 'Folio actual' },
+    {
+      // Lo que asigna el backend al timbrar: incrementa `folio_actual` y usa el resultado.
+      clave: 'id',
+      alineacion: 'derecha',
+      encabezado: 'Próximo folio',
+      render: (fila) => `${fila.serie}-${fila.folio_actual + 1}`,
+    },
     {
       clave: 'activo',
       encabezado: 'Estado',
@@ -397,9 +487,11 @@ function SeriesFolioSeccion() {
   ]
 
   return (
-    <section className="card">
-      <div className="sectionHeader">
-        <h2 className="sectionTitle">Series de facturación</h2>
+    <FilaAjustes
+      titulo="Series de facturación"
+      descripcion="Cada factura timbrada toma el siguiente folio de una serie activa. Una serie desactivada conserva su historial."
+    >
+      <div className={styles.cardActions}>
         <BotonPrimario onClick={abrirCrear}>Nueva serie</BotonPrimario>
       </div>
 
@@ -512,6 +604,6 @@ function SeriesFolioSeccion() {
           </BotonPrimario>
         </div>
       </Modal>
-    </section>
+    </FilaAjustes>
   )
 }

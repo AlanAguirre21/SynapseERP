@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { EstadoVenta, Venta } from '../../api/ventas'
+import { ETIQUETAS_ESTADO_VENTA, type EstadoVenta, type Venta } from '../../api/ventas'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useClientes } from '../../hooks/useClientes'
@@ -9,12 +9,6 @@ import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useVentas } from '../../hooks/useVentas'
 import { formatearMoneda } from '../../utils/moneda'
-
-const ETIQUETAS_ESTADO: Record<EstadoVenta, string> = {
-  pendiente: 'Pendiente',
-  entregada: 'Entregada',
-  cancelada: 'Cancelada',
-}
 
 function claseEstado(estado: EstadoVenta) {
   if (estado === 'entregada') return 'status statusSuccess'
@@ -53,7 +47,7 @@ export function Ventas() {
     {
       clave: 'estado',
       encabezado: 'Estado',
-      render: (fila) => <span className={claseEstado(fila.estado)}>{ETIQUETAS_ESTADO[fila.estado]}</span>,
+      render: (fila) => <span className={claseEstado(fila.estado)}>{ETIQUETAS_ESTADO_VENTA[fila.estado]}</span>,
     },
   ]
 
@@ -126,9 +120,9 @@ export function Ventas() {
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoVenta | '')}>
             <option value="">Todos</option>
-            {(Object.keys(ETIQUETAS_ESTADO) as EstadoVenta[]).map((estado) => (
+            {(Object.keys(ETIQUETAS_ESTADO_VENTA) as EstadoVenta[]).map((estado) => (
               <option key={estado} value={estado}>
-                {ETIQUETAS_ESTADO[estado]}
+                {ETIQUETAS_ESTADO_VENTA[estado]}
               </option>
             ))}
           </select>

@@ -152,10 +152,6 @@
     @apply flex flex-col gap-4 p-5 min-w-0 bg-superficie border border-borde rounded-tarjeta shadow-suave;
   }
 
-  .section {
-    @apply flex flex-col gap-4;
-  }
-
   .sectionHeader {
     @apply flex items-center justify-between gap-3 flex-wrap;
   }
@@ -443,6 +439,12 @@
     @apply bg-borde text-texto-suave;
   }
 
+  /* Etiqueta en el tono de la marca (ej. rol "Administrador"): resalta sin
+     significar éxito, error ni advertencia. */
+  .statusPrimary {
+    @apply bg-primario-suave text-primario;
+  }
+
   /* --- Acciones y enlaces ------------------------------------------------ */
 
   .rowActions {
@@ -502,6 +504,22 @@
 
   .dataTable tbody tr:hover {
     @apply bg-fondo;
+  }
+
+  /* Fila de detalle desplegada (`renderExpandido` de Tabla): sin resaltado al
+     pasar el cursor y con el fondo de página, para leerse como parte de la fila
+     de arriba y no como un registro más. */
+  .dataTable tbody tr.expandedRow:hover {
+    @apply bg-transparent;
+  }
+
+  .dataTable tbody tr.expandedRow > td {
+    @apply bg-fondo px-4 py-4;
+  }
+
+  /* Fila de totales (`filaPie` de Tabla): separada del cuerpo y en negrita. */
+  .dataTable tfoot td {
+    @apply px-4 py-3 bg-fondo text-texto font-semibold border-t-2 border-borde tabular-nums;
   }
 
   /* Tabla compacta de líneas de un documento (venta, compra, producción, traslado). */

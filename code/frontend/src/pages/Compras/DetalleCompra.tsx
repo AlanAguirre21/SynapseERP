@@ -1,18 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { EstadoCompra } from '../../api/compras'
+import { ETIQUETAS_ESTADO_COMPRA, type EstadoCompra } from '../../api/compras'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { useCancelarCompra, useCompra, useRecibirCompra } from '../../hooks/useCompras'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useProductos } from '../../hooks/useProductos'
-
-const ETIQUETAS_ESTADO: Record<EstadoCompra, string> = {
-  pendiente: 'Pendiente',
-  recibida: 'Recibida',
-  cancelada: 'Cancelada',
-}
 
 function claseEstado(estado: EstadoCompra) {
   if (estado === 'recibida') return 'status statusSuccess'
@@ -89,7 +83,7 @@ export function DetalleCompra() {
               <h1 className="documentTitle">Compra #{compra.id}</h1>
               <p className="documentHint">Registrada el {new Date(compra.fecha).toLocaleString('es-MX')}</p>
             </div>
-            <span className={claseEstado(compra.estado)}>{ETIQUETAS_ESTADO[compra.estado]}</span>
+            <span className={claseEstado(compra.estado)}>{ETIQUETAS_ESTADO_COMPRA[compra.estado]}</span>
           </div>
         </header>
 

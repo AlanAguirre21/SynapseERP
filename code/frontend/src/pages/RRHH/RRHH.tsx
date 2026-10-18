@@ -1,4 +1,4 @@
-import { Fragment, useState, type FormEvent } from 'react'
+import { Fragment, useMemo, useState, type FormEvent } from 'react'
 
 import type {
   Departamento,
@@ -10,6 +10,7 @@ import type {
 } from '../../api/rrhh'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
+import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import {
   useContactosEmergencia,
   useCrearContactoEmergencia,
@@ -23,7 +24,7 @@ import {
   useReactivarDepartamento,
 } from '../../hooks/useDepartamentos'
 import { useCrearDependiente, useDependientes, useEliminarDependiente } from '../../hooks/useDependientes'
-import { useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
+import { useAsignacionesVigentes, useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
 import {
   useContratarEmpleado,
   useDesactivarEmpleado,
@@ -37,9 +38,10 @@ import {
   useEditarPosicion,
   usePosiciones,
   useReactivarPosicion,
+  useTodasLasPosiciones,
 } from '../../hooks/usePosiciones'
 import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
-import { obtenerIniciales } from '../../utils/texto'
+import { normalizarBusqueda, obtenerIniciales } from '../../utils/texto'
 import styles from './RRHH.module.css'
 
 function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: string): string {
@@ -110,9 +112,30 @@ function ordenarPorJerarquia(posiciones: Posicion[]): { posicion: Posicion; prof
 
 type LimiteLista = '5' | '10' | 'todos'
 
+type PestañaRRHH = 'organizacion' | 'directorio'
+
+const PESTAÑAS_RRHH: { clave: PestañaRRHH; etiqueta: string }[] = [
+  { clave: 'organizacion', etiqueta: 'Organización' },
+  { clave: 'directorio', etiqueta: 'Directorio' },
+]
+
 export function RRHH() {
   const { data: departamentos, isLoading } = useDepartamentos()
   const { data: empleados } = useEmpleadosRRHH()
+  const { data: todasLasPosiciones } = useTodasLasPosiciones()
+  const { data: asignacionesVigentes } = useAsignacionesVigentes()
+  const [pestaña, setPestaña] = useState<PestañaRRHH>('organizacion')
+
+  // Empleados con asignación vigente por posición (ocupación y vacantes).
+  const ocupacion = useMemo(() => {
+    const conteo = new Map<number, number>()
+    for (const a of asignacionesVigentes ?? []) conteo.set(a.posicion, (conteo.get(a.posicion) ?? 0) + 1)
+    return conteo
+  }, [asignacionesVigentes])
+  const vacantes =
+    todasLasPosiciones && asignacionesVigentes
+      ? todasLasPosiciones.filter((p) => p.activo && !ocupacion.get(p.id)).length
+      : null
   const [departamentoId, setDepartamentoId] = useState<number | null>(null)
   const [formularioDepto, setFormularioDepto] = useState<'nuevo' | Departamento | null>(null)
   const desactivarDepto = useDesactivarDepartamento()
@@ -138,7 +161,10 @@ export function RRHH() {
   return (
     <div className="page">
       <div className="pageHeader">
-        <h1 className="pageTitle">Recursos Humanos</h1>
+        <div className="pageHeading">
+          <h1 className="pageTitle">Recursos Humanos</h1>
+          <p className="pageHint">Departamentos, posiciones y la plantilla de empleados de la empresa.</p>
+        </div>
         <BotonPrimario variante="secundario" onClick={() => setFormularioDepto('nuevo')}>
           Agregar departamento
         </BotonPrimario>
@@ -157,12 +183,38 @@ export function RRHH() {
           <span className="statLabel">Empleados inactivos</span>
           <span className="statValue">{empleados ? empleados.filter((e) => !e.activo).length : '…'}</span>
         </div>
+        <div className={vacantes ? 'statTile statTileWarning' : 'statTile'}>
+          <span className="statLabel">Posiciones vacantes</span>
+          <span className="statValue">{vacantes ?? '…'}</span>
+        </div>
       </div>
 
-      {isLoading ? (
+      <div className="tabs" role="tablist" aria-label="Vistas de Recursos Humanos">
+        {PESTAÑAS_RRHH.map((p) => (
+          <button
+            key={p.clave}
+            type="button"
+            role="tab"
+            aria-selected={pestaña === p.clave}
+            className={pestaña === p.clave ? 'tab tabActive' : 'tab'}
+            onClick={() => setPestaña(p.clave)}
+          >
+            {p.etiqueta}
+          </button>
+        ))}
+      </div>
+
+      {pestaña === 'directorio' ? (
+        <PestañaDirectorio
+          empleados={empleados}
+          asignaciones={asignacionesVigentes}
+          posiciones={todasLasPosiciones}
+          departamentos={departamentos}
+        />
+      ) : isLoading ? (
         <p>Cargando departamentos…</p>
       ) : (
-        <>
+        <div className="tabPanel">
           {/* Pestañas de departamento a la izquierda; a la derecha, las
               acciones sobre el departamento seleccionado. "Agregar
               departamento" vive en el encabezado de la página, así que sigue
@@ -207,11 +259,15 @@ export function RRHH() {
           </div>
 
           {departamentoSeleccionado ? (
-            <PanelDepartamento departamento={departamentoSeleccionado} empleados={empleados ?? []} />
+            <PanelDepartamento
+              departamento={departamentoSeleccionado}
+              empleados={empleados ?? []}
+              ocupacion={asignacionesVigentes ? ocupacion : null}
+            />
           ) : (
             <p className="emptyState">Todavía no hay departamentos registrados.</p>
           )}
-        </>
+        </div>
       )}
 
       <FormularioDepartamento
@@ -245,6 +301,182 @@ export function RRHH() {
             </BotonPrimario>
           </div>
         </Modal>
+      )}
+    </div>
+  )
+}
+
+// --- Directorio -------------------------------------------------------------
+
+type FiltroEstadoEmpleado = 'activos' | 'inactivos' | 'todos'
+
+interface FilaDirectorio {
+  id: number
+  empleado: Empleado
+  asignacion: EmpleadoPosicion | undefined
+  posicion: Posicion | undefined
+  departamento: Departamento | undefined
+  activo: boolean
+}
+
+function PestañaDirectorio({
+  empleados,
+  asignaciones,
+  posiciones,
+  departamentos,
+}: {
+  empleados: Empleado[] | undefined
+  asignaciones: EmpleadoPosicion[] | undefined
+  posiciones: Posicion[] | undefined
+  departamentos: Departamento[] | undefined
+}) {
+  const [busqueda, setBusqueda] = useState('')
+  const [departamentoFiltro, setDepartamentoFiltro] = useState('')
+  const [estado, setEstado] = useState<FiltroEstadoEmpleado>('activos')
+  const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null)
+
+  // Une empleados con su asignación vigente, su posición y su departamento.
+  // Si un empleado tuviera dos asignaciones vigentes, se toma la más reciente.
+  const filas = useMemo<FilaDirectorio[]>(() => {
+    const asignacionPorEmpleado = new Map<number, EmpleadoPosicion>()
+    for (const a of asignaciones ?? []) {
+      const previa = asignacionPorEmpleado.get(a.empleado)
+      if (!previa || a.fecha_inicio > previa.fecha_inicio) asignacionPorEmpleado.set(a.empleado, a)
+    }
+    return (empleados ?? [])
+      .map((empleado) => {
+        const asignacion = asignacionPorEmpleado.get(empleado.id)
+        const posicion = posiciones?.find((p) => p.id === asignacion?.posicion)
+        const departamento = departamentos?.find((d) => d.id === posicion?.departamento)
+        return { id: empleado.id, empleado, asignacion, posicion, departamento, activo: empleado.activo }
+      })
+      .sort((a, b) => a.empleado.nombre_completo.localeCompare(b.empleado.nombre_completo, 'es'))
+  }, [empleados, asignaciones, posiciones, departamentos])
+
+  const termino = normalizarBusqueda(busqueda)
+  const filtradas = filas.filter(
+    (f) =>
+      (estado === 'todos' || (estado === 'activos' ? f.empleado.activo : !f.empleado.activo)) &&
+      (!departamentoFiltro || String(f.departamento?.id) === departamentoFiltro) &&
+      (!termino ||
+        [f.empleado.nombre_completo, f.empleado.rfc].some((texto) => normalizarBusqueda(texto).includes(termino))),
+  )
+  // "Activos" es el valor por defecto, no un filtro aplicado.
+  const hayFiltros = Boolean(busqueda.trim() || departamentoFiltro || estado !== 'activos')
+
+  function limpiarFiltros() {
+    setBusqueda('')
+    setDepartamentoFiltro('')
+    setEstado('activos')
+  }
+
+  const seleccionada = filas.find((f) => f.id === seleccionadoId)
+  const cargando = !empleados || !asignaciones || !posiciones
+
+  const columnas: ColumnaTabla<FilaDirectorio>[] = [
+    {
+      clave: 'empleado',
+      encabezado: 'Empleado',
+      render: (fila) => (
+        <span className={styles.directoryName}>
+          <AvatarEmpleado empleado={fila.empleado} tamano="chico" />
+          {/* La ficha está ligada a una asignación: sin puesto vigente no hay ficha que abrir. */}
+          {fila.asignacion && fila.posicion ? (
+            <button type="button" className="actionLink" onClick={() => setSeleccionadoId(fila.id)}>
+              {fila.empleado.nombre_completo}
+            </button>
+          ) : (
+            <span>{fila.empleado.nombre_completo}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      clave: 'posicion',
+      encabezado: 'Posición',
+      render: (fila) => fila.posicion?.titulo_posicion ?? <span className="pageHint">Sin puesto vigente</span>,
+    },
+    { clave: 'departamento', encabezado: 'Departamento', render: (fila) => fila.departamento?.nombre_departamento ?? '—' },
+    { clave: 'id', encabezado: 'Teléfono', render: (fila) => fila.empleado.telefono || '—' },
+    {
+      clave: 'asignacion',
+      encabezado: 'Correo',
+      render: (fila) => fila.empleado.email || '—',
+    },
+    {
+      clave: 'activo',
+      encabezado: 'Estado',
+      render: (fila) => (
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+          {fila.activo ? 'Activo' : 'Inactivo'}
+        </span>
+      ),
+    },
+  ]
+
+  return (
+    <div className="tabPanel">
+      <div className="filters">
+        <label className="filterField">
+          Buscar
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Nombre o RFC"
+          />
+        </label>
+
+        <label className="filterField">
+          Departamento
+          <select value={departamentoFiltro} onChange={(e) => setDepartamentoFiltro(e.target.value)}>
+            <option value="">Todos</option>
+            {(departamentos ?? []).map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.nombre_departamento}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="filterField">
+          Estado
+          <select value={estado} onChange={(e) => setEstado(e.target.value as FiltroEstadoEmpleado)}>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+            <option value="todos">Todos</option>
+          </select>
+        </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      {cargando ? (
+        <p>Cargando directorio…</p>
+      ) : (
+        <>
+          <span className="pageHint">{`Mostrando ${filtradas.length} de ${filas.length}`}</span>
+          <Tabla
+            columnas={columnas}
+            datos={filtradas}
+            mensajeVacio={
+              hayFiltros ? 'Ningún empleado coincide con los filtros.' : 'Todavía no hay empleados registrados.'
+            }
+          />
+        </>
+      )}
+
+      {seleccionada?.asignacion && seleccionada.posicion && (
+        <ModalDetalleEmpleado
+          empleado={seleccionada.empleado}
+          posicion={seleccionada.posicion}
+          asignacion={seleccionada.asignacion}
+          onCerrar={() => setSeleccionadoId(null)}
+        />
       )}
     </div>
   )
@@ -329,7 +561,20 @@ function formatearMoneda(valor: string) {
   return `$${Number(valor).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function PanelDepartamento({ departamento, empleados }: { departamento: Departamento; empleados: Empleado[] }) {
+function textoOcupacion(cantidad: number): string {
+  return cantidad === 1 ? '1 empleado' : `${cantidad} empleados`
+}
+
+function PanelDepartamento({
+  departamento,
+  empleados,
+  ocupacion,
+}: {
+  departamento: Departamento
+  empleados: Empleado[]
+  // `null` mientras cargan las asignaciones vigentes.
+  ocupacion: Map<number, number> | null
+}) {
   const { data: posiciones, isLoading } = usePosiciones(departamento.id)
   const desactivarPosicion = useDesactivarPosicion()
   const reactivarPosicion = useReactivarPosicion()
@@ -368,6 +613,7 @@ function PanelDepartamento({ departamento, empleados }: { departamento: Departam
               <tr>
                 <th>Posición</th>
                 <th>Rango salarial</th>
+                <th>Ocupación</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -397,6 +643,16 @@ function PanelDepartamento({ departamento, empleados }: { departamento: Departam
                       <td className={styles.salaryCell}>
                         {formatearMoneda(posicion.salario_minimo)} – {formatearMoneda(posicion.salario_maximo)}
                       </td>
+                      <td className="cellNoWrap">
+                        {ocupacion === null ? (
+                          '…'
+                        ) : posicion.activo && !ocupacion.get(posicion.id) ? (
+                          // Una posición inactiva sin empleados no es una vacante que cubrir.
+                          <span className="status statusWarning">Vacante</span>
+                        ) : (
+                          textoOcupacion(ocupacion.get(posicion.id) ?? 0)
+                        )}
+                      </td>
                       <td>
                         <span className={posicion.activo ? 'status statusSuccess' : 'status statusNeutral'}>
                           {posicion.activo ? 'Activa' : 'Inactiva'}
@@ -419,7 +675,7 @@ function PanelDepartamento({ departamento, empleados }: { departamento: Departam
                     </tr>
                     {expandida && (
                       <tr>
-                        <td colSpan={4} className={styles.expandedCell}>
+                        <td colSpan={5} className={styles.expandedCell}>
                           <PanelEmpleadosPorPosicion posicion={posicion} empleados={empleados} />
                         </td>
                       </tr>

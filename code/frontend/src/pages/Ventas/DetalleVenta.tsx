@@ -2,19 +2,13 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { ETIQUETAS_ESTADO_FACTURA, FORMAS_PAGO, METODOS_PAGO, USOS_CFDI, type MetodoPago } from '../../api/facturacion'
-import { obtenerTicketVenta, type EstadoVenta } from '../../api/ventas'
+import { ETIQUETAS_ESTADO_VENTA, obtenerTicketVenta, type EstadoVenta } from '../../api/ventas'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturaDeVenta, useGenerarFactura } from '../../hooks/useFacturas'
 import { useProductos } from '../../hooks/useProductos'
 import { useCancelarVenta, useEntregarVenta, useVenta } from '../../hooks/useVentas'
-
-const ETIQUETAS_ESTADO: Record<EstadoVenta, string> = {
-  pendiente: 'Pendiente',
-  entregada: 'Entregada',
-  cancelada: 'Cancelada',
-}
 
 function claseEstado(estado: EstadoVenta) {
   if (estado === 'entregada') return 'status statusSuccess'
@@ -147,7 +141,7 @@ export function DetalleVenta() {
               <h1 className="documentTitle">Venta #{venta.id}</h1>
               <p className="documentHint">Registrada el {new Date(venta.fecha).toLocaleString('es-MX')}</p>
             </div>
-            <span className={claseEstado(venta.estado)}>{ETIQUETAS_ESTADO[venta.estado]}</span>
+            <span className={claseEstado(venta.estado)}>{ETIQUETAS_ESTADO_VENTA[venta.estado]}</span>
           </div>
         </header>
 
