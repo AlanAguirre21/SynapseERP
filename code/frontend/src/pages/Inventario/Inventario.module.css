@@ -44,6 +44,10 @@
   @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[180px];
 }
 
+.accionesStock {
+  @apply ml-auto;
+}
+
 .estadoNormal {
   @apply text-exito text-[0.8rem] font-semibold;
 }

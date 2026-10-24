@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { editarStockMinimo, getStock, type TipoItemInventario } from '../api/inventario'
+import { crearTraslado, editarStockMinimo, getStock, type TipoItemInventario } from '../api/inventario'
 
 export function useStock(tipo: TipoItemInventario, sucursalId: number | null) {
   return useQuery({
@@ -15,5 +15,18 @@ export function useEditarStockMinimo() {
   return useMutation({
     mutationFn: editarStockMinimo,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['stock'] }),
+  })
+}
+
+export function useCrearTraslado() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: crearTraslado,
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['stock'] }),
+        queryClient.invalidateQueries({ queryKey: ['movimientos-inventario'] }),
+        queryClient.invalidateQueries({ queryKey: ['alertas-stock'] }),
+      ]),
   })
 }

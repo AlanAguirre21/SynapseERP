@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
+import { useCrearTraslado, useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
@@ -40,7 +40,19 @@ const MOVIMIENTOS = [
     id: 1, fecha: '2026-08-20T10:00:00Z', sucursal: 1, sucursal_nombre: 'Matriz', tipo_item: 'producto' as const,
     item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'entrada' as const, cantidad: '20.00',
     motivo: 'compra' as const, referencia_id: null, stock_resultante: '20.00', usuario: 1,
-    usuario_nombre: 'admin1',
+    usuario_nombre: 'admin1', sucursal_contraparte: null,
+  },
+  {
+    id: 2, fecha: '2026-08-21T10:00:00Z', sucursal: 1, sucursal_nombre: 'Matriz', tipo_item: 'producto' as const,
+    item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'salida' as const, cantidad: '5.00',
+    motivo: 'traslado_salida' as const, referencia_id: 12, stock_resultante: '15.00', usuario: 1,
+    usuario_nombre: 'admin1', sucursal_contraparte: 'Norte',
+  },
+  {
+    id: 3, fecha: '2026-08-21T10:00:00Z', sucursal: 2, sucursal_nombre: 'Norte', tipo_item: 'producto' as const,
+    item_id: 1, item_nombre: 'Suero fisiológico', tipo_movimiento: 'entrada' as const, cantidad: '5.00',
+    motivo: 'traslado_entrada' as const, referencia_id: 12, stock_resultante: '5.00', usuario: 1,
+    usuario_nombre: 'admin1', sucursal_contraparte: 'Matriz',
   },
 ]
 
@@ -67,6 +79,9 @@ function mockearHooks(rol: 'admin' | 'operador' = 'operador') {
   )
   useEditarStockMinimoMock.mockReturnValue(
     { mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useEditarStockMinimo>,
+  )
+  vi.mocked(useCrearTraslado).mockReturnValue(
+    { mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCrearTraslado>,
   )
 }
 
@@ -150,5 +165,45 @@ describe('Inventario', () => {
     expect(screen.queryByLabelText(/Stock mínimo de/)).not.toBeInTheDocument()
     const tablaStock = within(primero(screen.getAllByRole('table')))
     expect(tablaStock.getAllByText('10.00')).toHaveLength(2)
+  })
+
+  it.each(['admin', 'operador'] as const)('un %s ve el botón "Traslado" y abre el modal', (rol) => {
+    mockearHooks(rol)
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Traslado' }))
+
+    expect(screen.getByRole('dialog', { name: 'Traslado entre sucursales' })).toBeInTheDocument()
+  })
+
+  it('precarga el modal con la sucursal y el tipo seleccionados en la tabla', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Inventario de materia prima' }))
+    fireEvent.change(primero(screen.getAllByLabelText('Sucursal')), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Traslado' }))
+
+    expect(screen.getByLabelText('Sucursal origen')).toHaveValue('2')
+    expect(screen.getByLabelText('Tipo de la línea 1')).toHaveValue('materia_prima')
+  })
+
+  it('el historial muestra las filas de traslado con número y sucursal contraparte', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    const historial = within(screen.getAllByRole('table')[1] as HTMLElement)
+    expect(historial.getByText('Traslado #12 (salida) → Norte')).toBeInTheDocument()
+    expect(historial.getByText('Traslado #12 (entrada) ← Matriz')).toBeInTheDocument()
+    expect(historial.getByText('Compra')).toBeInTheDocument()
+  })
+
+  it('permite filtrar el historial por motivo "Traslado"', () => {
+    mockearHooks()
+    render(<Inventario />)
+
+    fireEvent.change(screen.getByLabelText('Motivo'), { target: { value: 'traslado' } })
+
+    expect(useMovimientosInventarioMock).toHaveBeenLastCalledWith(expect.objectContaining({ motivo: 'traslado' }))
   })
 })
