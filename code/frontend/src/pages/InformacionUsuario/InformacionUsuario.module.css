@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-6 max-w-md mx-auto bg-superficie shadow-marcada rounded-tarjeta p-7;
 }
@@ -68,4 +69,63 @@
 
 .accionesFormulario {
   @apply flex items-center justify-end gap-3;
+=======
+/* Estilos propios de Información de Usuario: cabecera de perfil, fila de
+   seguridad, lista de módulos y barra de guardado. Las filas de ajustes son
+   clases globales de index.css. */
+
+/* --- Cabecera de perfil -------------------------------------------------- */
+
+/* Única superficie con color de marca de la pantalla: degradado suave de
+   primario-suave, como el panel de saldo de Caja. El avatar y sus acciones
+   son el componente común `SelectorFotoPerfil`. */
+.profileHeader {
+  @apply px-6 py-6 border border-borde rounded-tarjeta shadow-suave bg-linear-to-br from-primario-suave to-superficie;
+}
+
+.profileName {
+  @apply m-0 text-texto font-titulo font-semibold text-[1.35rem] break-words;
+}
+
+.profileMeta {
+  @apply m-0 text-texto-suave text-[0.9rem] break-words;
+}
+
+/* --- Seguridad ----------------------------------------------------------- */
+
+.securityRow {
+  @apply flex items-center justify-between gap-4 flex-wrap;
+}
+
+.securityText {
+  @apply flex flex-col gap-1;
+}
+
+.securityTitle {
+  @apply text-[0.9rem] font-semibold text-texto;
+}
+
+/* --- Rol y acceso -------------------------------------------------------- */
+
+.moduleList {
+  @apply flex flex-wrap gap-2 m-0 p-0 list-none;
+}
+
+/* --- Guardar ------------------------------------------------------------- */
+
+.saveArea {
+  @apply flex flex-col gap-3 pt-6 border-t border-borde;
+}
+
+.saveBar {
+  @apply flex items-center justify-between gap-4 flex-wrap;
+}
+
+.saveNote {
+  @apply text-[0.85rem] font-medium text-advertencia-texto;
+}
+
+.saveActions {
+  @apply flex items-center gap-4 flex-wrap ml-auto;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

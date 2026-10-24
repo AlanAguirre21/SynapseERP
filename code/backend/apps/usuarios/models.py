@@ -1,9 +1,55 @@
+<<<<<<< HEAD
 from django.contrib.auth.models import AbstractUser
+=======
+import os
+import uuid
+
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.files.storage import FileSystemStorage
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from django.db import models
 from django.utils import timezone
 
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
+<<<<<<< HEAD
+=======
+
+class AlmacenamientoFotosUsuario(FileSystemStorage):
+    """Storage de las fotografías de perfil (017 / 010), en su propia carpeta
+    y URL, igual que las fotos de empleado de 008 (ver nota en
+    `config/settings.py`). Lee la carpeta de `settings` en cada acceso en vez
+    de congelarla al cargar el modelo, para que los tests puedan apuntarla a
+    una carpeta temporal y no escriban en la carpeta real de desarrollo.
+    """
+
+    @property
+    def base_location(self):
+        return str(settings.USUARIOS_FOTOS_ROOT)
+
+    @property
+    def location(self):
+        return os.path.abspath(self.base_location)
+
+    @property
+    def base_url(self):
+        return f'/{settings.USUARIOS_FOTOS_URL}'
+
+
+# Función (no instancia) por la misma razón que en RRHH: `makemigrations`
+# no debe congelar nada dependiente del entorno dentro de la migración.
+def almacenamiento_fotos_usuario():
+    return AlmacenamientoFotosUsuario()
+
+
+def ruta_foto_usuario(instance, filename):
+    """Nombre aleatorio: no expone el nombre original del archivo ni permite
+    que una subida sobrescriba la fotografía de otra cuenta."""
+    extension = os.path.splitext(filename)[1].lower()
+    return f'{uuid.uuid4().hex}{extension}'
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 ROLES_USUARIO = [
     (ROL_ADMIN, 'Administrador'),
     (ROL_OPERADOR, 'Operador'),
@@ -31,6 +77,14 @@ class Usuario(AbstractUser):
     empleado = models.OneToOneField(
         'rrhh.Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='usuario',
     )
+<<<<<<< HEAD
+=======
+    # Fotografía de perfil (017 · Información de Usuario / 010 · Usuarios).
+    # Independiente de `Empleado.fotografia`: cambiarla nunca toca datos de RRHH.
+    foto_usuario = models.ImageField(
+        upload_to=ruta_foto_usuario, storage=almacenamiento_fotos_usuario, null=True, blank=True,
+    )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

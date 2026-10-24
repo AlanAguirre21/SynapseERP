@@ -6,8 +6,11 @@ psycopg2-binary>=2.9,<3
 python-dotenv>=1.0,<2
 xhtml2pdf>=0.2,<0.3
 cryptography>=43,<51
+<<<<<<< HEAD
 requests>=2.32,<3
 Pillow>=11,<13
+=======
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 pytest>=8.3,<9
 pytest-django>=4.9,<5

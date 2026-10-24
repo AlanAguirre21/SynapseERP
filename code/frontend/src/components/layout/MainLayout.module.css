@@ -1,6 +1,7 @@
 @reference "../../index.css";
 
 .layout {
+<<<<<<< HEAD
   @apply flex flex-col h-screen;
 }
 
@@ -14,4 +15,24 @@
 
 .estado {
   @apply flex items-center justify-center min-h-screen font-base text-texto;
+=======
+  @apply flex flex-col h-screen bg-fondo;
+}
+
+.layoutBody {
+  @apply flex flex-1 min-h-0 relative;
+}
+
+.layoutContent {
+  @apply flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-y-auto;
+}
+
+/* Velo detrás del sidebar cuando se abre como panel en pantallas angostas. */
+.backdrop {
+  @apply hidden max-md:block absolute inset-0 z-10 bg-texto/40;
+}
+
+.loadingState {
+  @apply flex items-center justify-center min-h-screen font-base text-texto-suave bg-fondo;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

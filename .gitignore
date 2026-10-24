@@ -2,7 +2,10 @@
 /spec
 /.claude
 /.agents
+<<<<<<< HEAD
 /synapse_img
+=======
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 # FILES
 Base de Datos Flebosil.txt
@@ -17,6 +20,11 @@ db.sqlite3
 staticfiles/
 .pytest_cache/
 code/backend/media/
+<<<<<<< HEAD
+=======
+code/backend/media_rrhh/
+code/backend/media_usuarios/
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 # Env / secrets
 .env

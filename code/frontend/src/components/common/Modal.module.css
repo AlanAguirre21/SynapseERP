@@ -4,6 +4,7 @@
   @apply fixed inset-0 bg-texto/50 flex items-center justify-center p-4 z-50;
 }
 
+<<<<<<< HEAD
 .contenido {
   @apply w-full max-w-[480px] max-h-[90vh] overflow-y-auto bg-superficie rounded-tarjeta shadow-marcada;
 }
@@ -25,5 +26,32 @@
 }
 
 .cuerpo {
+=======
+.dialog {
+  @apply w-full max-w-[480px] max-h-[90vh] overflow-y-auto bg-superficie rounded-tarjeta shadow-marcada;
+}
+
+.dialogWide {
+  @apply max-w-[760px];
+}
+
+.dialogHeader {
+  @apply flex items-center justify-between gap-3 px-6 py-4 border-b border-borde;
+}
+
+.dialogTitle {
+  @apply m-0 text-texto text-lg font-titulo font-semibold;
+}
+
+.closeButton {
+  @apply flex items-center justify-center w-8 h-8 shrink-0 bg-transparent border-0 text-texto-suave text-base leading-none cursor-pointer rounded-control transition-colors;
+}
+
+.closeButton:hover {
+  @apply bg-primario-suave text-primario;
+}
+
+.dialogBody {
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   @apply px-6 py-5;
 }

@@ -1,13 +1,26 @@
 from django.db import transaction
+<<<<<<< HEAD
+=======
+from django.db.models import Prefetch
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+<<<<<<< HEAD
 from core.permissions import EsAdmin
 
 from .models import (
+=======
+from apps.caja.services import SaldoInsuficienteError
+from core.permissions import EsAdmin
+
+from .models import (
+    ESTADO_NOMINA_PENDIENTE,
+    ESTADO_NOMINA_RECHAZADO,
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     MOTIVOS_CAMBIO,
     ContactoEmergencia,
     Departamento,
@@ -24,9 +37,24 @@ from .serializers import (
     DependienteSerializer,
     EmpleadoPosicionSerializer,
     EmpleadoSerializer,
+<<<<<<< HEAD
     PosicionSerializer,
     SolicitudNominaSerializer,
 )
+=======
+    GenerarNominaSerializer,
+    PagarLoteNominaSerializer,
+    PosicionSerializer,
+    RevertirPagoNominaSerializer,
+    SolicitudNominaSerializer,
+)
+from .services.nomina import (
+    ErrorNomina,
+    generar_nomina,
+    pagar_solicitudes,
+    revertir_pago,
+)
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 # Admin-only en todo RRHH (7 ViewSets): a diferencia del patrón estándar de
 # catálogo (LecturaParaTodosEscrituraSoloAdmin), aquí el operador no debe
@@ -236,6 +264,7 @@ class DependienteViewSet(viewsets.ModelViewSet):
 
 
 class SolicitudNominaViewSet(viewsets.ModelViewSet):
+<<<<<<< HEAD
     """`aprobar`/`rechazar` son las únicas formas de tocar `estado` — ver
     nota en `SolicitudNominaSerializer`. No genera movimientos de caja
     (spec.md, "Fuera de alcance"): es un registro informativo con
@@ -243,10 +272,20 @@ class SolicitudNominaViewSet(viewsets.ModelViewSet):
     """
 
     queryset = SolicitudNomina.objects.select_related('empleado', 'resuelto_por').all()
+=======
+    """Nómina con pago en caja (`spec.md`, "Actualización: nómina con pago en
+    caja"). `aprobar` aprueba **y paga**: registra el retiro de Caja en la
+    misma transacción. Toda la lógica de pago, pago en bloque y reverso vive
+    en `services/nomina.py`; aquí solo se traducen sus errores a
+    `{"detail": ...}`. Exclusivo de admin, como todo RRHH.
+    """
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     serializer_class = SolicitudNominaSerializer
     permission_classes = [EsAdmin]
 
     def get_queryset(self):
+<<<<<<< HEAD
         queryset = super().get_queryset()
         estado = self.request.query_params.get('estado')
         return queryset.filter(estado=estado) if estado else queryset
@@ -279,3 +318,107 @@ class SolicitudNominaViewSet(viewsets.ModelViewSet):
         solicitud.save(update_fields=['estado', 'fecha_resolucion', 'resuelto_por'])
 
         return Response(self.get_serializer(solicitud).data)
+=======
+        queryset = (
+            SolicitudNomina.objects.select_related('empleado', 'resuelto_por', 'revertido_por')
+            .prefetch_related(Prefetch(
+                'empleado__asignaciones',
+                queryset=EmpleadoPosicion.objects.filter(fecha_termino__isnull=True)
+                .select_related('posicion').order_by('-fecha_inicio'),
+                to_attr='asignaciones_vigentes',
+            ))
+            .all()
+        )
+        parametros = self.request.query_params
+        if parametros.get('estado'):
+            queryset = queryset.filter(estado=parametros['estado'])
+        if parametros.get('empleado'):
+            queryset = queryset.filter(empleado_id=parametros['empleado'])
+        # Periodo: solicitudes que se traslapan con [periodo_inicio, periodo_fin].
+        if parametros.get('periodo_inicio'):
+            queryset = queryset.filter(periodo_fin__gte=parametros['periodo_inicio'])
+        if parametros.get('periodo_fin'):
+            queryset = queryset.filter(periodo_inicio__lte=parametros['periodo_fin'])
+        return queryset
+
+    @staticmethod
+    def _error(mensaje):
+        return Response({'detail': mensaje}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        if self.get_object().estado != ESTADO_NOMINA_PENDIENTE:
+            return self._error('Solo se puede editar una solicitud de nómina pendiente.')
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Una solicitud resuelta es parte del historial (y puede tener
+        # movimientos de caja ligados): solo se borra si sigue pendiente.
+        if self.get_object().estado != ESTADO_NOMINA_PENDIENTE:
+            return self._error('Solo se puede eliminar una solicitud de nómina pendiente.')
+        return super().destroy(request, *args, **kwargs)
+
+    def _datos(self, solicitudes):
+        refrescadas = self.get_queryset().filter(pk__in=[s.pk for s in solicitudes]).order_by('id')
+        return self.get_serializer(refrescadas, many=True).data
+
+    @action(detail=True, methods=['post'])
+    def aprobar(self, request, pk=None):
+        solicitud = self.get_object()
+        try:
+            pagar_solicitudes([solicitud.pk], request.user)
+        except (ErrorNomina, SaldoInsuficienteError) as error:
+            return self._error(str(error))
+        return Response(self._datos([solicitud])[0])
+
+    @action(detail=False, methods=['post'], url_path='pagar-lote')
+    def pagar_lote(self, request):
+        entrada = PagarLoteNominaSerializer(data=request.data)
+        entrada.is_valid(raise_exception=True)
+        try:
+            pagadas = pagar_solicitudes(entrada.validated_data['ids'], request.user)
+        except (ErrorNomina, SaldoInsuficienteError) as error:
+            return self._error(str(error))
+        return Response(self._datos(pagadas))
+
+    @action(detail=True, methods=['post'])
+    def rechazar(self, request, pk=None):
+        with transaction.atomic():
+            solicitud = SolicitudNomina.objects.select_for_update().get(pk=self.get_object().pk)
+            if solicitud.estado != ESTADO_NOMINA_PENDIENTE:
+                return self._error(
+                    f'Esta solicitud ya fue {solicitud.get_estado_display().lower()}, no se puede volver a resolver.',
+                )
+            solicitud.estado = ESTADO_NOMINA_RECHAZADO
+            solicitud.fecha_resolucion = timezone.now()
+            solicitud.resuelto_por = request.user
+            solicitud.save(update_fields=['estado', 'fecha_resolucion', 'resuelto_por'])
+        return Response(self._datos([solicitud])[0])
+
+    @action(detail=True, methods=['post'])
+    def revertir(self, request, pk=None):
+        solicitud = self.get_object()
+        entrada = RevertirPagoNominaSerializer(data=request.data)
+        if not entrada.is_valid():
+            return self._error('Indica el motivo del reverso.')
+        try:
+            revertir_pago(solicitud.pk, entrada.validated_data['motivo'], request.user)
+        except (ErrorNomina, SaldoInsuficienteError) as error:
+            return self._error(str(error))
+        return Response(self._datos([solicitud])[0])
+
+    @action(detail=False, methods=['post'])
+    def generar(self, request):
+        entrada = GenerarNominaSerializer(data=request.data)
+        entrada.is_valid(raise_exception=True)
+        creadas, omitidas = generar_nomina(**entrada.validated_data)
+        return Response(
+            {
+                'creadas': self._datos(creadas) if creadas else [],
+                'omitidas': [
+                    {'empleado': empleado.id, 'empleado_nombre': empleado.nombre_completo, 'motivo': motivo}
+                    for empleado, motivo in omitidas
+                ],
+            },
+            status=status.HTTP_201_CREATED,
+        )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

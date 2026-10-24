@@ -21,18 +21,30 @@ from core.modules import modulos_para_rol
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
 from .models import CodigoRecuperacion, RegistroAcceso
+<<<<<<< HEAD
+=======
+from .validators import MENSAJE_FORMATO_FOTO, validar_foto_usuario
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 Usuario = get_user_model()
 
 VIGENCIA_CODIGO_MINUTOS = 10
 
+<<<<<<< HEAD
 RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_synapse.png'
+=======
+RUTA_LOGO_CORREO = Path(__file__).resolve().parent / 'static' / 'usuarios' / 'logo_flebosil.png'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     """Arma el correo de recuperación con parte texto plano + HTML con marca.
 
+<<<<<<< HEAD
     El logo va embebido como adjunto con Content-ID (`cid:logo_synapse`) en
+=======
+    El logo va embebido como adjunto con Content-ID (`cid:logo_flebosil`) en
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     vez de referenciarse por URL pública — el backend todavía no está
     desplegado en un dominio accesible, y varios clientes de correo bloquean
     por defecto imágenes cargadas desde URLs externas.
@@ -48,7 +60,11 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     })
 
     mensaje = EmailMultiAlternatives(
+<<<<<<< HEAD
         subject='Código de recuperación de contraseña — SynapseERP',
+=======
+        subject='Código de recuperación de contraseña — FleboSil',
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         body=texto_plano,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[email],
@@ -60,14 +76,49 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     logo = MIMEPart()
     logo.set_content(
         datos_logo, maintype='image', subtype='png',
+<<<<<<< HEAD
         disposition='inline', filename='logo_synapse.png', cid='<logo_synapse>',
+=======
+        disposition='inline', filename='logo_flebosil.png', cid='<logo_flebosil>',
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     )
     mensaje.attach(logo)
 
     return mensaje
 
 
+<<<<<<< HEAD
 class UsuarioSerializer(serializers.ModelSerializer):
+=======
+def campo_foto_usuario():
+    """`foto_usuario` de escritura, idéntico en los dos serializers que lo
+    aceptan (010 y 017): multipart para subirla, `null` para quitarla. Los
+    mensajes de imagen inválida van en español, como el resto de la API.
+    """
+    return serializers.ImageField(
+        required=False, allow_null=True, validators=[validar_foto_usuario],
+        error_messages={'invalid_image': MENSAJE_FORMATO_FOTO, 'invalid': MENSAJE_FORMATO_FOTO},
+    )
+
+
+class BorradoFotoAnteriorMixin:
+    """Al reemplazar o quitar `foto_usuario`, borra el archivo anterior del
+    storage — pero solo cuando la transacción se confirma, para no perder la
+    foto si el guardado se revierte. Compartido por 010 y 017.
+    """
+
+    def update(self, instance, validated_data):
+        anterior = instance.foto_usuario.name if 'foto_usuario' in validated_data else ''
+        instance = super().update(instance, validated_data)
+
+        if anterior and anterior != instance.foto_usuario.name:
+            storage = instance.foto_usuario.storage
+            transaction.on_commit(lambda: storage.delete(anterior))
+        return instance
+
+
+class UsuarioSerializer(BorradoFotoAnteriorMixin, serializers.ModelSerializer):
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """CRUD administrativo de usuarios (feature 010 · Usuarios).
 
     `password` es `write_only` y solo se usa en creación — nunca se expone
@@ -82,12 +133,20 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=False, trim_whitespace=False)
     activo = serializers.BooleanField(source='is_active', read_only=True)
+<<<<<<< HEAD
+=======
+    foto_usuario = campo_foto_usuario()
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'username', 'first_name', 'last_name', 'email', 'rol_usuario',
+<<<<<<< HEAD
             'empleado', 'activo', 'password',
+=======
+            'empleado', 'activo', 'password', 'foto_usuario',
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         ]
         read_only_fields = ['id']
         extra_kwargs = {'username': {'required': False}}
@@ -124,6 +183,11 @@ class UsuarioActualSerializer(serializers.Serializer):
     nombre = serializers.SerializerMethodField()
     rol = serializers.CharField(source='rol_usuario')
     modulos = serializers.SerializerMethodField()
+<<<<<<< HEAD
+=======
+    # URL absoluta si la vista pasa `request` en el contexto; `null` sin foto.
+    foto_usuario = serializers.ImageField(read_only=True)
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     def get_nombre(self, usuario):
         return usuario.nombre_mostrado()
@@ -132,7 +196,11 @@ class UsuarioActualSerializer(serializers.Serializer):
         return modulos_para_rol(usuario.rol_usuario)
 
 
+<<<<<<< HEAD
 class UsuarioPropioSerializer(serializers.ModelSerializer):
+=======
+class UsuarioPropioSerializer(BorradoFotoAnteriorMixin, serializers.ModelSerializer):
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """Edición de la propia cuenta (feature 015 · Información de Usuario).
 
     Distinto de `UsuarioSerializer` (CRUD administrativo de `008`): expone
@@ -163,10 +231,19 @@ class UsuarioPropioSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True, allow_blank=False)
     last_name = serializers.CharField(required=True, allow_blank=False)
     rol_usuario = serializers.ChoiceField(choices=[(ROL_ADMIN, 'Administrador'), (ROL_OPERADOR, 'Operador')])
+<<<<<<< HEAD
 
     class Meta:
         model = Usuario
         fields = ['username', 'email', 'first_name', 'last_name', 'rol_usuario']
+=======
+    # Solo la propia: la vista siempre edita `request.user`.
+    foto_usuario = campo_foto_usuario()
+
+    class Meta:
+        model = Usuario
+        fields = ['username', 'email', 'first_name', 'last_name', 'rol_usuario', 'foto_usuario']
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

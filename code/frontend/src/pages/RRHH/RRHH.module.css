@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-4;
 }
@@ -247,3 +248,241 @@
 .filaAgregarAnexo input {
   @apply px-3 py-2 text-[0.85rem] border border-texto/20 rounded-control flex-1 min-w-[120px];
 }
+=======
+/* Estilos propios de Recursos Humanos: barra de departamentos,
+   organigrama de posiciones, tarjetas de empleado y ficha de empleado.
+   Lo demás usa las clases globales. */
+
+/* --- Barra de departamentos --------------------------------------------- */
+
+/* Pestañas a la izquierda, acciones del departamento elegido a la derecha,
+   sobre una misma línea base. En pantallas angostas las acciones bajan a su
+   propia línea (antes se partían y el separador quedaba suelto). */
+.departmentBar {
+  @apply flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between md:gap-4 border-b border-borde;
+}
+
+.departmentTabs {
+  @apply flex items-center gap-1 flex-wrap;
+}
+
+.departmentActions {
+  @apply flex items-center gap-3 divide-x divide-borde text-[0.85rem] pb-2 md:pb-0 whitespace-nowrap;
+}
+
+.departmentActions > button {
+  @apply pl-3 first:pl-0;
+}
+
+/* --- Árbol de posiciones ------------------------------------------------ */
+
+.positionRow {
+  @apply cursor-pointer;
+}
+
+/* La fila raíz (sin superior) lleva un acento de color en su primera celda:
+   la jerarquía se remarca por color/peso, no solo por sangría. */
+.rootPositionCell {
+  @apply border-l-[3px] border-l-secundario;
+}
+
+.positionTitle {
+  @apply inline-flex items-center;
+}
+
+/* Sangría por nivel de profundidad; a partir del quinto nivel se reutiliza la última. */
+.treeLevel1 {
+  @apply pl-6;
+}
+
+.treeLevel2 {
+  @apply pl-12;
+}
+
+.treeLevel3 {
+  @apply pl-[72px];
+}
+
+.treeLevel4 {
+  @apply pl-24;
+}
+
+.treeLevel5 {
+  @apply pl-[120px];
+}
+
+.treeConnector {
+  @apply mr-1.5 font-mono text-texto-suave;
+}
+
+.rootPositionName {
+  @apply font-semibold text-secundario-texto;
+}
+
+.childPositionName {
+  @apply text-texto;
+}
+
+.salaryCell {
+  @apply whitespace-nowrap;
+}
+
+.expandedCell {
+  @apply p-0 bg-fondo;
+}
+
+/* --- Empleados de una posición (fila expandida) -------------------------- */
+
+.employeePanel {
+  @apply flex flex-col gap-3 p-4;
+}
+
+.employeeList {
+  @apply grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-2 list-none p-0 m-0;
+}
+
+.employeeItem {
+  @apply w-full flex items-center gap-3 p-2.5 bg-superficie border border-borde rounded-control text-left text-texto cursor-pointer transition-[border-color,box-shadow];
+}
+
+.employeeItem:hover {
+  @apply border-primario shadow-suave;
+}
+
+.employeeItemText {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.employeeItemName {
+  @apply font-semibold text-[0.9rem] overflow-hidden text-ellipsis whitespace-nowrap;
+}
+
+.employeeItemMeta {
+  @apply text-[0.78rem] text-texto-suave;
+}
+
+/* Fotografía o iniciales del empleado. */
+.employeeAvatar {
+  @apply flex items-center justify-center shrink-0 object-cover bg-primario-suave text-primario font-titulo font-semibold;
+}
+
+.employeeAvatarSmall {
+  @apply w-10 h-10 text-[0.85rem] rounded-pildora;
+}
+
+.employeeAvatarLarge {
+  @apply w-28 h-28 sm:w-36 sm:h-36 text-4xl border-4 border-superficie rounded-tarjeta shadow-marcada;
+}
+
+/* --- Ficha de empleado (modal) ------------------------------------------- */
+
+/* Cabecera de perfil: ocupa todo el ancho del modal, pegada a su barra. */
+.profileHero {
+  @apply flex flex-col sm:flex-row items-center sm:items-end gap-5 -mx-6 -mt-5 mb-6 px-6 py-6 border-b border-borde bg-linear-to-br from-primario-suave to-superficie text-center sm:text-left;
+}
+
+.profileIdentity {
+  @apply flex flex-col items-center sm:items-start gap-1.5 min-w-0;
+}
+
+.profileName {
+  @apply m-0 text-texto text-2xl sm:text-3xl font-titulo font-semibold leading-tight;
+}
+
+.profileRole {
+  @apply m-0 text-[0.95rem] font-semibold text-primario;
+}
+
+.profileFacts {
+  @apply flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-2 m-0 mt-2;
+}
+
+.profileFacts dt {
+  @apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-texto-suave;
+}
+
+.profileFacts dd {
+  @apply m-0 text-[0.95rem] font-semibold text-texto tabular-nums;
+}
+
+.dataSection {
+  @apply flex flex-col gap-3 pb-5 border-b border-borde;
+}
+
+/* Paneles bajo los datos: contactos y dependientes lado a lado, nómina a todo el ancho. */
+.profilePanels {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6;
+}
+
+.infoPanel {
+  @apply flex flex-col gap-3 min-w-0 p-4 bg-fondo border border-borde rounded-control;
+}
+
+.infoPanelWide {
+  @apply sm:col-span-2;
+}
+
+.infoList {
+  @apply flex flex-col list-none p-0 m-0;
+}
+
+.infoList li {
+  @apply flex items-center justify-between gap-3 py-2 border-b border-borde;
+}
+
+.infoList li:last-child {
+  @apply border-b-0;
+}
+
+.infoItemText {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.infoItemName {
+  @apply text-[0.9rem] font-semibold text-texto;
+}
+
+.infoItemMeta {
+  @apply text-[0.8rem] text-texto-suave;
+}
+
+.infoAddRow {
+  @apply flex flex-col gap-2 mt-auto;
+}
+
+.infoAddRow input {
+  @apply text-[0.85rem];
+}
+
+.infoAddRow button {
+  @apply self-end;
+}
+
+.payrollRow {
+  @apply flex flex-wrap items-end gap-3;
+}
+
+.payrollRow > label {
+  @apply flex-1 min-w-[150px];
+}
+
+/* --- Directorio --------------------------------------------------------- */
+
+/* Avatar y nombre del empleado en la primera columna del directorio. */
+.directoryName {
+  @apply inline-flex items-center gap-3 whitespace-nowrap;
+}
+
+/* --- Nóminas -------------------------------------------------------------- */
+
+/* Barra que aparece al seleccionar solicitudes pendientes: resumen y pago en bloque. */
+.selectionBar {
+  @apply flex items-center justify-between gap-4 flex-wrap px-4 py-3 bg-primario-suave border border-borde rounded-tarjeta text-[0.9rem] font-medium text-texto;
+}
+
+/* Empleados omitidos al generar la nómina, con su motivo. */
+.skippedList {
+  @apply flex flex-col gap-1.5 m-0 pl-5 text-[0.85rem] text-texto;
+}
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

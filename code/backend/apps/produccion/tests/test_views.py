@@ -105,13 +105,25 @@ def test_operador_puede_listar_recetas(operador_client, receta):
 
 
 @pytest.mark.django_db
+<<<<<<< HEAD
 def test_operador_no_puede_crear_receta(operador_client, producto, cloruro):
+=======
+def test_operador_puede_crear_receta(operador_client, operador, producto, cloruro):
+    # Antes el operador recibía 403; desde "Actualización: el operador puede
+    # crear recetas" puede darlas de alta y queda como su creador.
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     response = operador_client.post(
         '/api/produccion/recetas/',
         {'producto': producto.id, 'materia_prima': cloruro.id, 'cantidad_requerida': '0.50'},
         format='json',
     )
+<<<<<<< HEAD
     assert response.status_code == 403
+=======
+    assert response.status_code == 201
+    assert response.data['creado_por'] == operador.id
+    assert response.data['creado_por_nombre'] == 'operador1'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db
@@ -133,6 +145,12 @@ def test_admin_no_puede_duplicar_ingrediente_en_la_misma_receta(admin_client, pr
         format='json',
     )
     assert response.status_code == 400
+<<<<<<< HEAD
+=======
+    assert response.json()['non_field_errors'] == [
+        'Esta materia prima ya forma parte de la receta de este producto.',
+    ]
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db
@@ -306,3 +324,87 @@ def test_no_permite_editar_ni_borrar_una_produccion(admin_client, sucursal, prod
     assert admin_client.put(f'/api/produccion/{id_produccion}/', {}, format='json').status_code == 405
     assert admin_client.patch(f'/api/produccion/{id_produccion}/', {}, format='json').status_code == 405
     assert admin_client.delete(f'/api/produccion/{id_produccion}/').status_code == 405
+<<<<<<< HEAD
+=======
+
+
+# --- "Actualización: el operador puede crear recetas" ------------------------
+
+
+@pytest.mark.django_db
+def test_operador_agrega_materia_prima_a_una_receta_de_admin(operador_client, producto, cloruro, agua, admin):
+    Receta.objects.create(producto=producto, materia_prima=cloruro, cantidad_requerida='0.50', creado_por=admin)
+
+    response = operador_client.post(
+        '/api/produccion/recetas/',
+        {'producto': producto.id, 'materia_prima': agua.id, 'cantidad_requerida': '1.00'},
+        format='json',
+    )
+
+    assert response.status_code == 201
+    assert Receta.objects.filter(producto=producto, activo=True).count() == 2
+
+
+@pytest.mark.django_db
+def test_creado_por_no_se_puede_falsear(operador_client, operador, producto, cloruro, admin):
+    response = operador_client.post(
+        '/api/produccion/recetas/',
+        {'producto': producto.id, 'materia_prima': cloruro.id, 'cantidad_requerida': '0.50', 'creado_por': admin.id},
+        format='json',
+    )
+
+    assert response.status_code == 201
+    assert Receta.objects.get(pk=response.data['id']).creado_por_id == operador.id
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('cliente', ['operador_client', 'admin_client'])
+def test_duplicado_rechazado_para_ambos_roles(request, cliente, producto, cloruro):
+    Receta.objects.create(producto=producto, materia_prima=cloruro, cantidad_requerida='0.50')
+
+    response = request.getfixturevalue(cliente).post(
+        '/api/produccion/recetas/',
+        {'producto': producto.id, 'materia_prima': cloruro.id, 'cantidad_requerida': '0.80'},
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'Esta materia prima ya forma parte de la receta de este producto.' in str(response.data)
+
+
+@pytest.mark.django_db
+def test_operador_no_puede_editar_desactivar_ni_reactivar(operador_client, producto, cloruro, agua):
+    linea = Receta.objects.create(producto=producto, materia_prima=cloruro, cantidad_requerida='0.50')
+    inactiva = Receta.objects.create(producto=producto, materia_prima=agua, cantidad_requerida='1.00', activo=False)
+    url = f'/api/produccion/recetas/{linea.id}/'
+
+    assert operador_client.patch(url, {'cantidad_requerida': '9.00'}, format='json').status_code == 403
+    assert operador_client.put(url, {
+        'producto': producto.id, 'materia_prima': cloruro.id, 'cantidad_requerida': '9.00',
+    }, format='json').status_code == 403
+    assert operador_client.delete(url).status_code == 403
+    assert operador_client.post(f'/api/produccion/recetas/{inactiva.id}/reactivar/').status_code == 403
+    linea.refresh_from_db()
+    inactiva.refresh_from_db()
+    assert (str(linea.cantidad_requerida), linea.activo, inactiva.activo) == ('0.50', True, False)
+
+
+@pytest.mark.django_db
+def test_admin_conserva_editar_desactivar_y_reactivar(admin_client, producto, cloruro):
+    linea = Receta.objects.create(producto=producto, materia_prima=cloruro, cantidad_requerida='0.50')
+    url = f'/api/produccion/recetas/{linea.id}/'
+
+    assert admin_client.patch(url, {'cantidad_requerida': '0.75'}, format='json').status_code == 200
+    assert admin_client.delete(url).status_code == 204
+    assert admin_client.post(f'{url}reactivar/').status_code == 200
+
+
+@pytest.mark.django_db
+def test_las_lineas_anteriores_no_tienen_creador(operador_client, producto, cloruro):
+    Receta.objects.create(producto=producto, materia_prima=cloruro, cantidad_requerida='0.50')
+
+    fila = operador_client.get('/api/produccion/recetas/').data[0]
+
+    assert (fila['creado_por'], fila['creado_por_nombre']) == (None, None)
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

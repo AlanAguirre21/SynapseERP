@@ -10,6 +10,35 @@ export interface DatosFiscalesEmpresa {
 
 export type DatosFiscalesEmpresaFormulario = Omit<DatosFiscalesEmpresa, 'completa'>
 
+<<<<<<< HEAD
+=======
+// Catálogo c_RegimenFiscal del SAT (CFDI 4.0). Solo se usa para describir el
+// código capturado; el campo acepta cualquier código, así que un catálogo
+// desactualizado no bloquea nada (revisar junto con los demás catálogos del
+// SAT del checklist de mantenimiento de `019 · Facturación`).
+export const REGIMENES_FISCALES: { valor: string; etiqueta: string }[] = [
+  { valor: '601', etiqueta: '601 — General de Ley Personas Morales' },
+  { valor: '603', etiqueta: '603 — Personas Morales con Fines no Lucrativos' },
+  { valor: '605', etiqueta: '605 — Sueldos y Salarios e Ingresos Asimilados a Salarios' },
+  { valor: '606', etiqueta: '606 — Arrendamiento' },
+  { valor: '607', etiqueta: '607 — Régimen de Enajenación o Adquisición de Bienes' },
+  { valor: '608', etiqueta: '608 — Demás ingresos' },
+  { valor: '610', etiqueta: '610 — Residentes en el Extranjero sin Establecimiento Permanente en México' },
+  { valor: '611', etiqueta: '611 — Ingresos por Dividendos (socios y accionistas)' },
+  { valor: '612', etiqueta: '612 — Personas Físicas con Actividades Empresariales y Profesionales' },
+  { valor: '614', etiqueta: '614 — Ingresos por intereses' },
+  { valor: '615', etiqueta: '615 — Régimen de los ingresos por obtención de premios' },
+  { valor: '616', etiqueta: '616 — Sin obligaciones fiscales' },
+  { valor: '620', etiqueta: '620 — Sociedades Cooperativas de Producción que optan por diferir sus ingresos' },
+  { valor: '621', etiqueta: '621 — Incorporación Fiscal' },
+  { valor: '622', etiqueta: '622 — Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras' },
+  { valor: '623', etiqueta: '623 — Opcional para Grupos de Sociedades' },
+  { valor: '624', etiqueta: '624 — Coordinados' },
+  { valor: '625', etiqueta: '625 — Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas' },
+  { valor: '626', etiqueta: '626 — Régimen Simplificado de Confianza' },
+]
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export interface ConfiguracionPAC {
   proveedor: string
   api_key_configurada: boolean

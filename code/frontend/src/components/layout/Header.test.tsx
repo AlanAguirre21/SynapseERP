@@ -68,7 +68,11 @@ describe('Header', () => {
 
     renderHeader()
 
+<<<<<<< HEAD
     expect(screen.getByRole('link', { name: /SynapseERP/i })).toHaveAttribute('href', '/dashboard')
+=======
+    expect(screen.getByRole('link', { name: /FleboSil/i })).toHaveAttribute('href', '/dashboard')
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('muestra el contador de notificaciones cuando hay alertas de stock', () => {
@@ -134,13 +138,23 @@ describe('Header', () => {
     expect(logoutMock).toHaveBeenCalled()
   })
 
+<<<<<<< HEAD
   it('admin ve las solicitudes de nómina pendientes y puede aprobarlas/rechazarlas', () => {
+=======
+  // Actualización "nómina con pago en caja" (008): aprobar paga desde Caja, así
+  // que la campana ya no aprueba ni rechaza; cada solicitud enlaza a "Nóminas".
+  it('admin ve las solicitudes de nómina pendientes como enlaces a la pestaña Nóminas', () => {
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     mockUsuarioActual({ data: { nombre: 'Ana', rol: 'admin', modulos: [] } })
     mockAlertasStock({ data: [] })
     mockSolicitudesNomina({
       data: [
         {
+<<<<<<< HEAD
           id: 1, empleado: 3, periodo_inicio: '2026-01-01', periodo_fin: '2026-01-15',
+=======
+          id: 1, empleado: 3, empleado_nombre: 'Laura Gómez', periodo_inicio: '2026-01-01', periodo_fin: '2026-01-15',
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           monto: '4500.00', estado: 'pendiente', fecha_solicitud: '2026-01-16', fecha_resolucion: null,
           resuelto_por: null,
         },
@@ -152,8 +166,17 @@ describe('Header', () => {
 
     expect(screen.getByText('1')).toBeInTheDocument()
     expect(screen.getByText('Solicitudes de nómina')).toBeInTheDocument()
+<<<<<<< HEAD
     expect(screen.getByRole('button', { name: 'Aprobar' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Rechazar' })).toBeInTheDocument()
+=======
+    const solicitud = screen.getByRole('link', { name: /laura gómez/i })
+    expect(solicitud).toHaveAttribute('href', '/rrhh?pestana=nominas')
+    expect(solicitud).toHaveTextContent('01/01/2026 – 15/01/2026 · $4,500.00')
+    expect(screen.getByRole('link', { name: 'Ver nóminas' })).toHaveAttribute('href', '/rrhh?pestana=nominas')
+    expect(screen.queryByRole('button', { name: 'Aprobar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rechazar' })).not.toBeInTheDocument()
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('operador no ve la sección de solicitudes de nómina', () => {
@@ -165,4 +188,126 @@ describe('Header', () => {
 
     expect(screen.queryByText('Solicitudes de nómina')).not.toBeInTheDocument()
   })
+<<<<<<< HEAD
 })
+=======
+
+  it('el avatar del menú de usuario muestra la fotografía si la tiene', () => {
+    mockUsuarioActual({
+      data: { nombre: 'Ana', rol: 'admin', modulos: [], foto_usuario: 'http://servidor/fotos-usuarios/a.png' },
+    })
+    mockAlertasStock({ data: [] })
+
+    renderHeader()
+
+    expect(document.querySelector('img[src="http://servidor/fotos-usuarios/a.png"]')).toBeInTheDocument()
+  })
+
+  it('sin fotografía, el avatar del menú de usuario muestra las iniciales', () => {
+    mockUsuarioActual({ data: { nombre: 'Ana Torres', rol: 'admin', modulos: [], foto_usuario: null } })
+    mockAlertasStock({ data: [] })
+
+    renderHeader()
+
+    expect(screen.getByText('AT')).toBeInTheDocument()
+  })
+})
+
+describe('Header — cierre de los menús desplegables', () => {
+  const SOLICITUD = {
+    id: 1, empleado: 3, empleado_nombre: 'Laura Gómez', periodo_inicio: '2026-01-01', periodo_fin: '2026-01-15',
+    monto: '4500.00', estado: 'pendiente', fecha_solicitud: '2026-01-16', fecha_resolucion: null,
+    resuelto_por: null,
+  }
+
+  beforeEach(() => {
+    mockSolicitudesNomina()
+    mockUsuarioActual({ data: { nombre: 'Ana', rol: 'admin', modulos: [] } })
+    mockAlertasStock({ data: [] })
+  })
+
+  const campana = () => screen.getByRole('button', { name: /alertas de stock/i })
+  const botonUsuario = () => screen.getByRole('button', { name: /ana/i })
+
+  it('un clic fuera cierra el desplegable abierto', () => {
+    renderHeader()
+    fireEvent.click(campana())
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+
+    fireEvent.pointerDown(document.body)
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(campana()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('un clic dentro del desplegable no lo cierra', () => {
+    renderHeader()
+    fireEvent.click(campana())
+
+    fireEvent.pointerDown(screen.getByText('Stock bajo el mínimo'))
+
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+  })
+
+  it('Escape cierra el desplegable y devuelve el foco a su botón', () => {
+    renderHeader()
+    fireEvent.click(botonUsuario())
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(botonUsuario()).toHaveFocus()
+  })
+
+  it('se cierra cuando el foco del teclado sale del desplegable', () => {
+    renderHeader()
+    fireEvent.click(botonUsuario())
+
+    fireEvent.focusOut(screen.getByRole('button', { name: /cerrar sesión/i }), { relatedTarget: campana() })
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('solo un desplegable abierto a la vez', () => {
+    renderHeader()
+    fireEvent.click(campana())
+    fireEvent.click(botonUsuario())
+
+    expect(screen.getAllByRole('menu')).toHaveLength(1)
+    expect(campana()).toHaveAttribute('aria-expanded', 'false')
+    expect(botonUsuario()).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('al navegar desde el menú de usuario, el menú se cierra', () => {
+    renderHeader()
+    fireEvent.click(botonUsuario())
+
+    fireEvent.click(screen.getByRole('link', { name: /información de usuario/i }))
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('seguir el enlace de una solicitud de nómina cierra las notificaciones', () => {
+    mockSolicitudesNomina({ data: [SOLICITUD], isLoading: false })
+    renderHeader()
+    fireEvent.click(campana())
+
+    fireEvent.click(screen.getByRole('link', { name: /laura gómez/i }))
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('con todo cerrado, un clic fuera o Escape no cambian nada', () => {
+    renderHeader()
+
+    fireEvent.pointerDown(document.body)
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    fireEvent.click(campana())
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+  })
+})
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

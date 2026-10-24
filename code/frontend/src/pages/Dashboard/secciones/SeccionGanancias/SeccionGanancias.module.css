@@ -1,5 +1,6 @@
 @reference "../../../../index.css";
 
+<<<<<<< HEAD
 .seccion {
   @apply flex flex-col gap-4 p-5 rounded-xl border border-texto/10 bg-superficie;
 }
@@ -105,5 +106,82 @@
 }
 
 .movimientoDescripcion {
+=======
+/* Dos columnas en pantallas anchas: indicador + tendencia | movimientos. */
+.profitLayout {
+  @apply grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-5;
+}
+
+.profitMain {
+  @apply flex flex-col gap-4 min-w-0;
+}
+
+/* Indicador principal: la cifra manda, el color solo marca el signo. */
+.profitCard {
+  @apply flex flex-col gap-1 px-5 py-4 bg-fondo border-l-4 rounded-control;
+}
+
+.profitLabel {
+  @apply text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-texto-suave;
+}
+
+.profitAmount {
+  @apply text-4xl font-titulo font-semibold tabular-nums;
+}
+
+.profitPositive {
+  @apply border-l-exito;
+}
+
+.profitPositive .profitAmount {
+  @apply text-exito;
+}
+
+.profitNegative {
+  @apply border-l-error;
+}
+
+.profitNegative .profitAmount {
+  @apply text-error;
+}
+
+.movements {
+  @apply flex flex-col gap-3 min-w-0;
+}
+
+/* direction: rtl en el contenedor + direction: ltr en el contenido desplaza la
+   barra de scroll nativa al lado izquierdo sin invertir el orden de lectura
+   del contenido — pedido explícito del diseño. */
+.movementListContainer {
+  @apply max-h-[320px] overflow-y-auto bg-superficie border border-borde rounded-control;
+  direction: rtl;
+}
+
+.movementListContent {
+  direction: ltr;
+}
+
+.movementListMessage {
+  @apply m-0 p-4 text-[0.85rem] text-texto-suave;
+}
+
+.movementList {
+  @apply list-none m-0 p-0;
+}
+
+.movementRow {
+  @apply grid grid-cols-[auto_auto_1fr] items-baseline gap-3 px-4 py-2.5 text-[0.85rem] border-b border-borde;
+}
+
+.movementRow:last-child {
+  @apply border-b-0;
+}
+
+.movementDate {
+  @apply text-texto-suave whitespace-nowrap tabular-nums;
+}
+
+.movementDescription {
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   @apply text-texto;
 }

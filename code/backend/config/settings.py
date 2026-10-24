@@ -107,11 +107,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+<<<<<<< HEAD
         'NAME': os.environ.get('DB_NAME', 'synapse_erp'),
         'USER': os.environ.get('DB_USER', 'synapse'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5434'),
+=======
+        'NAME': os.environ.get('DB_NAME', 'flebosil_erp'),
+        'USER': os.environ.get('DB_USER', 'flebosil'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     }
 }
 
@@ -165,7 +173,11 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+<<<<<<< HEAD
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@synapse-erp.local')
+=======
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@flebosil-erp.net')
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 # Password validation
@@ -227,3 +239,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # momento `MEDIA_URL` llegara a conectarse.
 EMPLEADOS_FOTOS_URL = 'fotos-empleados/'
 EMPLEADOS_FOTOS_ROOT = BASE_DIR / 'media_rrhh' / 'fotos_empleados'
+<<<<<<< HEAD
+=======
+
+# Fotografías de perfil de usuario (017 · Información de Usuario y 010 ·
+# Usuarios) — mismo criterio que las de empleado: carpeta y URL propias,
+# servidas como estático solo bajo `DEBUG`. En producción, el servidor web
+# debe servir `USUARIOS_FOTOS_URL` desde `USUARIOS_FOTOS_ROOT` (igual que
+# las fotos de empleado).
+USUARIOS_FOTOS_URL = 'fotos-usuarios/'
+USUARIOS_FOTOS_ROOT = BASE_DIR / 'media_usuarios' / 'fotos_usuarios'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -1,0 +1,19 @@
+@reference "../../index.css";
+
+.photoPicker {
+  @apply flex items-center gap-5 min-w-0;
+}
+
+.photoContent {
+  @apply flex flex-col gap-1.5 min-w-0;
+}
+
+.photoActions {
+  @apply flex items-center gap-4 flex-wrap;
+}
+
+/* El selector de archivos del sistema se abre desde "Agregar/Cambiar
+   fotografía"; el control nativo no se muestra. */
+.fileInput {
+  @apply sr-only;
+}

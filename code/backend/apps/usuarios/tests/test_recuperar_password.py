@@ -71,10 +71,17 @@ def test_recuperar_correo_incluye_version_html_con_marca_y_codigo(usuario_activo
 
     html = next(contenido for contenido, tipo in mensaje.alternatives if tipo == 'text/html')
     assert registro.codigo in html
+<<<<<<< HEAD
     assert 'cid:logo_synapse' in html
 
     assert len(mensaje.attachments) == 1
     assert mensaje.attachments[0].get('Content-ID') == '<logo_synapse>'
+=======
+    assert 'cid:logo_flebosil' in html
+
+    assert len(mensaje.attachments) == 1
+    assert mensaje.attachments[0].get('Content-ID') == '<logo_flebosil>'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db

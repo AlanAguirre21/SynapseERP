@@ -5,10 +5,27 @@ import type { Departamento, Empleado, EmpleadoPosicion, Posicion } from '../../a
 import { useContactosEmergencia, useCrearContactoEmergencia, useEliminarContactoEmergencia } from '../../hooks/useContactosEmergencia'
 import { useCrearDepartamento, useDepartamentos, useDesactivarDepartamento, useEditarDepartamento, useReactivarDepartamento } from '../../hooks/useDepartamentos'
 import { useCrearDependiente, useDependientes, useEliminarDependiente } from '../../hooks/useDependientes'
+<<<<<<< HEAD
 import { useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
 import { useContratarEmpleado, useDesactivarEmpleado, useEditarEmpleado, useEmpleadosRRHH, useReactivarEmpleado } from '../../hooks/useEmpleadosRRHH'
 import { useCrearPosicion, useDesactivarPosicion, useEditarPosicion, usePosiciones, useReactivarPosicion } from '../../hooks/usePosiciones'
 import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
+=======
+import { useAsignacionesVigentes, useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
+import { useContratarEmpleado, useDesactivarEmpleado, useEditarEmpleado, useEmpleadosRRHH, useReactivarEmpleado } from '../../hooks/useEmpleadosRRHH'
+import { useCrearPosicion, useDesactivarPosicion, useEditarPosicion, usePosiciones, useReactivarPosicion, useTodasLasPosiciones } from '../../hooks/usePosiciones'
+import { useSaldoCaja } from '../../hooks/useMovimientosCaja'
+import {
+  useAprobarSolicitudNomina,
+  useCrearSolicitudNomina,
+  useEditarMontoNomina,
+  useGenerarNomina,
+  usePagarSolicitudesNomina,
+  useRechazarSolicitudNomina,
+  useRevertirPagoNomina,
+  useSolicitudesNomina,
+} from '../../hooks/useSolicitudesNomina'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { RRHH } from './RRHH'
 
 vi.mock('../../hooks/useDepartamentos')
@@ -18,6 +35,10 @@ vi.mock('../../hooks/useEmpleadoPosiciones')
 vi.mock('../../hooks/useContactosEmergencia')
 vi.mock('../../hooks/useDependientes')
 vi.mock('../../hooks/useSolicitudesNomina')
+<<<<<<< HEAD
+=======
+vi.mock('../../hooks/useMovimientosCaja')
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const DEPARTAMENTOS: Departamento[] = [
   { id: 1, nombre_departamento: 'Ventas', departamento_padre: null, posicion_manager: null, activo: true },
@@ -58,6 +79,16 @@ function mockearHooks() {
   vi.mocked(useEmpleadoPosicionesVigentes).mockReturnValue(
     { data: ASIGNACIONES_VENDEDOR, isLoading: false } as unknown as ReturnType<typeof useEmpleadoPosicionesVigentes>,
   )
+<<<<<<< HEAD
+=======
+  // Hooks de la segunda pasada (directorio y ocupación): toda la empresa.
+  vi.mocked(useTodasLasPosiciones).mockReturnValue(
+    { data: POSICIONES, isLoading: false } as unknown as ReturnType<typeof useTodasLasPosiciones>,
+  )
+  vi.mocked(useAsignacionesVigentes).mockReturnValue(
+    { data: ASIGNACIONES_VENDEDOR, isLoading: false } as unknown as ReturnType<typeof useAsignacionesVigentes>,
+  )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   vi.mocked(useContactosEmergencia).mockReturnValue(
     { data: [], isLoading: false } as unknown as ReturnType<typeof useContactosEmergencia>,
   )
@@ -91,6 +122,16 @@ function expandirVendedor() {
   fireEvent.click(screen.getByText('Vendedor'))
 }
 
+<<<<<<< HEAD
+=======
+// Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
+function indicador(etiqueta: string): HTMLElement {
+  const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
+  if (!recuadro) throw new Error(`Indicador "${etiqueta}" sin contenedor`)
+  return recuadro
+}
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('RRHH', () => {
   it('muestra las pestañas de departamentos y selecciona el primero por default', () => {
     mockearHooks()
@@ -268,4 +309,117 @@ describe('RRHH', () => {
     fireEvent.click(screen.getByRole('button', { name: /agregar departamento/i }))
     expect(screen.getByRole('dialog', { name: /nuevo departamento/i })).toBeInTheDocument()
   })
+<<<<<<< HEAD
 })
+=======
+  it('cada posición muestra su ocupación, y las activas sin nadie como "Vacante"', () => {
+    mockearHooks()
+    render(<RRHH />)
+
+    const filaVendedor = screen.getByText('Vendedor').closest('tr') as HTMLElement
+    expect(filaVendedor).toHaveTextContent('3 empleados')
+    const filaGerente = screen.getByText('Gerente de ventas').closest('tr') as HTMLElement
+    expect(within(filaGerente).getByText('Vacante')).toBeInTheDocument()
+  })
+
+  it('una posición inactiva sin empleados no se marca como vacante', () => {
+    mockearHooks()
+    const conGerenteInactivo = POSICIONES.map((p) => (p.id === 10 ? { ...p, activo: false } : p))
+    vi.mocked(usePosiciones).mockReturnValue({ data: conGerenteInactivo, isLoading: false } as unknown as ReturnType<typeof usePosiciones>)
+    vi.mocked(useTodasLasPosiciones).mockReturnValue(
+      { data: conGerenteInactivo, isLoading: false } as unknown as ReturnType<typeof useTodasLasPosiciones>,
+    )
+    render(<RRHH />)
+
+    const filaGerente = screen.getByText('Gerente de ventas').closest('tr') as HTMLElement
+    expect(within(filaGerente).queryByText('Vacante')).not.toBeInTheDocument()
+    expect(filaGerente).toHaveTextContent('0 empleados')
+    expect(indicador('Posiciones vacantes')).toHaveTextContent('0')
+    expect(indicador('Posiciones vacantes')).not.toHaveClass('statTileWarning')
+  })
+
+  it('el indicador de vacantes cuenta las posiciones activas sin empleados', () => {
+    mockearHooks()
+    render(<RRHH />)
+
+    expect(indicador('Posiciones vacantes')).toHaveTextContent('1')
+    expect(indicador('Posiciones vacantes')).toHaveClass('statTileWarning')
+  })
+
+  it('el directorio lista a los empleados activos con su posición y departamento', () => {
+    mockearHooks()
+    vi.mocked(useEmpleadosRRHH).mockReturnValue({
+      data: [...EMPLEADOS, { ...EMPLEADOS[0], id: 103, nombre_completo: 'Diego Sin Puesto', activo: true }, { ...EMPLEADOS[0], id: 104, nombre_completo: 'Elena Baja', activo: false }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useEmpleadosRRHH>)
+    render(<RRHH />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Directorio' }))
+
+    const tabla = within(screen.getByRole('table'))
+    const filaAna = tabla.getByText('Ana Torres').closest('tr') as HTMLElement
+    expect(filaAna).toHaveTextContent('Vendedor')
+    expect(filaAna).toHaveTextContent('Ventas')
+    expect(tabla.getByText('Diego Sin Puesto').closest('tr')).toHaveTextContent('Sin puesto vigente')
+    // "Activos" por defecto: la empleada inactiva no aparece hasta cambiar el filtro.
+    expect(tabla.queryByText('Elena Baja')).not.toBeInTheDocument()
+    expect(screen.getByText('Mostrando 4 de 5')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'inactivos' } })
+    expect(within(screen.getByRole('table')).getByText('Elena Baja')).toBeInTheDocument()
+  })
+
+  it('el directorio busca por nombre sin acentos y por RFC, y filtra por departamento', () => {
+    mockearHooks()
+    vi.mocked(useEmpleadosRRHH).mockReturnValue({
+      data: EMPLEADOS.map((e) => (e.id === 102 ? { ...e, nombre_completo: 'Cindy Páez', rfc: 'PAEC900101AB1' } : e)),
+      isLoading: false,
+    } as unknown as ReturnType<typeof useEmpleadosRRHH>)
+    render(<RRHH />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Directorio' }))
+
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'paez' } })
+    expect(screen.getByText('Mostrando 1 de 3')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'paec9001' } })
+    expect(screen.getByText('Mostrando 1 de 3')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    fireEvent.change(screen.getByLabelText('Departamento'), { target: { value: '2' } })
+    expect(screen.getByText('Ningún empleado coincide con los filtros.')).toBeInTheDocument()
+  })
+
+  it('desde el directorio se abre la ficha del empleado con su posición', () => {
+    mockearHooks()
+    render(<RRHH />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Directorio' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Beto Ruiz' }))
+
+    const dialogo = screen.getByRole('dialog', { name: /beto ruiz/i })
+    expect(within(dialogo).getByText('Vendedor')).toBeInTheDocument()
+    expect(within(dialogo).getByRole('button', { name: /modificar/i })).toBeInTheDocument()
+  })
+
+  it('?pestana=nominas abre directamente la pestaña Nóminas', () => {
+    mockearHooks()
+    vi.mocked(useSolicitudesNomina).mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<typeof useSolicitudesNomina>)
+    vi.mocked(useSaldoCaja).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof useSaldoCaja>)
+    for (const hook of [
+      useAprobarSolicitudNomina, usePagarSolicitudesNomina, useRechazarSolicitudNomina, useRevertirPagoNomina,
+      useEditarMontoNomina, useGenerarNomina,
+    ]) {
+      vi.mocked(hook).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as never)
+    }
+    window.history.replaceState(null, '', '/rrhh?pestana=nominas')
+
+    try {
+      render(<RRHH />)
+
+      expect(screen.getByRole('tab', { name: 'Nóminas' })).toHaveAttribute('aria-selected', 'true')
+      expect(screen.getByRole('button', { name: 'Generar nómina' })).toBeInTheDocument()
+    } finally {
+      window.history.replaceState(null, '', '/')
+    }
+  })
+})
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
