@@ -1,7 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+<<<<<<< HEAD
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { MainLayout } from './components/layout/MainLayout'
+=======
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+
+import { MainLayout } from './components/layout/MainLayout'
+import { RutaModulo } from './components/layout/RutaModulo'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { AuthProvider } from './context/AuthContext'
 import { Caja } from './pages/Caja/Caja'
 import { CambiarContrasena } from './pages/CambiarContrasena/CambiarContrasena'
@@ -46,6 +53,7 @@ function App() {
             <Route path="/cambiar-contrasena" element={<CambiarContrasena />} />
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+<<<<<<< HEAD
               <Route path="/sucursales" element={<Sucursales />} />
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/rrhh" element={<RRHH />} />
@@ -64,6 +72,52 @@ function App() {
               <Route path="/caja" element={<Caja />} />
               <Route path="/configuracion-fiscal" element={<ConfiguracionFiscal />} />
               <Route path="/contabilidad" element={<Contabilidad />} />
+=======
+              <Route element={<RutaModulo slug="sucursales" />}>
+                <Route path="/sucursales" element={<Sucursales />} />
+              </Route>
+              <Route element={<RutaModulo slug="catalogo" />}>
+                <Route path="/catalogo" element={<Catalogo />} />
+              </Route>
+              <Route element={<RutaModulo slug="rrhh" />}>
+                <Route path="/rrhh" element={<RRHHPorPestana />} />
+              </Route>
+              <Route element={<RutaModulo slug="terceros" />}>
+                <Route path="/terceros" element={<Terceros />} />
+              </Route>
+              <Route element={<RutaModulo slug="usuarios" />}>
+                <Route path="/usuarios" element={<Usuarios />} />
+              </Route>
+              <Route element={<RutaModulo slug="inventario" />}>
+                <Route path="/inventario" element={<Inventario />} />
+              </Route>
+              <Route element={<RutaModulo slug="compras" />}>
+                <Route path="/compras" element={<Compras />} />
+                <Route path="/compras/nueva" element={<NuevaCompra />} />
+                <Route path="/compras/:id" element={<DetalleCompra />} />
+              </Route>
+              <Route element={<RutaModulo slug="ventas" />}>
+                <Route path="/ventas" element={<Ventas />} />
+                <Route path="/ventas/nueva" element={<NuevaVenta />} />
+                <Route path="/ventas/:id" element={<DetalleVenta />} />
+              </Route>
+              <Route element={<RutaModulo slug="produccion" />}>
+                <Route path="/produccion" element={<Produccion />} />
+              </Route>
+              <Route element={<RutaModulo slug="facturacion" />}>
+                <Route path="/facturacion" element={<Facturacion />} />
+                <Route path="/facturacion/:id" element={<DetalleFactura />} />
+              </Route>
+              <Route element={<RutaModulo slug="caja" />}>
+                <Route path="/caja" element={<Caja />} />
+              </Route>
+              <Route element={<RutaModulo slug="configuracion_fiscal" />}>
+                <Route path="/configuracion-fiscal" element={<ConfiguracionFiscal />} />
+              </Route>
+              <Route element={<RutaModulo slug="contabilidad" />}>
+                <Route path="/contabilidad" element={<Contabilidad />} />
+              </Route>
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               <Route path="/informacion-usuario" element={<InformacionUsuario />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -75,3 +129,15 @@ function App() {
 }
 
 export default App
+<<<<<<< HEAD
+=======
+
+// RRHH lee `?pestana=` solo al montarse (ver `leerPestañaInicial`); si ya se
+// está en /rrhh y un enlace (campana del Header, Caja) cambia solo la
+// búsqueda, la clave nueva la vuelve a montar en la pestaña pedida.
+function RRHHPorPestana() {
+  const { search } = useLocation()
+  return <RRHH key={search} />
+}
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

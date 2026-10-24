@@ -32,6 +32,7 @@ export function SeccionGanancias({ periodo }: SeccionGananciasProps) {
   const sinDatos = !isLoading && resumen && Number(resumen.ventas_total) === 0 && Number(resumen.compras_total) === 0
 
   return (
+<<<<<<< HEAD
     <section className={styles.seccion}>
       <h2 className={styles.tituloSeccion}>Ganancias del periodo</h2>
 
@@ -100,6 +101,80 @@ export function SeccionGanancias({ periodo }: SeccionGananciasProps) {
                 ))}
               </ul>
             )}
+=======
+    <section className="card">
+      <h2 className="sectionTitle">Ganancias del periodo</h2>
+
+      <div className={styles.profitLayout}>
+        <div className={styles.profitMain}>
+          <div
+            className={`${styles.profitCard} ${
+              resumen && Number(resumen.ganancia) < 0 ? styles.profitNegative : styles.profitPositive
+            }`}
+          >
+            <span className={styles.profitLabel}>Ganancia del periodo</span>
+            <span className={styles.profitAmount}>{isLoading || resumen?.ganancia === undefined ? '…' : formatearMoneda(resumen.ganancia)}</span>
+          </div>
+
+          {isLoading || !resumen ? (
+            <p>Cargando resumen…</p>
+          ) : sinDatos ? (
+            <div className="placeholderBox">
+              <span className="placeholderTitle">Todavía no hay suficientes datos para este periodo</span>
+              <span>Registra una venta o compra para empezar a ver aquí la evolución de ganancias.</span>
+            </div>
+          ) : (
+            <GraficaLinea titulo="Evolución de ganancia" datos={datosGrafica} color="var(--color-primario)" />
+          )}
+        </div>
+
+        <div className={styles.movements}>
+          <div className="sectionHeader">
+            <h3 className="subtitle">Movimientos financieros del periodo</h3>
+            <div className="segmented" role="group" aria-label="Cantidad de movimientos a mostrar">
+              {OPCIONES_LIMITE.map((opcion) => (
+                <button
+                  key={opcion.valor}
+                  type="button"
+                  className={
+                    limite === opcion.valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'
+                  }
+                  aria-pressed={limite === opcion.valor}
+                  onClick={() => setLimite(opcion.valor)}
+                >
+                  {opcion.etiqueta}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.movementListContainer}>
+            <div className={styles.movementListContent}>
+              {cargandoMovimientos || !movimientos ? (
+                <p className={styles.movementListMessage}>Cargando movimientos…</p>
+              ) : movimientos.length === 0 ? (
+                <p className={styles.movementListMessage}>No hay movimientos de caja en este periodo.</p>
+              ) : (
+                <ul className={styles.movementList}>
+                  {movimientos.map((movimiento, indice) => (
+                    <li key={`${movimiento.fecha}-${indice}`} className={styles.movementRow}>
+                      <span className={styles.movementDate}>{formatearFechaMovimiento(movimiento.fecha)}</span>
+                      <span
+                        className={
+                          movimiento.tipo_movimiento === 'ingreso'
+                            ? 'textSuccess'
+                            : 'textError'
+                        }
+                      >
+                        {ETIQUETA_TIPO[movimiento.tipo_movimiento]}
+                      </span>
+                      <span className={styles.movementDescription}>{movimiento.observacion}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           </div>
         </div>
       </div>

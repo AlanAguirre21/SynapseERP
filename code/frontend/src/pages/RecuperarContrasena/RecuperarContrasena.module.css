@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .formulario {
   @apply flex flex-col gap-4;
 }
@@ -43,3 +44,9 @@
 .enlace:hover {
   @apply underline;
 }
+=======
+/* Campo del código de verificación: dígitos grandes y espaciados. */
+.codeInput {
+  @apply text-center tracking-[0.4em] text-xl;
+}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

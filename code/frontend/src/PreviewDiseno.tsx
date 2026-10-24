@@ -4,6 +4,10 @@ import { useState } from 'react'
 import type { Usuario } from './api/usuarios'
 import { AuthProvider } from './context/AuthContext'
 import { Header } from './components/layout/Header'
+<<<<<<< HEAD
+=======
+import layout from './components/layout/MainLayout.module.css'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { Sidebar } from './components/layout/Sidebar'
 import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 
@@ -15,6 +19,10 @@ const USUARIO_PREVIEW: Usuario = {
   last_name: 'Pérez López',
   nombre: 'Juan Pérez López',
   rol: 'operador',
+<<<<<<< HEAD
+=======
+  foto_usuario: null,
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   modulos: [
     { slug: 'ventas', nombre: 'Ventas', ruta: '/ventas' },
     { slug: 'compras', nombre: 'Compras', ruta: '/compras' },
@@ -43,11 +51,19 @@ export function PreviewDiseno() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+<<<<<<< HEAD
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
           <Header onToggleSidebar={() => setColapsado((v) => !v)} />
           <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
             <Sidebar modulos={USUARIO_PREVIEW.modulos} colapsado={colapsado} />
             <main style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+=======
+        <div className={layout.layout}>
+          <Header onToggleSidebar={() => setColapsado((v) => !v)} />
+          <div className={layout.layoutBody}>
+            <Sidebar modulos={USUARIO_PREVIEW.modulos} colapsado={colapsado} />
+            <main className={layout.layoutContent}>
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               <InformacionUsuario />
             </main>
           </div>

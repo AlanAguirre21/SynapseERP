@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-4;
 }
@@ -114,3 +115,58 @@
 .accionesFormulario {
   @apply flex items-center justify-end gap-3;
 }
+=======
+/* Panel de saldo: solo existe en Caja. "Saldo de la caja" es la cifra
+   principal y "actual" + "adicional" su desglose, porque son dos categorías
+   del mismo efectivo, no cuentas separadas. */
+.balancePanel {
+  @apply grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-6 px-6 md:px-8 py-6 bg-linear-to-br from-primario-suave to-superficie border border-borde rounded-tarjeta shadow-suave;
+}
+
+.balanceMain {
+  @apply flex flex-col gap-1 min-w-0;
+}
+
+.balanceLabel {
+  @apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-primario;
+}
+
+.balanceFigure {
+  @apply text-4xl md:text-5xl font-titulo font-semibold text-primario tabular-nums break-words;
+}
+
+.balanceHint {
+  @apply m-0 text-[0.85rem] text-texto-suave;
+}
+
+/* Desglose: separado de la cifra principal por un borde (a la izquierda en
+   pantallas anchas, arriba en angostas). */
+.balanceBreakdown {
+  @apply flex flex-col justify-center gap-3 pt-5 md:pt-0 md:pl-6 border-t md:border-t-0 md:border-l border-borde;
+}
+
+.balanceItem {
+  @apply flex items-baseline justify-between gap-4 text-[0.9rem] text-texto-suave;
+}
+
+.balanceItemAmount {
+  @apply text-lg font-titulo font-semibold text-texto tabular-nums whitespace-nowrap;
+}
+
+/* Etiqueta de motivo y enlace al documento de origen en una sola línea. */
+.reasonCell {
+  @apply flex items-center gap-2 whitespace-nowrap;
+}
+
+.referenceLink {
+  @apply text-primario text-[0.8rem] no-underline;
+}
+
+.referenceLink:hover {
+  @apply underline;
+}
+
+.resultingBalance {
+  @apply font-semibold text-texto;
+}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Factura } from '../../api/facturacion'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
+<<<<<<< HEAD
+=======
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { Facturacion } from './Facturacion'
 
 vi.mock('react-router-dom', async () => {
@@ -14,6 +18,10 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../../hooks/useFacturas')
 vi.mock('../../hooks/useClientes')
+<<<<<<< HEAD
+=======
+vi.mock('../../hooks/useUsuarioActual')
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const CLIENTES = [
   { id: 1, nombre_cliente: 'Hospital San Rafael', telefono: '', email: '', direccion: '', activo: true, datos_fiscales: null },
@@ -28,7 +36,13 @@ const FACTURAS: Factura[] = [
   },
 ]
 
+<<<<<<< HEAD
 function mockearHooks() {
+=======
+// La pantalla lee el rol para su texto (019, "el operador solo ve las facturas de sus ventas").
+function mockearHooks(rol: 'admin' | 'operador' = 'admin') {
+  vi.mocked(useUsuarioActual).mockReturnValue({ data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>)
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   vi.mocked(useClientes).mockReturnValue({ data: CLIENTES, isLoading: false } as unknown as ReturnType<typeof useClientes>)
   vi.mocked(useFacturas).mockReturnValue({ data: FACTURAS, isLoading: false } as unknown as ReturnType<typeof useFacturas>)
 }
@@ -41,6 +55,16 @@ function renderFacturacion() {
   )
 }
 
+<<<<<<< HEAD
+=======
+// Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
+function indicador(etiqueta: string): HTMLElement {
+  const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
+  if (!recuadro) throw new Error(`Indicador "${etiqueta}" sin contenedor`)
+  return recuadro
+}
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Facturacion', () => {
   it('muestra las facturas en la tabla', () => {
     mockearHooks()
@@ -88,4 +112,79 @@ describe('Facturacion', () => {
 
     expect(screen.getByText(/todavía no hay facturas/i)).toBeInTheDocument()
   })
+<<<<<<< HEAD
+=======
+
+  it('muestra el total con formato de moneda y el enlace a la venta de origen', () => {
+    mockearHooks()
+    renderFacturacion()
+
+    const fila = screen.getByRole('cell', { name: 'Hospital San Rafael' }).closest('tr')
+    expect(fila).toHaveTextContent('$90.00')
+    expect(screen.getByRole('button', { name: 'Venta #10' })).toBeInTheDocument()
+  })
+
+  it('los indicadores cuentan solo facturas vigentes en el importe y tiñen las alertas con valor', () => {
+    const conEstado = (id: number, estado: Factura['estado'], total: string): Factura => ({
+      ...(FACTURAS[0] as Factura), id, venta: 10 + id, estado, venta_total: total,
+    })
+    mockearHooks()
+    vi.mocked(useFacturas).mockReturnValue({
+      data: [
+        conEstado(1, 'timbrada', '100.00'),
+        conEstado(2, 'pendiente_cancelacion', '50.00'),
+        conEstado(3, 'cancelada', '999.00'),
+        conEstado(4, 'error', '999.00'),
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useFacturas>)
+    renderFacturacion()
+
+    expect(indicador('Facturas')).toHaveTextContent('4')
+    // Timbrada + pendiente de cancelación; cancelada y con error no cuentan.
+    expect(indicador('Importe facturado')).toHaveTextContent('$150.00')
+    expect(indicador('Con error')).toHaveTextContent('1')
+    expect(indicador('Con error')).toHaveClass('statTileDanger')
+    expect(indicador('Pendientes de cancelación')).toHaveClass('statTileWarning')
+  })
+
+  it('sin alertas, los indicadores de error y cancelación no se tiñen', () => {
+    mockearHooks()
+    renderFacturacion()
+
+    expect(indicador('Con error')).not.toHaveClass('statTileDanger')
+    expect(indicador('Pendientes de cancelación')).not.toHaveClass('statTileWarning')
+  })
+
+  it('"Limpiar filtros" aparece con un filtro aplicado y lo restablece', () => {
+    mockearHooks()
+    renderFacturacion()
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+
+    const estado = screen.getByLabelText('Estado')
+    fireEvent.change(estado, { target: { value: 'error' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+
+    expect(estado).toHaveValue('')
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+  })
+
+  it('con filtros y sin resultados, el mensaje lo distingue de "todavía no hay facturas"', () => {
+    mockearHooks()
+    vi.mocked(useFacturas).mockReturnValue({ data: [], isLoading: false } as unknown as ReturnType<typeof useFacturas>)
+    renderFacturacion()
+
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'error' } })
+
+    expect(screen.getByText('Ninguna factura coincide con los filtros.')).toBeInTheDocument()
+  })
+
+  // 019: el operador solo ve las facturas de sus ventas.
+  it('para el operador el encabezado aclara que son las facturas de sus ventas', () => {
+    mockearHooks('operador')
+    renderFacturacion()
+
+    expect(screen.getByText(/facturas de tus ventas/i)).toBeInTheDocument()
+  })
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

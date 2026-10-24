@@ -8,14 +8,28 @@ class Receta(models.Model):
     el conjunto de filas `Receta` activas con ese `producto` — no hay un
     modelo "Receta" único por producto, sino una por cada ingrediente.
 
+<<<<<<< HEAD
     CRUD restringido a admin; operador solo consulta (mismo criterio que
     Catálogo). Soft-delete vía `activo`, igual que el resto del catálogo.
+=======
+    Crear líneas: admin y operador; editar, desactivar y reactivar: solo
+    admin (`spec.md`, "Actualización: el operador puede crear recetas").
+    Soft-delete vía `activo`, igual que el resto del catálogo.
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """
 
     producto = models.ForeignKey('catalogo.Producto', on_delete=models.PROTECT, related_name='receta')
     materia_prima = models.ForeignKey('catalogo.MateriaPrima', on_delete=models.PROTECT, related_name='usada_en_recetas')
     cantidad_requerida = models.DecimalField(max_digits=12, decimal_places=2)
     activo = models.BooleanField(default=True)
+<<<<<<< HEAD
+=======
+    # Quién creó la línea; lo asigna el servidor desde la sesión. Las líneas
+    # anteriores a esta actualización no lo tienen.
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='recetas_creadas',
+    )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     class Meta:
         verbose_name_plural = 'recetas'

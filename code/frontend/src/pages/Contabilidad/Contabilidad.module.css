@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-4;
 }
@@ -145,4 +146,92 @@
 
 .saldoAcreedor {
   @apply text-texto/70;
+=======
+/* Estilos propios de Contabilidad: catálogo jerárquico, pólizas desplegables
+   del libro diario y título del balance con su etiqueta de cuadre. */
+
+/* --- Catálogo de cuentas ------------------------------------------------ */
+
+/* Sangría por nivel de la jerarquía; a partir del cuarto nivel se reutiliza
+   la última (mismo recurso que el árbol de RRHH). */
+.accountLevel0 {
+  @apply pl-0;
+}
+
+.accountLevel1 {
+  @apply pl-5;
+}
+
+.accountLevel2 {
+  @apply pl-10;
+}
+
+.accountLevel3 {
+  @apply pl-15;
+}
+
+/* Cuenta de mayor (tiene subcuentas). */
+.accountGroup {
+  @apply font-semibold text-texto;
+}
+
+/* --- Libro diario ------------------------------------------------------- */
+
+.entryList {
+  @apply flex flex-col gap-2;
+}
+
+.entry {
+  @apply bg-superficie border border-borde rounded-control overflow-hidden;
+}
+
+/* Fila de póliza: indicador, número, fecha, concepto, origen e importe. En
+   pantallas angostas el concepto y el importe bajan a una segunda fila
+   (concepto a la izquierda, importe a la derecha). */
+.entryHeader {
+  @apply w-full grid grid-cols-[1rem_auto_1fr_auto] md:grid-cols-[1rem_6.5rem_8.5rem_1fr_auto_8rem] items-center gap-x-3 gap-y-1 px-3 py-2.5 bg-transparent border-0 text-left text-[0.85rem] text-texto cursor-pointer;
+}
+
+.entryHeader:hover {
+  @apply bg-fondo;
+}
+
+.entryNumber {
+  @apply font-semibold whitespace-nowrap;
+}
+
+.entryConcept {
+  @apply col-start-2 col-span-2 row-start-2 md:col-start-auto md:col-span-1 md:row-start-auto min-w-0;
+}
+
+.entryAmount {
+  @apply col-start-4 row-start-2 md:col-start-auto md:row-start-auto text-right font-semibold tabular-nums whitespace-nowrap;
+}
+
+.entryDetail {
+  @apply flex flex-col gap-3 px-3 pb-3 border-t border-borde;
+}
+
+/* "Sumas iguales" de la póliza: debajo de la tabla de movimientos. */
+.entryTotals {
+  @apply flex flex-wrap items-center justify-end gap-x-5 gap-y-2 pt-2 text-[0.85rem] text-texto-suave tabular-nums;
+}
+
+.entryTotals strong {
+  @apply text-texto;
+}
+
+/* --- Balance de comprobación ------------------------------------------- */
+
+.titleWithStatus {
+  @apply flex items-center gap-3 flex-wrap;
+}
+
+.debitBalance {
+  @apply text-texto;
+}
+
+.creditBalance {
+  @apply text-texto-suave;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

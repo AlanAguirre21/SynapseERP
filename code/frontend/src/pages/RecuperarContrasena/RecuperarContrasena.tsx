@@ -86,8 +86,13 @@ export function RecuperarContrasena() {
 
   return paso === 'correo' ? (
     <PaginaAuth titulo="Recuperar contraseña" subtitulo="Te enviaremos un código de verificación por correo">
+<<<<<<< HEAD
       <form className={styles.formulario} onSubmit={alEnviarCorreo} noValidate>
         <label className={styles.campo}>
+=======
+      <form className="form" onSubmit={alEnviarCorreo} noValidate>
+        <label className="field">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Correo electrónico
           <input
             type="email"
@@ -99,7 +104,11 @@ export function RecuperarContrasena() {
         </label>
 
         {error && (
+<<<<<<< HEAD
           <p className={styles.error} role="alert">
+=======
+          <p className="errorMessage" role="alert">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {error}
           </p>
         )}
@@ -108,22 +117,37 @@ export function RecuperarContrasena() {
           {cargando ? 'Enviando…' : 'Enviar código'}
         </BotonPrimario>
 
+<<<<<<< HEAD
         <Link to="/login" className={styles.enlace}>
+=======
+        <Link to="/login" className="link linkCentered">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Volver a iniciar sesión
         </Link>
       </form>
     </PaginaAuth>
   ) : (
     <PaginaAuth titulo="Verifica tu código" subtitulo={`Enviamos un código de 6 dígitos a ${email}`}>
+<<<<<<< HEAD
       <form className={styles.formulario} onSubmit={alVerificarCodigo} noValidate>
         {mensaje && <p className={styles.mensaje}>{mensaje}</p>}
 
         <label className={styles.campo}>
+=======
+      <form className="form" onSubmit={alVerificarCodigo} noValidate>
+        {mensaje && <p className="successMessage">{mensaje}</p>}
+
+        <label className="field">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Código de 6 dígitos
           <input
             type="text"
             inputMode="numeric"
+<<<<<<< HEAD
             className={styles.inputCodigo}
+=======
+            className={styles.codeInput}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             maxLength={6}
             value={codigo}
             onChange={(evento) => setCodigo(evento.target.value.replace(/\D/g, ''))}
@@ -132,7 +156,11 @@ export function RecuperarContrasena() {
         </label>
 
         {error && (
+<<<<<<< HEAD
           <p className={styles.error} role="alert">
+=======
+          <p className="errorMessage" role="alert">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {error}
           </p>
         )}
@@ -143,14 +171,22 @@ export function RecuperarContrasena() {
 
         <button
           type="button"
+<<<<<<< HEAD
           className={styles.enlaceBoton}
+=======
+          className="link linkCentered"
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           onClick={alReenviar}
           disabled={cargando}
         >
           Reenviar código
         </button>
 
+<<<<<<< HEAD
         <Link to="/login" className={styles.enlace}>
+=======
+        <Link to="/login" className="link linkCentered">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Volver a iniciar sesión
         </Link>
       </form>

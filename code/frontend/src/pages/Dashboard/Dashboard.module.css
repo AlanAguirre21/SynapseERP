@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-6;
 }
@@ -38,4 +39,44 @@
 
 .pestañaActiva {
   @apply text-primario border-primario font-semibold;
+=======
+/* Franja de marca del inicio: logotipo, saldo en caja y selector de periodo,
+   centrados sobre un degradado suave en el tono de la pantalla de inicio. */
+.hero {
+  @apply flex flex-col items-center gap-5 px-6 py-8 border border-borde rounded-tarjeta shadow-suave bg-linear-to-b from-inicio-suave to-superficie;
+}
+
+.dashboardLogo {
+  @apply h-20 sm:h-24 w-auto object-contain;
+}
+
+.cashBalance {
+  @apply flex flex-col items-center gap-1;
+}
+
+.cashBalanceLabel {
+  @apply text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-texto-suave;
+}
+
+.cashBalanceAmount {
+  @apply text-4xl font-titulo font-semibold text-texto tabular-nums;
+}
+
+/* Selector de periodo como control segmentado tipo píldora. */
+.periodTabs {
+  @apply flex items-center gap-1 p-1 bg-superficie border border-borde rounded-pildora shadow-suave;
+}
+
+.periodTab {
+  @apply px-4 sm:px-5 py-1.5 bg-transparent border-0 rounded-pildora text-[0.9rem] text-texto-suave cursor-pointer transition-colors;
+}
+
+.periodTab:hover {
+  @apply text-texto;
+}
+
+.periodTabActive,
+.periodTabActive:hover {
+  @apply bg-inicio text-superficie font-semibold;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

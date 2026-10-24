@@ -1,5 +1,6 @@
 @reference "../../index.css";
 
+<<<<<<< HEAD
 .pagina {
   @apply flex flex-col gap-4;
 }
@@ -130,4 +131,19 @@
 
 .accionesFormulario {
   @apply flex items-center justify-end gap-3;
+=======
+/* Estilos propios de Usuarios: celda de identidad (avatar común + nombre +
+   usuario y correo). Lo demás usa las clases globales. */
+
+.identity {
+  @apply flex items-center gap-3 min-w-0;
+}
+
+.identityText {
+  @apply flex flex-col gap-0.5 min-w-0;
+}
+
+.identitySecondary {
+  @apply text-[0.8rem] text-texto-suave break-all;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

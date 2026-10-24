@@ -1,9 +1,21 @@
+<<<<<<< HEAD
 import { useState, type FormEvent } from 'react'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import type { Sucursal, SucursalFormulario } from '../../api/sucursales'
+=======
+import { useMemo, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
+
+import { BotonPrimario } from '../../components/common/BotonPrimario'
+import { Icono } from '../../components/common/Icono'
+import { Modal } from '../../components/common/Modal'
+import type { AlertaStock } from '../../api/inventario'
+import type { Sucursal, SucursalFormulario } from '../../api/sucursales'
+import { useAlertasStock } from '../../hooks/useAlertasStock'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import {
   useCrearSucursal,
   useDesactivarSucursal,
@@ -25,6 +37,40 @@ interface ErrorGuardarSucursal {
   nombre_sucursal?: string[]
 }
 
+<<<<<<< HEAD
+=======
+type FiltroEstado = 'todas' | 'activas' | 'inactivas'
+
+interface SaludStock {
+  bajoMinimo: number
+  agotados: number
+}
+
+// El endpoint de alertas identifica la sucursal solo por su nombre e incluye
+// inventario de sucursales inactivas. Como `006` impide dos sucursales activas
+// con el mismo nombre, el conteo se asigna después únicamente a la activa.
+// Misma prioridad que Inventario: existencia en cero (o menor) es "agotado".
+function agruparAlertas(alertas: AlertaStock[]): Map<string, SaludStock> {
+  const porSucursal = new Map<string, SaludStock>()
+  for (const alerta of alertas) {
+    const salud = porSucursal.get(alerta.sucursal) ?? { bajoMinimo: 0, agotados: 0 }
+    if (Number(alerta.stock_actual) <= 0) salud.agotados += 1
+    else salud.bajoMinimo += 1
+    porSucursal.set(alerta.sucursal, salud)
+  }
+  return porSucursal
+}
+
+function urlMapa(ubicacion: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ubicacion)}`
+}
+
+// El `href` de `tel:` solo admite dígitos y `+`; el texto visible se deja tal cual.
+function urlTelefono(telefono: string) {
+  return `tel:${telefono.replace(/[^\d+]/g, '')}`
+}
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export function Sucursales() {
   const { data: usuario } = useUsuarioActual()
   const { data: sucursales, isLoading } = useSucursales()
@@ -41,8 +87,45 @@ export function Sucursales() {
   const [sucursalAReactivar, setSucursalAReactivar] = useState<Sucursal | null>(null)
   const [errorReactivar, setErrorReactivar] = useState('')
 
+<<<<<<< HEAD
   const esAdmin = usuario?.rol === 'admin'
 
+=======
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todas')
+
+  const esAdmin = usuario?.rol === 'admin'
+
+  // `null` si las alertas no están disponibles (cargando o con error): las
+  // tarjetas omiten la línea de stock y el indicador muestra "—".
+  const { data: alertas } = useAlertasStock()
+  const alertasPorSucursal = useMemo(() => (alertas ? agruparAlertas(alertas) : null), [alertas])
+
+  function saludDe(sucursal: Sucursal): SaludStock | null {
+    if (!alertasPorSucursal || !sucursal.activo) return null
+    return alertasPorSucursal.get(sucursal.nombre_sucursal) ?? { bajoMinimo: 0, agotados: 0 }
+  }
+
+  const lista = useMemo(() => sucursales ?? [], [sucursales])
+
+  const indicadores = useMemo(() => {
+    const activas = lista.filter((s) => s.activo)
+    const conAlertas = alertasPorSucursal
+      ? activas.filter((s) => {
+          const salud = alertasPorSucursal.get(s.nombre_sucursal)
+          return salud && salud.bajoMinimo + salud.agotados > 0
+        }).length
+      : null
+    return { activas: activas.length, inactivas: lista.length - activas.length, conAlertas }
+  }, [lista, alertasPorSucursal])
+
+  const filtradas = lista.filter((s) => {
+    if (filtroEstado === 'activas') return s.activo
+    if (filtroEstado === 'inactivas') return !s.activo
+    return true
+  })
+  const hayFiltros = filtroEstado !== 'todas'
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   function abrirCrear() {
     setSucursalEnEdicion(null)
     setValores(SUCURSAL_VACIA)
@@ -126,6 +209,7 @@ export function Sucursales() {
     }
   }
 
+<<<<<<< HEAD
   const columnas: ColumnaTabla<Sucursal>[] = [
     { clave: 'nombre_sucursal', encabezado: 'Nombre' },
     { clave: 'ubicacion_sucursal', encabezado: 'Ubicación' },
@@ -180,6 +264,80 @@ export function Sucursales() {
               : undefined
           }
         />
+=======
+  return (
+    <div className="page">
+      <div className="pageHeader">
+        <div className="pageHeading">
+          <h1 className="pageTitle">Sucursales</h1>
+          <p className="pageHint">Ubicaciones físicas donde se guarda el inventario de la empresa.</p>
+        </div>
+        {esAdmin && <BotonPrimario onClick={abrirCrear}>Nueva sucursal</BotonPrimario>}
+      </div>
+
+      <div className="statRow">
+        <div className="statTile">
+          <span className="statLabel">Sucursales activas</span>
+          <span className="statValue">{indicadores.activas}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Sucursales inactivas</span>
+          <span className="statValue">{indicadores.inactivas}</span>
+        </div>
+        <div className={indicadores.conAlertas ? 'statTile statTileWarning' : 'statTile'}>
+          <span className="statLabel">Con alertas de stock</span>
+          <span className="statValue">{indicadores.conAlertas ?? '—'}</span>
+        </div>
+      </div>
+
+      <div className="filters">
+        <label className="filterField">
+          Estado
+          <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value as FiltroEstado)}>
+            <option value="todas">Todas</option>
+            <option value="activas">Activas</option>
+            <option value="inactivas">Inactivas</option>
+          </select>
+        </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={() => setFiltroEstado('todas')}>
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <p>Cargando sucursales…</p>
+      ) : (
+        <>
+          <span className="pageHint">{`Mostrando ${filtradas.length} de ${lista.length}`}</span>
+
+          {filtradas.length === 0 ? (
+            <div className="placeholderBox">
+              <p className="emptyState">
+                {lista.length === 0
+                  ? 'Todavía no hay sucursales registradas.'
+                  : 'Ninguna sucursal coincide con el filtro.'}
+              </p>
+            </div>
+          ) : (
+            <div className={styles.branchGrid}>
+              {filtradas.map((sucursal) => (
+                <TarjetaSucursal
+                  key={sucursal.id}
+                  sucursal={sucursal}
+                  salud={saludDe(sucursal)}
+                  esAdmin={esAdmin}
+                  onEditar={() => abrirEditar(sucursal)}
+                  onDesactivar={() => setSucursalADesactivar(sucursal)}
+                  onReactivar={() => abrirReactivar(sucursal)}
+                />
+              ))}
+            </div>
+          )}
+        </>
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
 
       <Modal
@@ -187,6 +345,7 @@ export function Sucursales() {
         abierto={formularioAbierto}
         onCerrar={cerrarFormulario}
       >
+<<<<<<< HEAD
         <form className={styles.formulario} onSubmit={alGuardar} noValidate>
           <label className={styles.campo}>
             Nombre
@@ -218,11 +377,50 @@ export function Sucursales() {
 
           {errorFormulario && (
             <p className={styles.error} role="alert">
+=======
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <div className="formGrid">
+            <label className="field formGridFull">
+              Nombre
+              <input
+                type="text"
+                value={valores.nombre_sucursal}
+                onChange={(evento) => setValores((v) => ({ ...v, nombre_sucursal: evento.target.value }))}
+                required
+              />
+            </label>
+
+            <label className="field">
+              Ubicación
+              <input
+                type="text"
+                value={valores.ubicacion_sucursal}
+                onChange={(evento) => setValores((v) => ({ ...v, ubicacion_sucursal: evento.target.value }))}
+              />
+            </label>
+
+            <label className="field">
+              Teléfono
+              <input
+                type="text"
+                value={valores.telefono_sucursal}
+                onChange={(evento) => setValores((v) => ({ ...v, telefono_sucursal: evento.target.value }))}
+              />
+            </label>
+          </div>
+
+          {errorFormulario && (
+            <p className="errorMessage" role="alert">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {errorFormulario}
             </p>
           )}
 
+<<<<<<< HEAD
           <div className={styles.accionesFormulario}>
+=======
+          <div className="formActions">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario type="button" variante="secundario" onClick={cerrarFormulario}>
               Cancelar
             </BotonPrimario>
@@ -238,11 +436,19 @@ export function Sucursales() {
         abierto={Boolean(sucursalADesactivar)}
         onCerrar={() => setSucursalADesactivar(null)}
       >
+<<<<<<< HEAD
         <p className={styles.textoConfirmacion}>
           ¿Confirmas que quieres desactivar la sucursal "{sucursalADesactivar?.nombre_sucursal}"? Dejará de estar
           disponible para nuevos movimientos, pero su historial se conserva.
         </p>
         <div className={styles.accionesFormulario}>
+=======
+        <p className="confirmText">
+          ¿Confirmas que quieres desactivar la sucursal "{sucursalADesactivar?.nombre_sucursal}"? Dejará de estar
+          disponible para nuevos movimientos, pero su historial se conserva.
+        </p>
+        <div className="formActions">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setSucursalADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -253,18 +459,30 @@ export function Sucursales() {
       </Modal>
 
       <Modal titulo="Reactivar sucursal" abierto={Boolean(sucursalAReactivar)} onCerrar={cerrarReactivar}>
+<<<<<<< HEAD
         <p className={styles.textoConfirmacion}>
+=======
+        <p className="confirmText">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres reactivar la sucursal "{sucursalAReactivar?.nombre_sucursal}"? Volverá a estar
           disponible para nuevos movimientos de inventario.
         </p>
 
         {errorReactivar && (
+<<<<<<< HEAD
           <p className={styles.error} role="alert">
+=======
+          <p className="errorMessage" role="alert">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {errorReactivar}
           </p>
         )}
 
+<<<<<<< HEAD
         <div className={styles.accionesFormulario}>
+=======
+        <div className="formActions">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={cerrarReactivar}>
             Cancelar
           </BotonPrimario>
@@ -276,3 +494,103 @@ export function Sucursales() {
     </div>
   )
 }
+<<<<<<< HEAD
+=======
+
+// --- Tarjeta de sucursal ---------------------------------------------------------
+
+interface TarjetaSucursalProps {
+  sucursal: Sucursal
+  salud: SaludStock | null
+  esAdmin: boolean
+  onEditar: () => void
+  onDesactivar: () => void
+  onReactivar: () => void
+}
+
+function TarjetaSucursal({ sucursal, salud, esAdmin, onEditar, onDesactivar, onReactivar }: TarjetaSucursalProps) {
+  const idTitulo = `sucursal-${sucursal.id}`
+  const ubicacion = sucursal.ubicacion_sucursal.trim()
+  const telefono = sucursal.telefono_sucursal.trim()
+
+  return (
+    <article
+      className={sucursal.activo ? `card ${styles.branchCard}` : `card ${styles.branchCard} ${styles.branchCardInactive}`}
+      aria-labelledby={idTitulo}
+    >
+      <div className={styles.branchHeader}>
+        <span className={styles.branchIcon}>
+          <Icono nombre="sucursales" tamano={20} />
+        </span>
+        <h2 id={idTitulo} className={styles.branchName}>
+          {sucursal.nombre_sucursal}
+        </h2>
+        <span className={sucursal.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+          {sucursal.activo ? 'Activa' : 'Inactiva'}
+        </span>
+      </div>
+
+      <dl className="factGrid">
+        <div>
+          <dt>Ubicación</dt>
+          <dd className={styles.branchFact}>
+            <span>{ubicacion || '—'}</span>
+            {ubicacion && (
+              <a className="link" href={urlMapa(ubicacion)} target="_blank" rel="noopener noreferrer">
+                Ver en mapa
+              </a>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Teléfono</dt>
+          <dd>{telefono ? <a className="link" href={urlTelefono(telefono)}>{telefono}</a> : '—'}</dd>
+        </div>
+      </dl>
+
+      {salud && (
+        <div className={styles.branchStock}>
+          {salud.bajoMinimo + salud.agotados === 0 ? (
+            <span className="status statusNeutral">Sin alertas</span>
+          ) : (
+            <>
+              {salud.bajoMinimo > 0 && <span className="status statusWarning">{`${salud.bajoMinimo} bajo mínimo`}</span>}
+              {salud.agotados > 0 && (
+                <span className="status statusError">
+                  {salud.agotados === 1 ? '1 agotado' : `${salud.agotados} agotados`}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {(sucursal.activo || esAdmin) && (
+        <div className={styles.branchFooter}>
+          {sucursal.activo && (
+            <Link to={`/inventario?sucursal=${sucursal.id}`} className="link">
+              Ver inventario
+            </Link>
+          )}
+          {esAdmin && (
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={onEditar}>
+                Editar
+              </button>
+              {sucursal.activo ? (
+                <button type="button" className="dangerActionLink" onClick={onDesactivar}>
+                  Desactivar
+                </button>
+              ) : (
+                <button type="button" className="actionLink" onClick={onReactivar}>
+                  Reactivar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  )
+}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

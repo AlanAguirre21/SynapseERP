@@ -1,5 +1,9 @@
 @reference "../../index.css";
 
 .footer {
+<<<<<<< HEAD
   @apply flex items-center justify-center gap-4 px-4 py-2 text-xs text-texto opacity-60 border-t border-texto/10 shrink-0;
+=======
+  @apply flex items-center justify-between gap-4 px-4 md:px-6 py-2 text-xs text-texto-suave bg-superficie border-t border-borde shrink-0;
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

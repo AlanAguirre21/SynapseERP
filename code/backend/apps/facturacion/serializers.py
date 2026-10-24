@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
 from apps.ventas.models import Venta
+<<<<<<< HEAD
+=======
+from core.permissions import es_admin
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 from .models import ComplementoPago, Factura
 
@@ -15,7 +19,13 @@ class FacturaSerializer(serializers.ModelSerializer):
     serializer de escritura aparte.
     """
 
+<<<<<<< HEAD
     venta = serializers.PrimaryKeyRelatedField(queryset=Venta.objects.all())
+=======
+    venta = serializers.PrimaryKeyRelatedField(
+        queryset=Venta.objects.all(), error_messages={'does_not_exist': 'No existe la venta indicada.'},
+    )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     cliente_nombre = serializers.SerializerMethodField()
     usuario_nombre = serializers.SerializerMethodField()
     venta_total = serializers.DecimalField(source='venta.total', max_digits=12, decimal_places=2, read_only=True)
@@ -33,6 +43,19 @@ class FacturaSerializer(serializers.ModelSerializer):
             'motivo_cancelacion', 'fecha_solicitud_cancelacion', 'fecha_creacion', 'fecha_timbrado',
         ]
 
+<<<<<<< HEAD
+=======
+    def get_fields(self):
+        # El operador solo puede facturar sus propias ventas: una ajena "no
+        # existe" para él (`019`, "Actualización: el operador solo ve las
+        # facturas de sus ventas").
+        campos = super().get_fields()
+        request = self.context.get('request')
+        if request is not None and not es_admin(request.user):
+            campos['venta'].queryset = Venta.objects.filter(usuario=request.user)
+        return campos
+
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     def get_cliente_nombre(self, factura):
         return factura.venta.cliente.nombre_cliente if factura.venta.cliente else 'Sin cliente'
 
@@ -46,7 +69,13 @@ class ComplementoPagoSerializer(serializers.ModelSerializer):
     `ComplementoPagoViewSet.create()` según la respuesta del PAC.
     """
 
+<<<<<<< HEAD
     factura = serializers.PrimaryKeyRelatedField(queryset=Factura.objects.all())
+=======
+    factura = serializers.PrimaryKeyRelatedField(
+        queryset=Factura.objects.all(), error_messages={'does_not_exist': 'No existe la factura indicada.'},
+    )
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     class Meta:
         model = ComplementoPago
@@ -55,3 +84,14 @@ class ComplementoPagoSerializer(serializers.ModelSerializer):
             'estado', 'mensaje_error', 'fecha_creacion',
         ]
         read_only_fields = ['id', 'usuario', 'folio_fiscal_rep', 'estado', 'mensaje_error', 'fecha_creacion']
+<<<<<<< HEAD
+=======
+
+    def get_fields(self):
+        # Complementos solo sobre facturas de ventas propias para el operador.
+        campos = super().get_fields()
+        request = self.context.get('request')
+        if request is not None and not es_admin(request.user):
+            campos['factura'].queryset = Factura.objects.filter(venta__usuario=request.user)
+        return campos
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

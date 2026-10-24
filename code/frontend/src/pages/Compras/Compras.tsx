@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+<<<<<<< HEAD
 import type { Compra, EstadoCompra } from '../../api/compras'
+=======
+import { ETIQUETAS_ESTADO_COMPRA, type Compra, type EstadoCompra } from '../../api/compras'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useCompras } from '../../hooks/useCompras'
 import { useProveedores } from '../../hooks/useProveedores'
+<<<<<<< HEAD
 import styles from './Compras.module.css'
 
 const ETIQUETAS_ESTADO: Record<EstadoCompra, string> = {
@@ -18,22 +23,45 @@ function claseEstado(estado: EstadoCompra) {
   if (estado === 'recibida') return styles.estadoRecibida
   if (estado === 'cancelada') return styles.estadoCancelada
   return styles.estadoPendiente
+=======
+import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { useUsuarios } from '../../hooks/useUsuarios'
+import { formatearMoneda } from '../../utils/moneda'
+
+function claseEstado(estado: EstadoCompra) {
+  if (estado === 'recibida') return 'status statusSuccess'
+  if (estado === 'cancelada') return 'status statusError'
+  return 'status statusWarning'
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export function Compras() {
   const navigate = useNavigate()
   const { data: proveedores } = useProveedores()
+<<<<<<< HEAD
+=======
+  // El operador solo ve las compras que él registró (el backend las filtra);
+  // el admin ve todas y puede filtrar por quién las registró.
+  const { data: usuarioActual } = useUsuarioActual()
+  const esAdmin = usuarioActual?.rol === 'admin'
+  const { data: usuarios } = useUsuarios(esAdmin)
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const [proveedorFiltro, setProveedorFiltro] = useState<number | ''>('')
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCompra | ''>('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+<<<<<<< HEAD
+=======
+  const [usuarioFiltro, setUsuarioFiltro] = useState<number | ''>('')
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const { data: compras, isLoading } = useCompras({
     proveedor: proveedorFiltro || undefined,
     estado: estadoFiltro || undefined,
     fecha_desde: fechaDesde || undefined,
     fecha_hasta: fechaHasta || undefined,
+<<<<<<< HEAD
   })
 
   const columnas: ColumnaTabla<Compra>[] = [
@@ -57,6 +85,77 @@ export function Compras() {
 
       <div className={styles.filtros}>
         <label className={styles.campoFiltro}>
+=======
+    usuario: (esAdmin && usuarioFiltro) || undefined,
+  })
+
+  const columnas: ColumnaTabla<Compra>[] = [
+    { clave: 'id', encabezado: 'Folio', render: (fila) => `#${fila.id}` },
+    { clave: 'fecha', encabezado: 'Fecha', render: (fila) => new Date(fila.fecha).toLocaleDateString('es-MX') },
+    { clave: 'proveedor_nombre', encabezado: 'Proveedor' },
+    { clave: 'sucursal_nombre', encabezado: 'Sucursal destino' },
+    ...(esAdmin ? [{ clave: 'usuario_nombre' as const, encabezado: 'Registrada por' }] : []),
+    { clave: 'total', alineacion: 'derecha', encabezado: 'Total', render: (fila) => formatearMoneda(fila.total) },
+    {
+      clave: 'estado',
+      encabezado: 'Estado',
+      render: (fila) => <span className={claseEstado(fila.estado)}>{ETIQUETAS_ESTADO_COMPRA[fila.estado]}</span>,
+    },
+  ]
+
+  // Indicadores sobre la lista ya filtrada por el backend; el importe no cuenta las canceladas.
+  const lista = compras ?? []
+  const vigentes = lista.filter((compra) => compra.estado !== 'cancelada')
+  const importe = vigentes.reduce((acumulado, compra) => acumulado + Number(compra.total), 0)
+  const pendientes = lista.filter((compra) => compra.estado === 'pendiente').length
+  const recibidas = lista.filter((compra) => compra.estado === 'recibida').length
+
+  const hayFiltros = Boolean(proveedorFiltro || estadoFiltro || fechaDesde || fechaHasta || usuarioFiltro)
+
+  function limpiarFiltros() {
+    setProveedorFiltro('')
+    setEstadoFiltro('')
+    setFechaDesde('')
+    setFechaHasta('')
+    setUsuarioFiltro('')
+  }
+
+  return (
+    <div className="page">
+      <div className="pageHeader">
+        <div className="pageHeading">
+          <h1 className="pageTitle">Compras</h1>
+          <p className="pageHint">
+            {esAdmin
+              ? 'Consulta las compras a proveedores y da seguimiento a su recepción.'
+              : 'Tus compras registradas: consúltalas y da seguimiento a su recepción.'}
+          </p>
+        </div>
+        <BotonPrimario onClick={() => navigate('/compras/nueva')}>Nueva compra</BotonPrimario>
+      </div>
+
+      <div className="statRow">
+        <div className="statTile">
+          <span className="statLabel">Compras</span>
+          <span className="statValue">{compras ? lista.length : '…'}</span>
+        </div>
+        <div className="statTile statTilePurchase">
+          <span className="statLabel">Importe comprado</span>
+          <span className="statValue">{compras ? formatearMoneda(importe) : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Pendientes de recibir</span>
+          <span className="statValue">{compras ? pendientes : '…'}</span>
+        </div>
+        <div className="statTile">
+          <span className="statLabel">Recibidas</span>
+          <span className="statValue">{compras ? recibidas : '…'}</span>
+        </div>
+      </div>
+
+      <div className="filters">
+        <label className="filterField">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Proveedor
           <select
             value={proveedorFiltro}
@@ -71,6 +170,7 @@ export function Compras() {
           </select>
         </label>
 
+<<<<<<< HEAD
         <label className={styles.campoFiltro}>
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoCompra | '')}>
@@ -78,20 +178,63 @@ export function Compras() {
             {(Object.keys(ETIQUETAS_ESTADO) as EstadoCompra[]).map((estado) => (
               <option key={estado} value={estado}>
                 {ETIQUETAS_ESTADO[estado]}
+=======
+        <label className="filterField">
+          Estado
+          <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoCompra | '')}>
+            <option value="">Todos</option>
+            {(Object.keys(ETIQUETAS_ESTADO_COMPRA) as EstadoCompra[]).map((estado) => (
+              <option key={estado} value={estado}>
+                {ETIQUETAS_ESTADO_COMPRA[estado]}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               </option>
             ))}
           </select>
         </label>
 
+<<<<<<< HEAD
         <label className={styles.campoFiltro}>
+=======
+        {esAdmin && (
+          <label className="filterField">
+            Registrada por
+            <select
+              value={usuarioFiltro}
+              onChange={(e) => setUsuarioFiltro(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">Todos</option>
+              {(usuarios ?? []).map((u) => (
+                <option key={u.id} value={u.id}>
+                  {`${u.first_name} ${u.last_name}`.trim() || u.username}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        <label className="filterField">
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
+<<<<<<< HEAD
         <label className={styles.campoFiltro}>
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
         </label>
+=======
+        <label className="filterField">
+          Hasta
+          <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+        </label>
+
+        {hayFiltros && (
+          <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        )}
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </div>
 
       {isLoading ? (
@@ -100,9 +243,21 @@ export function Compras() {
         <Tabla
           columnas={columnas}
           datos={compras ?? []}
+<<<<<<< HEAD
           mensajeVacio="Todavía no hay compras registradas."
           renderAcciones={(fila) => (
             <button type="button" className={styles.enlaceAccion} onClick={() => navigate(`/compras/${fila.id}`)}>
+=======
+          mensajeVacio={
+            hayFiltros
+              ? 'Ninguna compra coincide con los filtros.'
+              : esAdmin
+                ? 'Todavía no hay compras registradas.'
+                : 'Todavía no has registrado compras.'
+          }
+          renderAcciones={(fila) => (
+            <button type="button" className="actionLink" onClick={() => navigate(`/compras/${fila.id}`)}>
+>>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               Ver detalle
             </button>
           )}
