@@ -1,21 +1,6 @@
 @reference "../../index.css";
 
 .layout {
-<<<<<<< HEAD
-  @apply flex flex-col h-screen;
-}
-
-.cuerpo {
-  @apply flex flex-1 min-h-0 relative;
-}
-
-.contenido {
-  @apply flex-1 p-6 overflow-y-auto;
-}
-
-.estado {
-  @apply flex items-center justify-center min-h-screen font-base text-texto;
-=======
   @apply flex flex-col h-screen bg-fondo;
 }
 
@@ -34,5 +19,4 @@
 
 .loadingState {
   @apply flex items-center justify-center min-h-screen font-base text-texto-suave bg-fondo;
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

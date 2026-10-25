@@ -266,8 +266,6 @@ describe('Catalogo', () => {
 
     await waitFor(() => expect(reactivarMock).toHaveBeenCalledWith(4))
   })
-<<<<<<< HEAD
-=======
 
   it('la acción del encabezado corresponde a la pestaña activa y abre su formulario (solo admin)', () => {
     mockearHooks()
@@ -413,5 +411,4 @@ describe('Catalogo', () => {
     fireEvent.change(dialogo.getByLabelText('Costo de producción'), { target: { value: '60' } })
     expect(dialogo.getByTestId('margen-vista-previa')).toHaveTextContent('40.0%')
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

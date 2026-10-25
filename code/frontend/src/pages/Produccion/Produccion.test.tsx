@@ -68,8 +68,6 @@ function mockearStock(stockActual: string) {
   )
 }
 
-<<<<<<< HEAD
-=======
 // Recetas de varios productos para la pestaña "Gestión de recetas": Suero
 // con dos líneas activas, Gel con una sola línea inactiva, Crema sin receta.
 const PRODUCTOS_RECETAS = [
@@ -117,7 +115,6 @@ function textosDeOpciones(select: HTMLElement): string[] {
     .map((opcion) => opcion.textContent ?? '')
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Produccion', () => {
   it('muestra la pestaña de Producciones registradas por defecto', () => {
     mockearHooks()
@@ -128,9 +125,6 @@ describe('Produccion', () => {
 
     const tabla = within(screen.getByRole('table'))
     expect(tabla.getByText('Suero fisiológico')).toBeInTheDocument()
-<<<<<<< HEAD
-    expect(tabla.getByText('10.00')).toBeInTheDocument()
-=======
     // Producciones enteras: la cantidad se muestra sin decimales.
     expect(tabla.getByText('10')).toBeInTheDocument()
   })
@@ -238,7 +232,6 @@ describe('Produccion', () => {
     // Costo por unidad: 50.00 / 10 unidades.
     expect(within(dialogo).getByText('$5.00')).toBeInTheDocument()
     expect(within(dialogo).getByTestId('costo-total-produccion')).toHaveTextContent('$50.00')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('cambia a Gestión de recetas sin recargar la página', () => {
@@ -249,42 +242,15 @@ describe('Produccion', () => {
     render(<Produccion />)
     fireEvent.click(screen.getByRole('tab', { name: 'Gestión de recetas' }))
 
-<<<<<<< HEAD
-    expect(screen.getByText('Cloruro de sodio')).toBeInTheDocument()
-    expect(screen.getByText('0.50')).toBeInTheDocument()
-  })
-
-  it('operador ve las recetas en solo lectura, sin botones de escritura', () => {
-    mockearHooks()
-    mockearStock('100.00')
-    mockUsuarioActual('operador')
-=======
     expect(screen.getByRole('button', { name: /^Suero fisiológico/ })).toBeInTheDocument()
   })
 
   it('muestra una sola fila por producto, con su número de materias primas y estado', () => {
     mockearRecetasAgrupadas('operador')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     render(<Produccion />)
     fireEvent.click(screen.getByRole('tab', { name: 'Gestión de recetas' }))
 
-<<<<<<< HEAD
-    expect(screen.queryByRole('button', { name: /nueva línea de receta/i })).not.toBeInTheDocument()
-    expect(screen.queryByText('Editar')).not.toBeInTheDocument()
-  })
-
-  it('admin ve botones de escritura en recetas', () => {
-    mockearHooks()
-    mockearStock('100.00')
-    mockUsuarioActual('admin')
-
-    render(<Produccion />)
-    fireEvent.click(screen.getByRole('tab', { name: 'Gestión de recetas' }))
-
-    expect(screen.getByRole('button', { name: /nueva línea de receta/i })).toBeInTheDocument()
-    expect(screen.getByText('Editar')).toBeInTheDocument()
-=======
     const suero = screen.getAllByRole('button', { name: /^Suero fisiológico/ })
     expect(suero).toHaveLength(1)
     expect(suero[0]).toHaveTextContent('2 materias primas')
@@ -426,7 +392,6 @@ describe('Produccion', () => {
     expect(materiaPrima).toHaveValue('1')
     // "Agua destilada" ya es otra línea de la misma receta.
     expect(textosDeOpciones(materiaPrima)).toEqual(['Cloruro de sodio', 'Glicerina'])
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('muestra en vivo la materia prima requerida y el stock disponible al elegir producto/sucursal', () => {

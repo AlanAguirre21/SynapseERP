@@ -150,22 +150,6 @@ class DependienteSerializer(serializers.ModelSerializer):
 
 
 class SolicitudNominaSerializer(serializers.ModelSerializer):
-<<<<<<< HEAD
-    """`estado`/`fecha_resolucion`/`resuelto_por` son de solo lectura aquí —
-    solo cambian a través de las acciones `aprobar`/`rechazar` del ViewSet,
-    nunca directo por PATCH, para no perder el rastro de quién resolvió.
-    """
-
-    class Meta:
-        model = SolicitudNomina
-        fields = [
-            'id', 'empleado', 'periodo_inicio', 'periodo_fin', 'monto',
-            'estado', 'fecha_solicitud', 'fecha_resolucion', 'resuelto_por',
-        ]
-        read_only_fields = ['id', 'estado', 'fecha_solicitud', 'fecha_resolucion', 'resuelto_por']
-
-    def validate(self, attrs):
-=======
     """El estado y los datos de pago, rechazo y reverso son de solo lectura:
     cambian únicamente por las acciones del ViewSet (`aprobar`, `pagar-lote`,
     `rechazar`, `revertir`), que pasan por `services/nomina.py`. Al editar
@@ -224,7 +208,6 @@ class SolicitudNominaSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         from .services.nomina import solicitudes_que_ocupan
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         inicio = attrs.get('periodo_inicio', getattr(self.instance, 'periodo_inicio', None))
         fin = attrs.get('periodo_fin', getattr(self.instance, 'periodo_fin', None))
 
@@ -233,9 +216,6 @@ class SolicitudNominaSerializer(serializers.ModelSerializer):
                 'periodo_fin': 'El fin del periodo no puede ser anterior a su inicio.',
             })
 
-<<<<<<< HEAD
-        return attrs
-=======
         empleado = attrs.get('empleado', getattr(self.instance, 'empleado', None))
         if empleado and inicio and fin:
             duplicada = solicitudes_que_ocupan(
@@ -266,4 +246,3 @@ class PagarLoteNominaSerializer(serializers.Serializer):
 
 class RevertirPagoNominaSerializer(serializers.Serializer):
     motivo = serializers.CharField(allow_blank=False, trim_whitespace=True)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -1,42 +1,5 @@
 @reference "../../index.css";
 
-<<<<<<< HEAD
-.primario {
-  @apply px-4 py-2 text-fondo bg-primario border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
-}
-
-.primario:hover {
-  @apply opacity-90;
-}
-
-.primario:disabled {
-  @apply opacity-60 cursor-not-allowed;
-}
-
-.secundario {
-  @apply px-4 py-2 text-primario bg-fondo border border-primario rounded-control font-semibold cursor-pointer text-[0.9rem];
-}
-
-.secundario:hover {
-  @apply bg-texto/5;
-}
-
-.secundario:disabled {
-  @apply opacity-60 cursor-not-allowed;
-}
-
-.peligro {
-  @apply px-4 py-2 text-fondo bg-error border-0 rounded-control font-semibold cursor-pointer text-[0.9rem];
-}
-
-.peligro:hover {
-  @apply opacity-90;
-}
-
-.peligro:disabled {
-  @apply opacity-60 cursor-not-allowed;
-}
-=======
 .primary,
 .secondary,
 .danger {
@@ -72,4 +35,3 @@
 .danger:hover:not(:disabled) {
   @apply opacity-90;
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

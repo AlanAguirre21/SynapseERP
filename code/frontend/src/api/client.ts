@@ -1,7 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
-const TOKEN_KEY = 'flebosil_access_token'
-const REFRESH_TOKEN_KEY = 'flebosil_refresh_token'
+const TOKEN_KEY = 'synapse_access_token'
+const REFRESH_TOKEN_KEY = 'synapse_refresh_token'
 
 interface ConfigConReintento extends InternalAxiosRequestConfig {
   _reintentada?: boolean

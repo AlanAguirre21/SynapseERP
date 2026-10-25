@@ -16,7 +16,7 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def usuario(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123'
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123'
     )
 
 
@@ -30,7 +30,7 @@ def api_client(usuario):
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
 
 

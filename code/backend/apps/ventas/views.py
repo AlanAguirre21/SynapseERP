@@ -23,10 +23,7 @@ from apps.inventario.services import (
     registrar_movimiento_inventario,
 )
 from core.pdf import resolver_ruta_estatica
-<<<<<<< HEAD
-=======
 from core.permissions import es_admin
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 from .models import Venta
 from .serializers import VentaSerializer
@@ -73,13 +70,9 @@ def _revertir_linea_venta(venta, detalle, usuario):
 
 class VentaViewSet(viewsets.ModelViewSet):
     """CRUD de ventas — feature 011 · Ventas. Cualquier usuario autenticado
-<<<<<<< HEAD
-    puede registrar y consultar, sin restricción de rol. Solo lectura y
-=======
     puede registrar ventas; el operador solo consulta y opera las que él
     registró (`get_queryset`, así listado, detalle y acciones responden 404
     con una ajena), y el admin todas. Solo lectura y
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     creación como métodos genéricos (sin `PUT`/`PATCH`/`DELETE`): una vez
     creada, una venta solo cambia de estado vía `entregar()`/`cancelar()`.
     """
@@ -97,8 +90,6 @@ class VentaViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         params = self.request.query_params
 
-<<<<<<< HEAD
-=======
         if es_admin(self.request.user):
             usuario_id = params.get('usuario')
             if usuario_id:
@@ -106,7 +97,6 @@ class VentaViewSet(viewsets.ModelViewSet):
         else:
             queryset = queryset.filter(usuario=self.request.user)
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         sucursal_id = params.get('sucursal')
         if sucursal_id:
             queryset = queryset.filter(sucursal_id=sucursal_id)

@@ -1,21 +1,5 @@
 @reference "../../../index.css";
 
-<<<<<<< HEAD
-.grafica {
-  @apply flex flex-col gap-2 p-4 rounded-xl border border-texto/10 min-w-0;
-}
-
-.graficaTitulo {
-  @apply m-0 text-[0.9rem] font-semibold text-texto;
-}
-
-.graficaLienzo {
-  @apply h-[220px];
-}
-
-.graficaVacia {
-  @apply flex items-center justify-center h-[220px] text-[0.85rem] text-texto/50 text-center;
-=======
 /* Panel de una gráfica: sin borde, sobre el fondo cálido, para no apilar un
    marco dentro de la tarjeta de la sección. */
 .chart {
@@ -32,5 +16,4 @@
 
 .chartEmpty {
   @apply flex items-center justify-center h-[220px] text-[0.85rem] text-texto-suave text-center;
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

@@ -51,16 +51,9 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-<<<<<<< HEAD
-    # Solo las fotografías de empleado (008 · RRHH) — nunca `MEDIA_URL`/
-    # `MEDIA_ROOT` en sí, que guardan los XML/PDF de Facturación y deben
-    # seguir sin una URL pública (ver nota en `config/settings.py`).
-    urlpatterns += static(settings.EMPLEADOS_FOTOS_URL, document_root=settings.EMPLEADOS_FOTOS_ROOT)
-=======
     # Solo las fotografías de empleado (008 · RRHH) y de perfil de usuario
     # (017 / 010) — nunca `MEDIA_URL`/`MEDIA_ROOT` en sí, que guardan los
     # XML/PDF de Facturación y deben seguir sin una URL pública (ver nota en
     # `config/settings.py`).
     urlpatterns += static(settings.EMPLEADOS_FOTOS_URL, document_root=settings.EMPLEADOS_FOTOS_ROOT)
     urlpatterns += static(settings.USUARIOS_FOTOS_URL, document_root=settings.USUARIOS_FOTOS_ROOT)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

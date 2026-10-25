@@ -1,20 +1,14 @@
-<<<<<<< HEAD
-from django.contrib.auth.models import AbstractUser
-=======
 import os
 import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.files.storage import FileSystemStorage
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from django.db import models
 from django.utils import timezone
 
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
-<<<<<<< HEAD
-=======
 
 class AlmacenamientoFotosUsuario(FileSystemStorage):
     """Storage de las fotografías de perfil (017 / 010), en su propia carpeta
@@ -49,7 +43,6 @@ def ruta_foto_usuario(instance, filename):
     extension = os.path.splitext(filename)[1].lower()
     return f'{uuid.uuid4().hex}{extension}'
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 ROLES_USUARIO = [
     (ROL_ADMIN, 'Administrador'),
     (ROL_OPERADOR, 'Operador'),
@@ -77,14 +70,11 @@ class Usuario(AbstractUser):
     empleado = models.OneToOneField(
         'rrhh.Empleado', on_delete=models.SET_NULL, null=True, blank=True, related_name='usuario',
     )
-<<<<<<< HEAD
-=======
     # Fotografía de perfil (017 · Información de Usuario / 010 · Usuarios).
     # Independiente de `Empleado.fotografia`: cambiarla nunca toca datos de RRHH.
     foto_usuario = models.ImageField(
         upload_to=ruta_foto_usuario, storage=almacenamiento_fotos_usuario, null=True, blank=True,
     )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

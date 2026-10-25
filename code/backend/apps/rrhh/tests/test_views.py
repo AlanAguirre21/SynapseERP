@@ -26,7 +26,7 @@ def _imagen_prueba():
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -34,7 +34,7 @@ def admin(db):
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -159,7 +159,7 @@ def test_contratar_guarda_datos_completos_y_fotografia(admin_client, posicion):
         '/api/rrhh/empleados/contratar/',
         {
             'nombre_completo': 'Empleada Completa', 'curp': 'ABCD900101HDFXXX01', 'rfc': 'ABCD900101XXX',
-            'nss': '12345678901', 'telefono': '5551234567', 'email': 'empleada@flebosil.test',
+            'nss': '12345678901', 'telefono': '5551234567', 'email': 'empleada@synapse.test',
             'cuenta_bancaria': '1234567890', 'posicion': posicion.id, 'salario_asignado': '7000.00',
             'fecha_inicio': '2026-01-01', 'fotografia': _imagen_prueba(),
         },
@@ -172,7 +172,7 @@ def test_contratar_guarda_datos_completos_y_fotografia(admin_client, posicion):
     assert empleado.rfc == 'ABCD900101XXX'
     assert empleado.nss == '12345678901'
     assert empleado.telefono == '5551234567'
-    assert empleado.email == 'empleada@flebosil.test'
+    assert empleado.email == 'empleada@synapse.test'
     assert empleado.cuenta_bancaria == '1234567890'
     assert empleado.fotografia.name
 
@@ -316,7 +316,7 @@ def test_desactivar_empleado_es_idempotente(admin_client, empleado):
 @pytest.mark.django_db
 def test_desactivar_empleado_desactiva_su_cuenta_de_usuario_vinculada(admin_client, empleado):
     usuario = Usuario.objects.create_user(
-        username='laura', email='laura@flebosil.test', password='clave-segura-123', empleado=empleado,
+        username='laura', email='laura@synapse.test', password='clave-segura-123', empleado=empleado,
     )
 
     response = admin_client.delete(f'/api/rrhh/empleados/{empleado.id}/')
@@ -355,10 +355,6 @@ def test_lista_solicitudes_filtradas_por_estado(admin_client, solicitud):
     assert len(response.data) == 1
 
 
-<<<<<<< HEAD
-@pytest.mark.django_db
-def test_admin_aprueba_solicitud_nomina(admin_client, admin, solicitud):
-=======
 @pytest.fixture
 def caja_con_saldo(admin):
     # Aprobar una solicitud ahora la paga desde Caja ("Actualización: nómina
@@ -379,16 +375,11 @@ def caja_con_saldo(admin):
 
 @pytest.mark.django_db
 def test_admin_aprueba_solicitud_nomina(admin_client, admin, solicitud, caja_con_saldo):
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     response = admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/aprobar/')
     assert response.status_code == 200
 
     solicitud.refresh_from_db()
-<<<<<<< HEAD
-    assert solicitud.estado == 'aprobado'
-=======
     assert solicitud.estado == 'pagado'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     assert solicitud.resuelto_por_id == admin.id
     assert solicitud.fecha_resolucion is not None
 
@@ -402,11 +393,7 @@ def test_admin_rechaza_solicitud_nomina(admin_client, solicitud):
 
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_no_se_puede_resolver_una_solicitud_ya_resuelta(admin_client, solicitud):
-=======
 def test_no_se_puede_resolver_una_solicitud_ya_resuelta(admin_client, solicitud, caja_con_saldo):
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/aprobar/')
     response = admin_client.post(f'/api/rrhh/solicitudes-nomina/{solicitud.id}/rechazar/')
     assert response.status_code == 400
@@ -425,7 +412,7 @@ def test_operador_no_puede_aprobar_solicitud(operador_client, solicitud):
 def test_disponible_excluye_empleados_ya_vinculados_a_un_usuario(admin_client, empleado):
     empleado_libre = Empleado.objects.create(nombre_completo='Empleado Libre')
     Usuario.objects.create_user(
-        username='con-cuenta', email='con-cuenta@flebosil.test', password='clave-segura-123',
+        username='con-cuenta', email='con-cuenta@synapse.test', password='clave-segura-123',
         empleado=empleado,
     )
 
@@ -446,7 +433,7 @@ def test_disponible_excluye_empleados_inactivos(admin_client):
 @pytest.mark.django_db
 def test_sin_el_query_param_devuelve_todos_los_empleados(admin_client, empleado):
     Usuario.objects.create_user(
-        username='con-cuenta', email='con-cuenta@flebosil.test', password='clave-segura-123',
+        username='con-cuenta', email='con-cuenta@synapse.test', password='clave-segura-123',
         empleado=empleado,
     )
     response = admin_client.get('/api/rrhh/empleados/')

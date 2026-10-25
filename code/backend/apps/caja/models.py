@@ -35,23 +35,17 @@ class MovimientoCaja(models.Model):
     MOTIVO_MANUAL = 'manual'
     MOTIVO_COMPRA = 'compra'
     MOTIVO_ENVIO = 'envio'
-<<<<<<< HEAD
-=======
     # Pago de una solicitud de nómina (retiro) o su reverso (ingreso) —
     # `008 · RRHH`, "Actualización: nómina con pago en caja";
     # `referencia_id` apunta a la `SolicitudNomina`.
     MOTIVO_NOMINA = 'nomina'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     MOTIVO_CHOICES = [
         (MOTIVO_VENTA, 'Venta'),
         (MOTIVO_AJUSTE, 'Ajuste'),
         (MOTIVO_MANUAL, 'Manual'),
         (MOTIVO_COMPRA, 'Compra'),
         (MOTIVO_ENVIO, 'Envío'),
-<<<<<<< HEAD
-=======
         (MOTIVO_NOMINA, 'Nómina'),
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     ]
 
     monto = models.DecimalField(max_digits=12, decimal_places=2)

@@ -8,10 +8,6 @@ import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useProductos } from '../../hooks/useProductos'
 import { useProveedores } from '../../hooks/useProveedores'
 import { useSucursales } from '../../hooks/useSucursales'
-<<<<<<< HEAD
-import styles from './NuevaCompra.module.css'
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 type TipoLinea = 'producto' | 'materia_prima'
 
@@ -143,163 +139,6 @@ export function NuevaCompra() {
     }
   }
 
-<<<<<<< HEAD
-  return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Nueva compra</h1>
-
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <div className={styles.filaCampos}>
-          <label className={styles.campo}>
-            Proveedor
-            <select value={proveedor} onChange={(e) => setProveedor(e.target.value ? Number(e.target.value) : '')}>
-              <option value="" disabled>
-                Selecciona un proveedor
-              </option>
-              {proveedoresActivos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre_proveedor}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Sucursal destino
-            <select value={sucursal} onChange={(e) => setSucursal(e.target.value ? Number(e.target.value) : '')}>
-              <option value="" disabled>
-                Selecciona una sucursal
-              </option>
-              {sucursalesActivas.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.nombre_sucursal}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Fecha de entrega estimada (opcional)
-            <input type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} />
-          </label>
-        </div>
-
-        <div className={styles.seccionLineas}>
-          <h2 className={styles.tituloSeccion}>Líneas de la compra</h2>
-
-          <div className={styles.filaAgregarLinea}>
-            <label className={styles.campo}>
-              Tipo
-              <select
-                value={tipoNuevaLinea}
-                onChange={(e) => {
-                  setTipoNuevaLinea(e.target.value as TipoLinea)
-                  setItemNuevaLinea('')
-                }}
-              >
-                <option value="producto">Producto</option>
-                <option value="materia_prima">Materia prima</option>
-              </select>
-            </label>
-
-            <label className={styles.campo}>
-              Ítem
-              <select
-                value={itemNuevaLinea}
-                onChange={(e) => setItemNuevaLinea(e.target.value ? Number(e.target.value) : '')}
-              >
-                <option value="">Selecciona un ítem</option>
-                {opcionesItemNuevaLinea.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={styles.campo}>
-              Cantidad
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={cantidadNuevaLinea}
-                onChange={(e) => setCantidadNuevaLinea(e.target.value)}
-              />
-            </label>
-
-            <label className={styles.campo}>
-              Costo unitario
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={costoNuevaLinea}
-                onChange={(e) => setCostoNuevaLinea(e.target.value)}
-              />
-            </label>
-
-            <BotonPrimario type="button" variante="secundario" onClick={agregarLinea}>
-              Agregar línea
-            </BotonPrimario>
-          </div>
-
-          {lineas.length > 0 && (
-            <table className={styles.tablaLineas}>
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Ítem</th>
-                  <th>Cantidad</th>
-                  <th>Costo unitario</th>
-                  <th>Subtotal</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lineas.map((linea) => (
-                  <tr key={linea.clave}>
-                    <td>{linea.tipo === 'producto' ? 'Producto' : 'Materia prima'}</td>
-                    <td>{linea.itemNombre}</td>
-                    <td>{linea.cantidad}</td>
-                    <td>{linea.costoUnitario}</td>
-                    <td>{subtotalDe(linea).toFixed(2)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.enlaceAccionPeligro}
-                        onClick={() => quitarLinea(linea.clave)}
-                      >
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          <div className={styles.total}>
-            <span>Total:</span>
-            <span data-testid="total-compra">{total.toFixed(2)}</span>
-          </div>
-        </div>
-
-        {errorFormulario && (
-          <p className={styles.error} role="alert">
-            {errorFormulario}
-          </p>
-        )}
-
-        <div className={styles.accionesFormulario}>
-          <BotonPrimario type="button" variante="secundario" onClick={() => navigate('/compras')}>
-            Cancelar
-          </BotonPrimario>
-          <BotonPrimario type="submit" disabled={crear.isPending}>
-            {crear.isPending ? 'Guardando…' : 'Guardar compra'}
-          </BotonPrimario>
-        </div>
-=======
 
   return (
     <div className="documentPage">
@@ -500,7 +339,6 @@ export function NuevaCompra() {
             </BotonPrimario>
           </div>
         </footer>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </form>
     </div>
   )

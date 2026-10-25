@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
-
-import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { CampoContrasena } from '../../components/common/CampoContrasena'
-import { Modal } from '../../components/common/Modal'
-import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
-import { generarPasswordAleatoria, type LimiteAccesos, type UsuarioCuenta } from '../../api/usuarios'
-import { useEmpleado, useEmpleadosDisponibles } from '../../hooks/useEmpleadosRRHH'
-=======
 import { useMemo, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 
@@ -28,7 +17,6 @@ import {
   type UsuarioCuenta,
 } from '../../api/usuarios'
 import { useEmpleado, useEmpleadosDisponibles, useEmpleadosRRHH } from '../../hooks/useEmpleadosRRHH'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import {
   useAccesosUsuario,
@@ -38,10 +26,7 @@ import {
   useReactivarUsuario,
   useUsuarios,
 } from '../../hooks/useUsuarios'
-<<<<<<< HEAD
-=======
 import { normalizarBusqueda } from '../../utils/texto'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import styles from './Usuarios.module.css'
 
 interface ValoresFormulario {
@@ -80,8 +65,6 @@ const ETIQUETAS_TIPO_ACCESO: Record<string, string> = {
   fallido: 'Intento fallido',
 }
 
-<<<<<<< HEAD
-=======
 const CLASES_TIPO_ACCESO: Record<string, string> = {
   exitoso: 'status statusSuccess',
   cierre_sesion: 'status statusNeutral',
@@ -92,7 +75,6 @@ function nombreCompleto(usuario: UsuarioCuenta): string {
   return `${usuario.first_name} ${usuario.last_name}`.trim()
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 function alternarEnConjunto(conjunto: Set<number>, id: number): Set<number> {
   const nuevo = new Set(conjunto)
   if (nuevo.has(id)) nuevo.delete(id)
@@ -118,11 +100,8 @@ export function Usuarios() {
   return <UsuariosContenido />
 }
 
-<<<<<<< HEAD
-=======
 type FiltroRol = '' | UsuarioCuenta['rol_usuario']
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 function UsuariosContenido() {
   const { data: usuarios, isLoading } = useUsuarios()
   const crear = useCrearUsuario()
@@ -130,25 +109,17 @@ function UsuariosContenido() {
   const desactivar = useDesactivarUsuario()
   const reactivar = useReactivarUsuario()
   const { data: empleadosDisponibles } = useEmpleadosDisponibles()
-<<<<<<< HEAD
-
-  const [mostrarInactivos, setMostrarInactivos] = useState(false)
-=======
   const { data: empleados } = useEmpleadosRRHH()
 
   const [mostrarInactivos, setMostrarInactivos] = useState(false)
   const [busqueda, setBusqueda] = useState('')
   const [rolFiltro, setRolFiltro] = useState<FiltroRol>('')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const [formularioAbierto, setFormularioAbierto] = useState(false)
   const [enEdicion, setEnEdicion] = useState<UsuarioCuenta | null>(null)
   const [valores, setValores] = useState<ValoresFormulario>(FORMULARIO_VACIO)
   const [errorFormulario, setErrorFormulario] = useState('')
-<<<<<<< HEAD
-=======
   // Fotografía: `undefined` sin cambio, archivo nuevo o `null` para quitarla.
   const [cambioFoto, setCambioFoto] = useState<CambioFoto | undefined>(undefined)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const [aDesactivar, setADesactivar] = useState<UsuarioCuenta | null>(null)
   const [errorDesactivar, setErrorDesactivar] = useState('')
   const [aReactivar, setAReactivar] = useState<UsuarioCuenta | null>(null)
@@ -164,11 +135,6 @@ function UsuariosContenido() {
     return lista.sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo))
   })()
 
-<<<<<<< HEAD
-  function abrirCrear() {
-    setEnEdicion(null)
-    setValores(FORMULARIO_VACIO)
-=======
   const resumen = useMemo(() => {
     const lista = usuarios ?? []
     const activos = lista.filter((u) => u.activo)
@@ -184,7 +150,6 @@ function UsuariosContenido() {
     setEnEdicion(null)
     setValores(FORMULARIO_VACIO)
     setCambioFoto(undefined)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
@@ -199,10 +164,7 @@ function UsuariosContenido() {
       empleado: usuario.empleado,
       password: '',
     })
-<<<<<<< HEAD
-=======
     setCambioFoto(undefined)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     setErrorFormulario('')
     setFormularioAbierto(true)
   }
@@ -220,12 +182,9 @@ function UsuariosContenido() {
       return
     }
 
-<<<<<<< HEAD
-=======
     // Sin cambio de fotografía, las peticiones son las mismas de siempre.
     const foto = cambioFoto === undefined ? {} : { foto_usuario: cambioFoto }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     try {
       if (enEdicion) {
         await editar.mutateAsync({
@@ -236,10 +195,7 @@ function UsuariosContenido() {
             email: valores.email,
             rol_usuario: valores.rol_usuario,
             empleado: valores.empleado,
-<<<<<<< HEAD
-=======
             ...foto,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           },
         })
       } else {
@@ -250,21 +206,14 @@ function UsuariosContenido() {
           rol_usuario: valores.rol_usuario,
           empleado: valores.empleado,
           password: valores.password,
-<<<<<<< HEAD
-=======
           ...foto,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         })
       }
       setFormularioAbierto(false)
     } catch (err) {
       setErrorFormulario(
         extraerMensajeError(
-<<<<<<< HEAD
-          err, ['email', 'password', 'empleado', 'rol_usuario'],
-=======
           err, ['email', 'password', 'empleado', 'rol_usuario', 'foto_usuario'],
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           'No se pudo guardar el usuario. Intenta de nuevo.',
         ),
       )
@@ -288,9 +237,6 @@ function UsuariosContenido() {
     setAReactivar(null)
   }
 
-<<<<<<< HEAD
-  const usuariosVisibles = (usuarios ?? []).filter((u) => mostrarInactivos || u.activo)
-=======
   // "Mostrar inactivos" es una preferencia de vista (por defecto ocultos,
   // según `010`); la búsqueda y el rol son los filtros que se limpian.
   const termino = normalizarBusqueda(busqueda)
@@ -312,37 +258,11 @@ function UsuariosContenido() {
     if (id === null) return 'Sin vincular'
     return empleados?.find((e) => e.id === id)?.nombre_completo ?? '…'
   }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const columnas: ColumnaTabla<UsuarioCuenta>[] = [
     {
       clave: 'username',
       encabezado: 'Usuario',
-<<<<<<< HEAD
-      render: (fila) => (
-        <button
-          type="button"
-          className={styles.enlaceExpandir}
-          onClick={() => setExpandidos((actual) => alternarEnConjunto(actual, fila.id))}
-          aria-expanded={expandidos.has(fila.id)}
-        >
-          <span className={styles.indicadorExpandir}>{expandidos.has(fila.id) ? '▾' : '▸'}</span>
-          {fila.username}
-        </button>
-      ),
-    },
-    {
-      clave: 'first_name',
-      encabezado: 'Nombre',
-      render: (fila) => `${fila.first_name} ${fila.last_name}`.trim() || '—',
-    },
-    { clave: 'email', encabezado: 'Correo' },
-    {
-      clave: 'rol_usuario',
-      encabezado: 'Rol',
-      render: (fila) => (fila.rol_usuario === 'admin' ? 'Administrador' : 'Operador'),
-    },
-=======
       render: (fila) => {
         const nombre = nombreCompleto(fila)
         return (
@@ -378,39 +298,17 @@ function UsuariosContenido() {
       ),
     },
     { clave: 'empleado', encabezado: 'Empleado', render: (fila) => nombreEmpleado(fila.empleado) },
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-<<<<<<< HEAD
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
-=======
         <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {fila.activo ? 'Activo' : 'Inactivo'}
         </span>
       ),
     },
   ]
 
-<<<<<<< HEAD
-  return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Usuarios</h1>
-        <div className={styles.accionesEncabezado}>
-          <label className={styles.toggleInactivos}>
-            <input
-              type="checkbox"
-              checked={mostrarInactivos}
-              onChange={(e) => setMostrarInactivos(e.target.checked)}
-            />
-            Mostrar inactivos
-          </label>
-          <BotonPrimario onClick={abrirCrear}>Nuevo usuario</BotonPrimario>
-        </div>
-=======
   const cifra = (valor: number) => (usuarios ? valor : '…')
 
   return (
@@ -472,49 +370,11 @@ function UsuariosContenido() {
             Limpiar filtros
           </button>
         )}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </div>
 
       {isLoading ? (
         <p>Cargando usuarios…</p>
       ) : (
-<<<<<<< HEAD
-        <Tabla
-          columnas={columnas}
-          datos={usuariosVisibles}
-          mensajeVacio="Todavía no hay usuarios registrados."
-          renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
-                Editar
-              </button>
-              {fila.activo ? (
-                <button
-                  type="button"
-                  className={styles.enlaceAccionPeligro}
-                  onClick={() => {
-                    setErrorDesactivar('')
-                    setADesactivar(fila)
-                  }}
-                >
-                  Desactivar
-                </button>
-              ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
-                  Reactivar
-                </button>
-              )}
-            </div>
-          )}
-        />
-      )}
-
-      {[...expandidos].map((id) => {
-        const usuario = usuariosVisibles.find((u) => u.id === id)
-        return usuario ? <AccesosDeUsuarioSeccion key={id} usuario={usuario} /> : null
-      })}
-
-=======
         <>
           <span className="pageHint">{`Mostrando ${usuariosVisibles.length} de ${lista.length}`}</span>
           <Tabla
@@ -551,83 +411,10 @@ function UsuariosContenido() {
         </>
       )}
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       <Modal
         titulo={enEdicion ? 'Editar usuario' : 'Nuevo usuario'}
         abierto={formularioAbierto}
         onCerrar={() => setFormularioAbierto(false)}
-<<<<<<< HEAD
-      >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
-            Nombre(s)
-            <input
-              type="text"
-              value={valores.first_name}
-              onChange={(e) => setValores((v) => ({ ...v, first_name: e.target.value }))}
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Apellido(s)
-            <input
-              type="text"
-              value={valores.last_name}
-              onChange={(e) => setValores((v) => ({ ...v, last_name: e.target.value }))}
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Correo electrónico
-            <input
-              type="email"
-              value={valores.email}
-              onChange={(e) => setValores((v) => ({ ...v, email: e.target.value }))}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Rol
-            <select
-              value={valores.rol_usuario}
-              onChange={(e) => setValores((v) => ({ ...v, rol_usuario: e.target.value as 'admin' | 'operador' }))}
-            >
-              <option value="operador">Operador</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Empleado vinculado (opcional)
-            <select
-              value={valores.empleado ?? ''}
-              onChange={(e) => setValores((v) => ({ ...v, empleado: e.target.value ? Number(e.target.value) : null }))}
-            >
-              <option value="">Sin vincular</option>
-              {opcionesEmpleado.map((empleado) => (
-                <option key={empleado.id} value={empleado.id}>
-                  {empleado.nombre_completo}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {!enEdicion && (
-            <CampoContrasena
-              etiqueta="Contraseña"
-              valor={valores.password}
-              onCambiar={(password) => setValores((v) => ({ ...v, password }))}
-              required
-              botonGenerar={{
-                onClick: () => setValores((v) => ({ ...v, password: generarPasswordAleatoria() })),
-              }}
-            />
-          )}
-
-          {errorFormulario && (
-            <p className={styles.error} role="alert">
-=======
         ancho="amplio"
       >
         <form className="form" onSubmit={alGuardar} noValidate>
@@ -727,16 +514,11 @@ function UsuariosContenido() {
 
           {errorFormulario && (
             <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {errorFormulario}
             </p>
           )}
 
-<<<<<<< HEAD
-          <div className={styles.accionesFormulario}>
-=======
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -748,28 +530,16 @@ function UsuariosContenido() {
       </Modal>
 
       <Modal titulo="Desactivar usuario" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-=======
         <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres desactivar a "{aDesactivar?.username}"? Perderá acceso al sistema de inmediato; su
           sesión actual (si tiene una activa) queda invalidada.
         </p>
         {errorDesactivar && (
-<<<<<<< HEAD
-          <p className={styles.error} role="alert">
-            {errorDesactivar}
-          </p>
-        )}
-        <div className={styles.accionesFormulario}>
-=======
           <p className="errorMessage" role="alert">
             {errorDesactivar}
           </p>
         )}
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -780,17 +550,10 @@ function UsuariosContenido() {
       </Modal>
 
       <Modal titulo="Reactivar usuario" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres reactivar a "{aReactivar?.username}"? Recuperará acceso al sistema.
-        </p>
-        <div className={styles.accionesFormulario}>
-=======
         <p className="confirmText">
           ¿Confirmas que quieres reactivar a "{aReactivar?.username}"? Recuperará acceso al sistema.
         </p>
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -803,24 +566,14 @@ function UsuariosContenido() {
   )
 }
 
-<<<<<<< HEAD
-=======
 function formatearFechaAcceso(fecha: string): string {
   return new Date(fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
   const [limite, setLimite] = useState<LimiteAccesos>('5')
   const { data: accesos, isLoading } = useAccesosUsuario(usuario.id, limite)
 
-<<<<<<< HEAD
-  return (
-    <div className={styles.seccionExpandida}>
-      <div className={styles.encabezadoExpandido}>
-        <h3 className={styles.subtituloExpandido}>Historial de accesos de {usuario.username}</h3>
-        <div className={styles.selectorLimite} role="group" aria-label="Cantidad de accesos a mostrar">
-=======
   // Resumen de los accesos cargados (5, 10 o todos), no de todo el historial.
   const lista = accesos ?? []
   const ultimoExitoso = lista
@@ -851,16 +604,11 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
       <div className="sectionHeader">
         <h3 className="subtitle">Historial de accesos de {usuario.username}</h3>
         <div className="segmented" role="group" aria-label="Cantidad de accesos a mostrar">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {(['5', '10', 'todos'] as LimiteAccesos[]).map((valor) => (
             <button
               key={valor}
               type="button"
-<<<<<<< HEAD
-              className={limite === valor ? `${styles.botonLimite} ${styles.botonLimiteActivo}` : styles.botonLimite}
-=======
               className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               onClick={() => setLimite(valor)}
             >
               {valor === 'todos' ? 'Todos' : valor}
@@ -871,20 +619,6 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
 
       {isLoading ? (
         <p>Cargando accesos…</p>
-<<<<<<< HEAD
-      ) : !accesos || accesos.length === 0 ? (
-        <p className={styles.vacio}>Este usuario todavía no tiene accesos registrados.</p>
-      ) : (
-        <ul className={styles.listaExpandida}>
-          {accesos.map((registro) => (
-            <li key={registro.id}>
-              <span>{ETIQUETAS_TIPO_ACCESO[registro.tipo] ?? registro.tipo}</span>
-              <span>{new Date(registro.creado_en).toLocaleString('es-MX')}</span>
-              <span>{registro.ip ?? '—'}</span>
-            </li>
-          ))}
-        </ul>
-=======
       ) : lista.length === 0 ? (
         <p className="emptyState">Este usuario todavía no tiene accesos registrados.</p>
       ) : (
@@ -901,7 +635,6 @@ function AccesosDeUsuarioSeccion({ usuario }: { usuario: UsuarioCuenta }) {
           </dl>
           <Tabla columnas={columnas} datos={lista} />
         </>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
     </div>
   )

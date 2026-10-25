@@ -159,8 +159,6 @@ describe('DetalleVenta', () => {
 
     expect(screen.getByRole('button', { name: /reintentar factura/i })).toBeEnabled()
   })
-<<<<<<< HEAD
-=======
 
   // 013: una venta ajena (o inexistente) llega como 404 y la pantalla lo dice.
   it('sin venta muestra "No se encontró la venta." con "Volver al listado"', () => {
@@ -173,5 +171,4 @@ describe('DetalleVenta', () => {
     expect(screen.getByText(/no tengas acceso/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Volver al listado' })).toBeInTheDocument()
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

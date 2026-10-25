@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className={styles.footer}>
       <span>v{APP_VERSION}</span>
-      <span>© {anio} FleboSil</span>
+      <span>© {anio} SynapseERP</span>
     </footer>
   )
 }

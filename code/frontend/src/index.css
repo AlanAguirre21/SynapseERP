@@ -1,15 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
 @import "tailwindcss";
 
-<<<<<<< HEAD
-=======
 /* ==========================================================================
-   Núcleo CSS de FleboSil ERP.
+   Núcleo CSS de SynapseERP.
    Orden fijo: (1) tokens @theme, (2) estilos base, (3) clases globales.
    Todo patrón visual usado en más de una pantalla se define aquí, una vez.
    ========================================================================== */
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 @theme {
   /* Paleta de marca */
   --color-primario: #a6295f;
@@ -22,40 +19,22 @@
   --color-fondo: #fbf8f6;
   --color-superficie: #ffffff;
   --color-texto: #241f26;
-<<<<<<< HEAD
-=======
   --color-texto-suave: #675e6a;
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   --color-borde: #ebe2e6;
 
   /* Colores de estado (independientes de la paleta de marca) */
   --color-exito: #2e7d32;
-<<<<<<< HEAD
-  --color-error: #c62828;
-  --color-advertencia: #f9a825;
-=======
   --color-exito-suave: #e4f1e5;
   --color-error: #c62828;
   --color-error-suave: #f9e2e2;
   --color-advertencia: #f9a825;
   --color-advertencia-suave: #fdf1d0;
   --color-advertencia-texto: #855600;
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   /* Tipografía */
   --font-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-titulo: 'Fraunces', Georgia, serif;
 
-<<<<<<< HEAD
-  /* Radios (tokens propios: no pisan la escala rounded-* por defecto de Tailwind,
-     para no re-teñir componentes que aún no adoptan el nuevo sistema visual) */
-  --radius-control: 10px;
-  --radius-tarjeta: 20px;
-
-  /* Sombras (mismo criterio que los radios: tokens propios, no la escala shadow-* nativa) */
-  --shadow-suave: 0 1px 3px rgba(166, 41, 95, 0.06);
-  --shadow-marcada: 0 10px 28px rgba(166, 41, 95, 0.12);
-=======
   /* Radios (tokens propios: no se usa la escala rounded-* nativa de Tailwind) */
   --radius-control: 10px;
   --radius-tarjeta: 20px;
@@ -65,7 +44,6 @@
   --shadow-suave: 0 1px 3px rgba(166, 41, 95, 0.06);
   --shadow-marcada: 0 10px 28px rgba(166, 41, 95, 0.12);
   --shadow-foco: 0 0 0 3px var(--color-primario-suave);
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   /* Breakpoints */
   --breakpoint-sm: 480px;
@@ -73,15 +51,6 @@
   --breakpoint-lg: 1024px;
 }
 
-<<<<<<< HEAD
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  @apply font-base text-texto bg-fondo;
-=======
 /* ==========================================================================
    Estilos base de elementos
    ========================================================================== */
@@ -793,5 +762,4 @@ body {
   .expandedList li:last-child {
     @apply border-b-0;
   }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }

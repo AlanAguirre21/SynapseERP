@@ -68,11 +68,7 @@ describe('Header', () => {
 
     renderHeader()
 
-<<<<<<< HEAD
     expect(screen.getByRole('link', { name: /SynapseERP/i })).toHaveAttribute('href', '/dashboard')
-=======
-    expect(screen.getByRole('link', { name: /FleboSil/i })).toHaveAttribute('href', '/dashboard')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('muestra el contador de notificaciones cuando hay alertas de stock', () => {
@@ -138,23 +134,15 @@ describe('Header', () => {
     expect(logoutMock).toHaveBeenCalled()
   })
 
-<<<<<<< HEAD
-  it('admin ve las solicitudes de nómina pendientes y puede aprobarlas/rechazarlas', () => {
-=======
   // Actualización "nómina con pago en caja" (008): aprobar paga desde Caja, así
   // que la campana ya no aprueba ni rechaza; cada solicitud enlaza a "Nóminas".
   it('admin ve las solicitudes de nómina pendientes como enlaces a la pestaña Nóminas', () => {
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     mockUsuarioActual({ data: { nombre: 'Ana', rol: 'admin', modulos: [] } })
     mockAlertasStock({ data: [] })
     mockSolicitudesNomina({
       data: [
         {
-<<<<<<< HEAD
-          id: 1, empleado: 3, periodo_inicio: '2026-01-01', periodo_fin: '2026-01-15',
-=======
           id: 1, empleado: 3, empleado_nombre: 'Laura Gómez', periodo_inicio: '2026-01-01', periodo_fin: '2026-01-15',
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           monto: '4500.00', estado: 'pendiente', fecha_solicitud: '2026-01-16', fecha_resolucion: null,
           resuelto_por: null,
         },
@@ -166,17 +154,12 @@ describe('Header', () => {
 
     expect(screen.getByText('1')).toBeInTheDocument()
     expect(screen.getByText('Solicitudes de nómina')).toBeInTheDocument()
-<<<<<<< HEAD
-    expect(screen.getByRole('button', { name: 'Aprobar' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Rechazar' })).toBeInTheDocument()
-=======
     const solicitud = screen.getByRole('link', { name: /laura gómez/i })
     expect(solicitud).toHaveAttribute('href', '/rrhh?pestana=nominas')
     expect(solicitud).toHaveTextContent('01/01/2026 – 15/01/2026 · $4,500.00')
     expect(screen.getByRole('link', { name: 'Ver nóminas' })).toHaveAttribute('href', '/rrhh?pestana=nominas')
     expect(screen.queryByRole('button', { name: 'Aprobar' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Rechazar' })).not.toBeInTheDocument()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('operador no ve la sección de solicitudes de nómina', () => {
@@ -188,9 +171,6 @@ describe('Header', () => {
 
     expect(screen.queryByText('Solicitudes de nómina')).not.toBeInTheDocument()
   })
-<<<<<<< HEAD
-})
-=======
 
   it('el avatar del menú de usuario muestra la fotografía si la tiene', () => {
     mockUsuarioActual({
@@ -310,4 +290,3 @@ describe('Header — cierre de los menús desplegables', () => {
   })
 })
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -2,16 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   crearEmpleadoPosicion,
-<<<<<<< HEAD
-=======
   getEmpleadoPosicionesVigentes,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   getEmpleadoPosicionesVigentesPorPosicion,
   type EmpleadoPosicionFormulario,
 } from '../api/rrhh'
 
-<<<<<<< HEAD
-=======
 // Comparte el prefijo `empleado-posiciones`: contratar y desactivar ya
 // invalidan ese prefijo completo, así que esta consulta se refresca sola.
 const CLAVE_VIGENTES = ['empleado-posiciones', 'vigentes'] as const
@@ -24,7 +19,6 @@ export function useAsignacionesVigentes() {
   })
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 // Empleados que desempeñan una posición ahora mismo, ya ordenados por el
 // backend (antigüedad en el puesto) — el selector 5/10/todos de `RRHH.tsx`
 // recorta este arreglo del lado del cliente, sin volver a pedirlo.
@@ -42,10 +36,7 @@ export function useCrearEmpleadoPosicion() {
     mutationFn: (datos: EmpleadoPosicionFormulario) => crearEmpleadoPosicion(datos),
     onSuccess: (asignacion) => {
       queryClient.invalidateQueries({ queryKey: ['empleado-posiciones', asignacion.posicion] })
-<<<<<<< HEAD
-=======
       queryClient.invalidateQueries({ queryKey: CLAVE_VIGENTES })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       queryClient.invalidateQueries({ queryKey: ['empleados-rrhh'] })
     },
   })

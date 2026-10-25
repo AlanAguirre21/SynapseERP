@@ -56,15 +56,12 @@ export type PosicionFormulario = Pick<
   'titulo_posicion' | 'departamento' | 'reporta_a' | 'salario_minimo' | 'salario_maximo'
 >
 
-<<<<<<< HEAD
-=======
 // Posiciones de todos los departamentos (el endpoint sin `departamento`).
 export async function getTodasLasPosiciones(): Promise<Posicion[]> {
   const { data } = await apiClient.get<Posicion[]>('/rrhh/posiciones/')
   return data
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export async function getPosiciones(departamentoId: number): Promise<Posicion[]> {
   const { data } = await apiClient.get<Posicion[]>('/rrhh/posiciones/', {
     params: { departamento: departamentoId },
@@ -212,8 +209,6 @@ export async function getEmpleadoPosicionesVigentesPorPosicion(posicionId: numbe
   return data
 }
 
-<<<<<<< HEAD
-=======
 // Todas las asignaciones vigentes de la empresa (sin filtro de posición):
 // alimentan el directorio y la ocupación de cada posición.
 export async function getEmpleadoPosicionesVigentes(): Promise<EmpleadoPosicion[]> {
@@ -223,7 +218,6 @@ export async function getEmpleadoPosicionesVigentes(): Promise<EmpleadoPosicion[
   return data
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export async function crearEmpleadoPosicion(datos: EmpleadoPosicionFormulario): Promise<EmpleadoPosicion> {
   const { data } = await apiClient.post<EmpleadoPosicion>('/rrhh/empleado-posiciones/', datos)
   return data
@@ -284,11 +278,6 @@ export async function eliminarDependiente(id: number): Promise<void> {
   await apiClient.delete(`/rrhh/dependientes/${id}/`)
 }
 
-<<<<<<< HEAD
-// --- SolicitudNomina ---------------------------------------------------------
-
-export type EstadoSolicitudNomina = 'pendiente' | 'aprobado' | 'rechazado'
-=======
 // --- SolicitudNomina (008 · RRHH, "Actualización: nómina con pago en caja") -
 // `aprobado` solo existe en solicitudes resueltas antes de que aprobar pagara
 // desde Caja; hoy aprobar deja la solicitud `pagado`.
@@ -302,17 +291,13 @@ export const ETIQUETAS_ESTADO_NOMINA: Record<EstadoSolicitudNomina, string> = {
   rechazado: 'Rechazada',
   revertido: 'Revertida',
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 export interface SolicitudNomina {
   id: number
   empleado: number
-<<<<<<< HEAD
-=======
   empleado_nombre: string
   empleado_foto: string | null
   posicion_nombre: string | null
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   periodo_inicio: string
   periodo_fin: string
   monto: string
@@ -320,8 +305,6 @@ export interface SolicitudNomina {
   fecha_solicitud: string
   fecha_resolucion: string | null
   resuelto_por: number | null
-<<<<<<< HEAD
-=======
   resuelto_por_nombre: string | null
   movimiento_pago: number | null
   movimiento_reverso: number | null
@@ -329,13 +312,10 @@ export interface SolicitudNomina {
   fecha_reverso: string | null
   revertido_por: number | null
   revertido_por_nombre: string | null
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export type SolicitudNominaFormulario = Pick<SolicitudNomina, 'empleado' | 'periodo_inicio' | 'periodo_fin' | 'monto'>
 
-<<<<<<< HEAD
-=======
 export interface FiltrosSolicitudesNomina {
   estado?: EstadoSolicitudNomina
   // Solicitudes cuyo periodo se traslapa con [periodo_inicio, periodo_fin].
@@ -365,21 +345,11 @@ export function periodoQuincena(anio: number, mes: number, quincena: Quincena): 
   return { inicio: `${anio}-${mm}-16`, fin: `${anio}-${mm}-${ultimoDia}` }
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export async function crearSolicitudNomina(datos: SolicitudNominaFormulario): Promise<SolicitudNomina> {
   const { data } = await apiClient.post<SolicitudNomina>('/rrhh/solicitudes-nomina/', datos)
   return data
 }
 
-<<<<<<< HEAD
-export async function getSolicitudesNominaPendientes(): Promise<SolicitudNomina[]> {
-  const { data } = await apiClient.get<SolicitudNomina[]>('/rrhh/solicitudes-nomina/', {
-    params: { estado: 'pendiente' },
-  })
-  return data
-}
-
-=======
 export async function getSolicitudesNomina(filtros: FiltrosSolicitudesNomina = {}): Promise<SolicitudNomina[]> {
   const { data } = await apiClient.get<SolicitudNomina[]>('/rrhh/solicitudes-nomina/', { params: filtros })
   return data
@@ -395,27 +365,21 @@ export async function editarMontoSolicitudNomina(id: number, monto: string): Pro
 }
 
 // Aprueba **y paga**: registra el retiro de Caja en la misma operación.
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export async function aprobarSolicitudNomina(id: number): Promise<SolicitudNomina> {
   const { data } = await apiClient.post<SolicitudNomina>(`/rrhh/solicitudes-nomina/${id}/aprobar/`)
   return data
 }
 
-<<<<<<< HEAD
-=======
 // Todo o nada: si el saldo no alcanza o alguna ya no está pendiente, no se paga ninguna.
 export async function pagarSolicitudesNomina(ids: number[]): Promise<SolicitudNomina[]> {
   const { data } = await apiClient.post<SolicitudNomina[]>('/rrhh/solicitudes-nomina/pagar-lote/', { ids })
   return data
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export async function rechazarSolicitudNomina(id: number): Promise<SolicitudNomina> {
   const { data } = await apiClient.post<SolicitudNomina>(`/rrhh/solicitudes-nomina/${id}/rechazar/`)
   return data
 }
-<<<<<<< HEAD
-=======
 
 export async function revertirPagoNomina(id: number, motivo: string): Promise<SolicitudNomina> {
   const { data } = await apiClient.post<SolicitudNomina>(`/rrhh/solicitudes-nomina/${id}/revertir/`, { motivo })
@@ -426,4 +390,3 @@ export async function generarNomina(datos: GenerarNominaDatos): Promise<Resultad
   const { data } = await apiClient.post<ResultadoGenerarNomina>('/rrhh/solicitudes-nomina/generar/', datos)
   return data
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

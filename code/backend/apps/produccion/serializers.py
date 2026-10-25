@@ -2,10 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from rest_framework import serializers
-<<<<<<< HEAD
-=======
 from rest_framework.validators import UniqueTogetherValidator
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 from apps.catalogo.models import MateriaPrima, Producto
 from apps.sucursales.models import Sucursal
@@ -33,20 +30,12 @@ class RecetaSerializer(serializers.ModelSerializer):
     cantidad_requerida = serializers.DecimalField(
         max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))],
     )
-<<<<<<< HEAD
-=======
     creado_por_nombre = serializers.SerializerMethodField()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     class Meta:
         model = Receta
         fields = [
             'id', 'producto', 'producto_nombre', 'materia_prima', 'materia_prima_nombre',
-<<<<<<< HEAD
-            'cantidad_requerida', 'activo',
-        ]
-        read_only_fields = ['id', 'activo']
-=======
             'cantidad_requerida', 'activo', 'creado_por', 'creado_por_nombre',
         ]
         # `creado_por` lo asigna el ViewSet desde la sesión, nunca la petición.
@@ -63,7 +52,6 @@ class RecetaSerializer(serializers.ModelSerializer):
 
     def get_creado_por_nombre(self, receta):
         return receta.creado_por.nombre_mostrado() if receta.creado_por else None
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 class DetalleProduccionSerializer(serializers.ModelSerializer):

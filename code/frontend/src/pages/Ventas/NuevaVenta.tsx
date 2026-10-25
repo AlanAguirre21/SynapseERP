@@ -8,10 +8,6 @@ import { useStock } from '../../hooks/useInventario'
 import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useCrearVenta } from '../../hooks/useVentas'
-<<<<<<< HEAD
-import styles from './NuevaVenta.module.css'
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 interface LineaLocal {
   clave: string
@@ -154,90 +150,6 @@ export function NuevaVenta() {
     }
   }
 
-<<<<<<< HEAD
-  return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Nueva venta</h1>
-
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <div className={styles.filaCampos}>
-          <label className={styles.campo}>
-            Cliente (opcional)
-            <select value={cliente} onChange={(e) => setCliente(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">Sin cliente</option>
-              {clientesActivos.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre_cliente}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Sucursal
-            <select
-              value={sucursal}
-              onChange={(e) => {
-                setSucursal(e.target.value ? Number(e.target.value) : '')
-                setLineas([])
-              }}
-            >
-              <option value="" disabled>
-                Selecciona una sucursal
-              </option>
-              {sucursalesActivas.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.nombre_sucursal}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.campo}>
-            Fecha de entrega (opcional)
-            <input type="date" value={fechaEntrega} onChange={(e) => setFechaEntrega(e.target.value)} />
-          </label>
-        </div>
-
-        <div className={styles.seccionLineas}>
-          <h2 className={styles.tituloSeccion}>Productos de la venta</h2>
-
-          <div className={styles.filaAgregarLinea}>
-            <label className={styles.campo}>
-              Producto
-              <select
-                value={productoNuevaLinea}
-                onChange={(e) => setProductoNuevaLinea(e.target.value ? Number(e.target.value) : '')}
-                disabled={!sucursal}
-              >
-                <option value="">Selecciona un producto</option>
-                {productosActivos.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre_producto}
-                  </option>
-                ))}
-              </select>
-              {disponible !== null && (
-                <span className={disponible <= 0 ? styles.disponibleInsuficiente : styles.disponible}>
-                  Disponible: {disponible}
-                </span>
-              )}
-            </label>
-
-            <label className={styles.campo}>
-              Cantidad
-              <input
-                type="number"
-                step="1"
-                min="1"
-                value={cantidadNuevaLinea}
-                onChange={(e) => setCantidadNuevaLinea(e.target.value)}
-                disabled={!sucursal}
-              />
-            </label>
-            <div className={styles.campoBoton}>
-              <span className={styles.etiquetaInvisible}>{'\u00A0'}</span>
-=======
 
   return (
     <div className="documentPage">
@@ -334,89 +246,10 @@ export function NuevaVenta() {
                 />
               </label>
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               <BotonPrimario type="button" variante="secundario" onClick={agregarLinea} disabled={!sucursal}>
                 Agregar línea
               </BotonPrimario>
             </div>
-<<<<<<< HEAD
-          </div>
-
-          {lineas.length > 0 && (
-            <table className={styles.tablaLineas}>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Precio unitario</th>
-                  <th>Subtotal</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lineas.map((linea) => (
-                  <tr key={linea.clave}>
-                    <td>{linea.productoNombre}</td>
-                    <td>{linea.cantidad}</td>
-                    <td>{linea.precioUnitario}</td>
-                    <td>{subtotalDe(linea).toFixed(2)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.enlaceAccionPeligro}
-                        onClick={() => quitarLinea(linea.clave)}
-                      >
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          <div className={styles.total}>
-            <span>Subtotal:</span>
-            <span data-testid="subtotal-venta">{subtotalProductos.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <div className={styles.seccionGastoEnvio}>
-          <h2 className={styles.tituloSeccion}>Gastos de envío</h2>
-
-          <label className={styles.campo}>
-            Monto de envío (opcional)
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={gastoEnvio}
-              onChange={(e) => setGastoEnvio(e.target.value)}
-              data-testid="gasto-envio"
-            />
-          </label>
-        </div>
-
-        <div className={styles.total}>
-          <span>Total:</span>
-          <span data-testid="total-venta">{total.toFixed(2)}</span>
-        </div>
-
-        {errorFormulario && (
-          <p className={styles.error} role="alert">
-            {errorFormulario}
-          </p>
-        )}
-
-        <div className={styles.accionesFormulario}>
-          <BotonPrimario type="button" variante="secundario" onClick={() => navigate('/ventas')}>
-            Cancelar
-          </BotonPrimario>
-          <BotonPrimario type="submit" disabled={crear.isPending}>
-            {crear.isPending ? 'Guardando…' : 'Guardar venta'}
-          </BotonPrimario>
-        </div>
-=======
 
             {disponible !== null && (
               <span className={disponible <= 0 ? 'fieldError' : 'fieldHint'}>Disponible: {disponible}</span>
@@ -520,7 +353,6 @@ export function NuevaVenta() {
             </BotonPrimario>
           </div>
         </footer>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </form>
     </div>
   )

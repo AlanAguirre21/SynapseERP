@@ -28,7 +28,7 @@ def _imagen(formato='PNG', nombre='foto.png', tamano=(8, 8)):
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -36,7 +36,7 @@ def operador(db):
 @pytest.fixture
 def otro_operador(db):
     return Usuario.objects.create_user(
-        username='operador2', email='operador2@flebosil.test', password='clave-segura-123',
+        username='operador2', email='operador2@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -44,7 +44,7 @@ def otro_operador(db):
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -169,7 +169,7 @@ def test_me_solo_cambia_la_foto_propia(operador, otro_operador):
 
 def test_admin_crea_usuario_con_foto(admin):
     respuesta = _cliente(admin).post('/api/usuarios/', {
-        'email': 'nuevo@flebosil.test', 'first_name': 'Nuevo', 'last_name': 'Usuario',
+        'email': 'nuevo@synapse.test', 'first_name': 'Nuevo', 'last_name': 'Usuario',
         'rol_usuario': 'operador', 'password': 'Clave-segura-123', 'foto_usuario': _imagen(),
     }, format='multipart')
 

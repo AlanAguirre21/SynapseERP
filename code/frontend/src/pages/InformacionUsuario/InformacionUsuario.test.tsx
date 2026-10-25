@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-=======
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -18,16 +14,13 @@ const useActualizarMiInformacionMock = vi.mocked(useActualizarMiInformacion)
 const USUARIO: Usuario = {
   id: 1,
   username: 'juanp',
-  email: 'juanp@flebosil.test',
+  email: 'juanp@synapse.test',
   first_name: 'Juan',
   last_name: 'Pérez López',
   nombre: 'Juan Pérez López',
   rol: 'operador',
   modulos: [],
-<<<<<<< HEAD
-=======
   foto_usuario: null,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 const USUARIO_ADMIN: Usuario = { ...USUARIO, id: 2, username: 'admin1', rol: 'admin' }
@@ -56,7 +49,7 @@ describe('InformacionUsuario', () => {
     renderPagina()
 
     expect(screen.getByDisplayValue('juanp')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('juanp@flebosil.test')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('juanp@synapse.test')).toBeInTheDocument()
     expect(screen.getByText('Operador')).toBeInTheDocument()
     expect(screen.queryByRole('textbox', { name: /rol/i })).not.toBeInTheDocument()
   })
@@ -95,7 +88,7 @@ describe('InformacionUsuario', () => {
 
     await waitFor(() =>
       expect(actualizarMock).toHaveBeenCalledWith({
-        username: 'juan_editado', email: 'juanp@flebosil.test', first_name: 'Juan', last_name: 'Pérez López',
+        username: 'juan_editado', email: 'juanp@synapse.test', first_name: 'Juan', last_name: 'Pérez López',
       }),
     )
     expect(await screen.findByRole('status')).toHaveTextContent('se actualizó correctamente')
@@ -158,8 +151,6 @@ describe('InformacionUsuario', () => {
     )
   })
 })
-<<<<<<< HEAD
-=======
 
 describe('InformacionUsuario — página de cuenta', () => {
   const MODULOS = [
@@ -297,7 +288,7 @@ describe('InformacionUsuario — fotografía de perfil', () => {
 
     await waitFor(() =>
       expect(actualizarMock).toHaveBeenCalledWith({
-        username: 'juanp', email: 'juanp@flebosil.test', first_name: 'Juan', last_name: 'Pérez López',
+        username: 'juanp', email: 'juanp@synapse.test', first_name: 'Juan', last_name: 'Pérez López',
         foto_usuario: foto,
       }),
     )
@@ -348,4 +339,3 @@ describe('InformacionUsuario — fotografía de perfil', () => {
     expect(screen.queryByText('Tienes cambios sin guardar')).not.toBeInTheDocument()
   })
 })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -5,16 +5,11 @@ import {
   desactivarPosicion,
   editarPosicion,
   getPosiciones,
-<<<<<<< HEAD
-=======
   getTodasLasPosiciones,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   reactivarPosicion,
   type PosicionFormulario,
 } from '../api/rrhh'
 
-<<<<<<< HEAD
-=======
 const CLAVE_TODAS = ['posiciones', 'todas'] as const
 
 // Posiciones de toda la empresa (directorio y vacantes de RRHH).
@@ -25,7 +20,6 @@ export function useTodasLasPosiciones() {
   })
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export function usePosiciones(departamentoId: number | null) {
   return useQuery({
     queryKey: ['posiciones', departamentoId],
@@ -38,16 +32,11 @@ export function useCrearPosicion() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: crearPosicion,
-<<<<<<< HEAD
-    onSuccess: (posicion) =>
-      queryClient.invalidateQueries({ queryKey: ['posiciones', posicion.departamento] }),
-=======
     onSuccess: (posicion) => {
       queryClient.invalidateQueries({ queryKey: ['posiciones', posicion.departamento] })
       // La clave del departamento no alcanza a la lista completa.
       queryClient.invalidateQueries({ queryKey: CLAVE_TODAS })
     },
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 }
 
@@ -55,16 +44,11 @@ export function useEditarPosicion() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, datos }: { id: number; datos: PosicionFormulario }) => editarPosicion(id, datos),
-<<<<<<< HEAD
-    onSuccess: (posicion) =>
-      queryClient.invalidateQueries({ queryKey: ['posiciones', posicion.departamento] }),
-=======
     onSuccess: (posicion) => {
       queryClient.invalidateQueries({ queryKey: ['posiciones', posicion.departamento] })
       // La clave del departamento no alcanza a la lista completa.
       queryClient.invalidateQueries({ queryKey: CLAVE_TODAS })
     },
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 }
 

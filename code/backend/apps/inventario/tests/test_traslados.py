@@ -25,7 +25,7 @@ URL_MOVIMIENTOS = '/api/inventario/movimientos/'
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
     )
 
 
@@ -39,7 +39,7 @@ def operador_client(operador):
 @pytest.fixture
 def admin_client(db):
     admin = Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
     client = APIClient()
     client.force_authenticate(user=admin)

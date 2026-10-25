@@ -49,8 +49,6 @@ function renderCaja() {
   )
 }
 
-<<<<<<< HEAD
-=======
 // Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
 function indicador(etiqueta: string): HTMLElement {
   const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
@@ -58,7 +56,6 @@ function indicador(etiqueta: string): HTMLElement {
   return recuadro
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Caja', () => {
   it('un operador no ve el contenido del módulo de Caja', () => {
     mockearHooks()
@@ -141,9 +138,6 @@ describe('Caja', () => {
     expect(within(dialogo).getByRole('alert')).toHaveTextContent(/monto mayor a cero/i)
     expect(crearMock).not.toHaveBeenCalled()
   })
-<<<<<<< HEAD
-})
-=======
 
   it('el panel muestra el saldo de la caja como cifra principal y su desglose', () => {
     mockearHooks({ saldo_actual: '450.00', saldo_adicional: '50.00', saldo_total: '500.00' })
@@ -267,4 +261,3 @@ describe('Caja', () => {
   })
 })
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

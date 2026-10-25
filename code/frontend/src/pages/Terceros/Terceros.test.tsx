@@ -19,10 +19,7 @@ import {
   useProveedores,
   useReactivarProveedor,
 } from '../../hooks/useProveedores'
-<<<<<<< HEAD
-=======
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useVentas } from '../../hooks/useVentas'
 import { Terceros } from './Terceros'
 
@@ -30,10 +27,7 @@ vi.mock('../../hooks/useClientes')
 vi.mock('../../hooks/useProveedores')
 vi.mock('../../hooks/useVentas')
 vi.mock('../../hooks/useCompras')
-<<<<<<< HEAD
-=======
 vi.mock('../../hooks/useUsuarioActual')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const useClientesMock = vi.mocked(useClientes)
 const useProveedoresMock = vi.mocked(useProveedores)
@@ -95,15 +89,11 @@ function comprasDePrueba(cantidad: number): Compra[] {
   }))
 }
 
-<<<<<<< HEAD
-function mockearHooks({ ventas = [], compras = [] }: { ventas?: Venta[]; compras?: Compra[] } = {}) {
-=======
 // El historial lee el rol para su aclaración (009, "historial propio para el operador").
 function mockearHooks({
   ventas = [], compras = [], rol = 'admin',
 }: { ventas?: Venta[]; compras?: Compra[]; rol?: 'admin' | 'operador' } = {}) {
   vi.mocked(useUsuarioActual).mockReturnValue({ data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   useClientesMock.mockReturnValue({ data: CLIENTES, isLoading: false } as unknown as ReturnType<typeof useClientes>)
   useProveedoresMock.mockReturnValue({ data: PROVEEDORES, isLoading: false } as unknown as ReturnType<typeof useProveedores>)
   useVentasMock.mockReturnValue({ data: ventas, isLoading: false } as unknown as ReturnType<typeof useVentas>)
@@ -246,8 +236,6 @@ describe('Terceros', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Todos' }))
     expect(screen.getAllByText('Ver detalle')).toHaveLength(12)
   })
-<<<<<<< HEAD
-=======
 
   it('la acción del encabezado corresponde a la pestaña activa y abre su formulario', () => {
     mockearHooks()
@@ -379,5 +367,4 @@ describe('Terceros', () => {
     fireEvent.click(screen.getByRole('button', { name: /hospital san rafael/i }))
     expect(screen.queryByText('Solo tus ventas a este cliente.')).not.toBeInTheDocument()
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

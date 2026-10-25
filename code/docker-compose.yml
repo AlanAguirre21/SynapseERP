@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 name: synapse_erp
 
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 services:
   db:
     image: postgres:16
@@ -14,14 +11,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-<<<<<<< HEAD
       - synapse_db_data:/var/lib/postgresql/data
 
 volumes:
   synapse_db_data:
-=======
-      - flebosil_db_data:/var/lib/postgresql/data
-
-volumes:
-  flebosil_db_data:
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

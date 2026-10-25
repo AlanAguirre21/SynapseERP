@@ -5,10 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Factura } from '../../api/facturacion'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
-<<<<<<< HEAD
-=======
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { Facturacion } from './Facturacion'
 
 vi.mock('react-router-dom', async () => {
@@ -18,10 +15,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../../hooks/useFacturas')
 vi.mock('../../hooks/useClientes')
-<<<<<<< HEAD
-=======
 vi.mock('../../hooks/useUsuarioActual')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const CLIENTES = [
   { id: 1, nombre_cliente: 'Hospital San Rafael', telefono: '', email: '', direccion: '', activo: true, datos_fiscales: null },
@@ -36,13 +30,9 @@ const FACTURAS: Factura[] = [
   },
 ]
 
-<<<<<<< HEAD
-function mockearHooks() {
-=======
 // La pantalla lee el rol para su texto (019, "el operador solo ve las facturas de sus ventas").
 function mockearHooks(rol: 'admin' | 'operador' = 'admin') {
   vi.mocked(useUsuarioActual).mockReturnValue({ data: { rol } } as unknown as ReturnType<typeof useUsuarioActual>)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   vi.mocked(useClientes).mockReturnValue({ data: CLIENTES, isLoading: false } as unknown as ReturnType<typeof useClientes>)
   vi.mocked(useFacturas).mockReturnValue({ data: FACTURAS, isLoading: false } as unknown as ReturnType<typeof useFacturas>)
 }
@@ -55,8 +45,6 @@ function renderFacturacion() {
   )
 }
 
-<<<<<<< HEAD
-=======
 // Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
 function indicador(etiqueta: string): HTMLElement {
   const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
@@ -64,7 +52,6 @@ function indicador(etiqueta: string): HTMLElement {
   return recuadro
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Facturacion', () => {
   it('muestra las facturas en la tabla', () => {
     mockearHooks()
@@ -112,8 +99,6 @@ describe('Facturacion', () => {
 
     expect(screen.getByText(/todavía no hay facturas/i)).toBeInTheDocument()
   })
-<<<<<<< HEAD
-=======
 
   it('muestra el total con formato de moneda y el enlace a la venta de origen', () => {
     mockearHooks()
@@ -186,5 +171,4 @@ describe('Facturacion', () => {
 
     expect(screen.getByText(/facturas de tus ventas/i)).toBeInTheDocument()
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

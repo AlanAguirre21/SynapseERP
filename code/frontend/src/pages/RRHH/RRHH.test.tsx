@@ -5,12 +5,6 @@ import type { Departamento, Empleado, EmpleadoPosicion, Posicion } from '../../a
 import { useContactosEmergencia, useCrearContactoEmergencia, useEliminarContactoEmergencia } from '../../hooks/useContactosEmergencia'
 import { useCrearDepartamento, useDepartamentos, useDesactivarDepartamento, useEditarDepartamento, useReactivarDepartamento } from '../../hooks/useDepartamentos'
 import { useCrearDependiente, useDependientes, useEliminarDependiente } from '../../hooks/useDependientes'
-<<<<<<< HEAD
-import { useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
-import { useContratarEmpleado, useDesactivarEmpleado, useEditarEmpleado, useEmpleadosRRHH, useReactivarEmpleado } from '../../hooks/useEmpleadosRRHH'
-import { useCrearPosicion, useDesactivarPosicion, useEditarPosicion, usePosiciones, useReactivarPosicion } from '../../hooks/usePosiciones'
-import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
-=======
 import { useAsignacionesVigentes, useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
 import { useContratarEmpleado, useDesactivarEmpleado, useEditarEmpleado, useEmpleadosRRHH, useReactivarEmpleado } from '../../hooks/useEmpleadosRRHH'
 import { useCrearPosicion, useDesactivarPosicion, useEditarPosicion, usePosiciones, useReactivarPosicion, useTodasLasPosiciones } from '../../hooks/usePosiciones'
@@ -25,7 +19,6 @@ import {
   useRevertirPagoNomina,
   useSolicitudesNomina,
 } from '../../hooks/useSolicitudesNomina'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { RRHH } from './RRHH'
 
 vi.mock('../../hooks/useDepartamentos')
@@ -35,10 +28,7 @@ vi.mock('../../hooks/useEmpleadoPosiciones')
 vi.mock('../../hooks/useContactosEmergencia')
 vi.mock('../../hooks/useDependientes')
 vi.mock('../../hooks/useSolicitudesNomina')
-<<<<<<< HEAD
-=======
 vi.mock('../../hooks/useMovimientosCaja')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const DEPARTAMENTOS: Departamento[] = [
   { id: 1, nombre_departamento: 'Ventas', departamento_padre: null, posicion_manager: null, activo: true },
@@ -79,8 +69,6 @@ function mockearHooks() {
   vi.mocked(useEmpleadoPosicionesVigentes).mockReturnValue(
     { data: ASIGNACIONES_VENDEDOR, isLoading: false } as unknown as ReturnType<typeof useEmpleadoPosicionesVigentes>,
   )
-<<<<<<< HEAD
-=======
   // Hooks de la segunda pasada (directorio y ocupación): toda la empresa.
   vi.mocked(useTodasLasPosiciones).mockReturnValue(
     { data: POSICIONES, isLoading: false } as unknown as ReturnType<typeof useTodasLasPosiciones>,
@@ -88,7 +76,6 @@ function mockearHooks() {
   vi.mocked(useAsignacionesVigentes).mockReturnValue(
     { data: ASIGNACIONES_VENDEDOR, isLoading: false } as unknown as ReturnType<typeof useAsignacionesVigentes>,
   )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   vi.mocked(useContactosEmergencia).mockReturnValue(
     { data: [], isLoading: false } as unknown as ReturnType<typeof useContactosEmergencia>,
   )
@@ -122,8 +109,6 @@ function expandirVendedor() {
   fireEvent.click(screen.getByText('Vendedor'))
 }
 
-<<<<<<< HEAD
-=======
 // Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
 function indicador(etiqueta: string): HTMLElement {
   const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
@@ -131,7 +116,6 @@ function indicador(etiqueta: string): HTMLElement {
   return recuadro
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('RRHH', () => {
   it('muestra las pestañas de departamentos y selecciona el primero por default', () => {
     mockearHooks()
@@ -191,7 +175,7 @@ describe('RRHH', () => {
     fireEvent.change(within(dialogo).getByLabelText(/nombre completo/i), { target: { value: 'Diana Ruiz' } })
     fireEvent.change(within(dialogo).getByLabelText('CURP'), { target: { value: 'RUDI900101HDFXXX02' } })
     fireEvent.change(within(dialogo).getByLabelText('RFC'), { target: { value: 'RUDI900101XY2' } })
-    fireEvent.change(within(dialogo).getByLabelText('Correo'), { target: { value: 'diana@flebosil.test' } })
+    fireEvent.change(within(dialogo).getByLabelText('Correo'), { target: { value: 'diana@synapse.test' } })
 
     const archivo = new File(['contenido'], 'foto.png', { type: 'image/png' })
     const campoArchivo = within(dialogo).getByLabelText(/fotografía/i) as HTMLInputElement
@@ -202,7 +186,7 @@ describe('RRHH', () => {
     expect(vi.mocked(useContratarEmpleado)().mutateAsync).toHaveBeenCalledWith({
       datos: expect.objectContaining({
         nombre_completo: 'Diana Ruiz', curp: 'RUDI900101HDFXXX02', rfc: 'RUDI900101XY2',
-        email: 'diana@flebosil.test', posicion: 11,
+        email: 'diana@synapse.test', posicion: 11,
       }),
       foto: archivo,
     })
@@ -309,9 +293,6 @@ describe('RRHH', () => {
     fireEvent.click(screen.getByRole('button', { name: /agregar departamento/i }))
     expect(screen.getByRole('dialog', { name: /nuevo departamento/i })).toBeInTheDocument()
   })
-<<<<<<< HEAD
-})
-=======
   it('cada posición muestra su ocupación, y las activas sin nadie como "Vacante"', () => {
     mockearHooks()
     render(<RRHH />)
@@ -422,4 +403,3 @@ describe('RRHH', () => {
   })
 })
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
