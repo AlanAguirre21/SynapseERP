@@ -21,6 +21,8 @@ staticfiles/
 code/backend/media/
 code/backend/media_rrhh/
 code/backend/media_usuarios/
+# Modelo de embeddings del asistente (024), se descarga con `indexar_intenciones`.
+code/backend/.modelos_embeddings/
 
 # Node
 node_modules/
