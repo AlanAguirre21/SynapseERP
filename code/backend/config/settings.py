@@ -71,6 +71,8 @@ INSTALLED_APPS = [
     'apps.auditoria',
     'apps.analitica',
     'apps.asistente',
+    # Sin modelos: solo comandos transversales (`cargar_datos_demo`, 025).
+    'core',
 ]
 
 MIDDLEWARE = [
