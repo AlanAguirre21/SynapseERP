@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import { useState, type FormEvent } from 'react'
-
-import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { Modal } from '../../components/common/Modal'
-import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
-import type { Sucursal, SucursalFormulario } from '../../api/sucursales'
-=======
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -15,7 +7,6 @@ import { Modal } from '../../components/common/Modal'
 import type { AlertaStock } from '../../api/inventario'
 import type { Sucursal, SucursalFormulario } from '../../api/sucursales'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import {
   useCrearSucursal,
   useDesactivarSucursal,
@@ -37,8 +28,6 @@ interface ErrorGuardarSucursal {
   nombre_sucursal?: string[]
 }
 
-<<<<<<< HEAD
-=======
 type FiltroEstado = 'todas' | 'activas' | 'inactivas'
 
 interface SaludStock {
@@ -70,7 +59,6 @@ function urlTelefono(telefono: string) {
   return `tel:${telefono.replace(/[^\d+]/g, '')}`
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export function Sucursales() {
   const { data: usuario } = useUsuarioActual()
   const { data: sucursales, isLoading } = useSucursales()
@@ -87,10 +75,6 @@ export function Sucursales() {
   const [sucursalAReactivar, setSucursalAReactivar] = useState<Sucursal | null>(null)
   const [errorReactivar, setErrorReactivar] = useState('')
 
-<<<<<<< HEAD
-  const esAdmin = usuario?.rol === 'admin'
-
-=======
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todas')
 
   const esAdmin = usuario?.rol === 'admin'
@@ -125,7 +109,6 @@ export function Sucursales() {
   })
   const hayFiltros = filtroEstado !== 'todas'
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   function abrirCrear() {
     setSucursalEnEdicion(null)
     setValores(SUCURSAL_VACIA)
@@ -209,62 +192,6 @@ export function Sucursales() {
     }
   }
 
-<<<<<<< HEAD
-  const columnas: ColumnaTabla<Sucursal>[] = [
-    { clave: 'nombre_sucursal', encabezado: 'Nombre' },
-    { clave: 'ubicacion_sucursal', encabezado: 'Ubicación' },
-    { clave: 'telefono_sucursal', encabezado: 'Teléfono' },
-    {
-      clave: 'activo',
-      encabezado: 'Estado',
-      render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
-          {fila.activo ? 'Activa' : 'Inactiva'}
-        </span>
-      ),
-    },
-  ]
-
-  return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Sucursales</h1>
-        {esAdmin && <BotonPrimario onClick={abrirCrear}>Nueva sucursal</BotonPrimario>}
-      </div>
-
-      {isLoading ? (
-        <p>Cargando sucursales…</p>
-      ) : (
-        <Tabla
-          columnas={columnas}
-          datos={sucursales ?? []}
-          mensajeVacio="Todavía no hay sucursales registradas."
-          renderAcciones={
-            esAdmin
-              ? (fila) => (
-                  <div className={styles.acciones}>
-                    <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
-                      Editar
-                    </button>
-                    {fila.activo ? (
-                      <button
-                        type="button"
-                        className={styles.enlaceAccionPeligro}
-                        onClick={() => setSucursalADesactivar(fila)}
-                      >
-                        Desactivar
-                      </button>
-                    ) : (
-                      <button type="button" className={styles.enlaceAccion} onClick={() => abrirReactivar(fila)}>
-                        Reactivar
-                      </button>
-                    )}
-                  </div>
-                )
-              : undefined
-          }
-        />
-=======
   return (
     <div className="page">
       <div className="pageHeader">
@@ -337,7 +264,6 @@ export function Sucursales() {
             </div>
           )}
         </>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
 
       <Modal
@@ -345,39 +271,6 @@ export function Sucursales() {
         abierto={formularioAbierto}
         onCerrar={cerrarFormulario}
       >
-<<<<<<< HEAD
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
-            Nombre
-            <input
-              type="text"
-              value={valores.nombre_sucursal}
-              onChange={(evento) => setValores((v) => ({ ...v, nombre_sucursal: evento.target.value }))}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Ubicación
-            <input
-              type="text"
-              value={valores.ubicacion_sucursal}
-              onChange={(evento) => setValores((v) => ({ ...v, ubicacion_sucursal: evento.target.value }))}
-            />
-          </label>
-
-          <label className={styles.campo}>
-            Teléfono
-            <input
-              type="text"
-              value={valores.telefono_sucursal}
-              onChange={(evento) => setValores((v) => ({ ...v, telefono_sucursal: evento.target.value }))}
-            />
-          </label>
-
-          {errorFormulario && (
-            <p className={styles.error} role="alert">
-=======
         <form className="form" onSubmit={alGuardar} noValidate>
           <div className="formGrid">
             <label className="field formGridFull">
@@ -411,16 +304,11 @@ export function Sucursales() {
 
           {errorFormulario && (
             <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {errorFormulario}
             </p>
           )}
 
-<<<<<<< HEAD
-          <div className={styles.accionesFormulario}>
-=======
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario type="button" variante="secundario" onClick={cerrarFormulario}>
               Cancelar
             </BotonPrimario>
@@ -436,19 +324,11 @@ export function Sucursales() {
         abierto={Boolean(sucursalADesactivar)}
         onCerrar={() => setSucursalADesactivar(null)}
       >
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres desactivar la sucursal "{sucursalADesactivar?.nombre_sucursal}"? Dejará de estar
-          disponible para nuevos movimientos, pero su historial se conserva.
-        </p>
-        <div className={styles.accionesFormulario}>
-=======
         <p className="confirmText">
           ¿Confirmas que quieres desactivar la sucursal "{sucursalADesactivar?.nombre_sucursal}"? Dejará de estar
           disponible para nuevos movimientos, pero su historial se conserva.
         </p>
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setSucursalADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -459,30 +339,18 @@ export function Sucursales() {
       </Modal>
 
       <Modal titulo="Reactivar sucursal" abierto={Boolean(sucursalAReactivar)} onCerrar={cerrarReactivar}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-=======
         <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres reactivar la sucursal "{sucursalAReactivar?.nombre_sucursal}"? Volverá a estar
           disponible para nuevos movimientos de inventario.
         </p>
 
         {errorReactivar && (
-<<<<<<< HEAD
-          <p className={styles.error} role="alert">
-=======
           <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {errorReactivar}
           </p>
         )}
 
-<<<<<<< HEAD
-        <div className={styles.accionesFormulario}>
-=======
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={cerrarReactivar}>
             Cancelar
           </BotonPrimario>
@@ -494,8 +362,6 @@ export function Sucursales() {
     </div>
   )
 }
-<<<<<<< HEAD
-=======
 
 // --- Tarjeta de sucursal ---------------------------------------------------------
 
@@ -593,4 +459,3 @@ function TarjetaSucursal({ sucursal, salud, esAdmin, onEditar, onDesactivar, onR
     </article>
   )
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -1,18 +1,10 @@
-<<<<<<< HEAD
-import { fireEvent, render, screen, within } from '@testing-library/react'
-=======
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Empleado } from '../../api/rrhh'
 import type { RegistroAcceso, UsuarioCuenta } from '../../api/usuarios'
-<<<<<<< HEAD
-import { useEmpleado, useEmpleadosDisponibles } from '../../hooks/useEmpleadosRRHH'
-=======
 import { useEmpleado, useEmpleadosDisponibles, useEmpleadosRRHH } from '../../hooks/useEmpleadosRRHH'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import {
   useAccesosUsuario,
@@ -36,20 +28,12 @@ const useEmpleadoMock = vi.mocked(useEmpleado)
 
 const USUARIOS: UsuarioCuenta[] = [
   {
-    id: 1, username: 'ana', first_name: 'Ana', last_name: 'Torres', email: 'ana@flebosil.test',
-<<<<<<< HEAD
-    rol_usuario: 'admin', empleado: 2, activo: true,
-  },
-  {
-    id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@flebosil.test',
-    rol_usuario: 'operador', empleado: null, activo: false,
-=======
+    id: 1, username: 'ana', first_name: 'Ana', last_name: 'Torres', email: 'ana@synapse.test',
     rol_usuario: 'admin', empleado: 2, activo: true, foto_usuario: null,
   },
   {
-    id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@flebosil.test',
+    id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@synapse.test',
     rol_usuario: 'operador', empleado: null, activo: false, foto_usuario: null,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   },
 ]
 
@@ -88,13 +72,10 @@ function mockearHooks({ accesos = [] }: { accesos?: RegistroAcceso[] } = {}) {
   useEmpleadoMock.mockReturnValue(
     { data: undefined, isLoading: false } as unknown as ReturnType<typeof useEmpleado>,
   )
-<<<<<<< HEAD
-=======
   // Lista completa de empleados (columna "Empleado" del rediseño de 021).
   vi.mocked(useEmpleadosRRHH).mockReturnValue(
     { data: [EMPLEADO_VINCULADO, ...EMPLEADOS_DISPONIBLES], isLoading: false } as unknown as ReturnType<typeof useEmpleadosRRHH>,
   )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   vi.mocked(useCrearUsuario).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCrearUsuario>)
   vi.mocked(useEditarUsuario).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useEditarUsuario>)
@@ -110,8 +91,6 @@ function renderUsuarios() {
   )
 }
 
-<<<<<<< HEAD
-=======
 // Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
 function indicador(etiqueta: string): HTMLElement {
   const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
@@ -119,7 +98,6 @@ function indicador(etiqueta: string): HTMLElement {
   return recuadro
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Usuarios', () => {
   it('redirige a /dashboard si el usuario autenticado no es admin', () => {
     mockearHooks()
@@ -211,9 +189,6 @@ describe('Usuarios', () => {
 
     expect(screen.getByText('Este usuario todavía no tiene accesos registrados.')).toBeInTheDocument()
   })
-<<<<<<< HEAD
-})
-=======
   it('muestra los indicadores de cuentas', () => {
     mockearHooks()
     renderUsuarios()
@@ -229,7 +204,7 @@ describe('Usuarios', () => {
     renderUsuarios()
 
     const fila = screen.getByRole('button', { name: /ana torres/i }).closest('tr') as HTMLElement
-    expect(fila).toHaveTextContent('ana@flebosil.test')
+    expect(fila).toHaveTextContent('ana@synapse.test')
     expect(within(fila).getByText('ana')).toBeInTheDocument()
     expect(within(fila).getByText('Administrador')).toHaveClass('statusPrimary')
     expect(fila).toHaveTextContent('Empleado Ya Vinculado')
@@ -316,7 +291,7 @@ describe('Usuarios', () => {
     const foto = new File([new Uint8Array(10)], 'foto.webp', { type: 'image/webp' })
     fireEvent.change(dialogo.getByLabelText('Fotografía de perfil'), { target: { files: [foto] } })
     expect(dialogo.getByRole('button', { name: 'Cambiar fotografía' })).toBeInTheDocument()
-    fireEvent.change(dialogo.getByLabelText(/correo electrónico/i), { target: { value: 'nuevo@flebosil.test' } })
+    fireEvent.change(dialogo.getByLabelText(/correo electrónico/i), { target: { value: 'nuevo@synapse.test' } })
     fireEvent.change(dialogo.getByLabelText(/^contraseña$/i), { target: { value: 'Clave-segura-123' } })
     fireEvent.click(dialogo.getByRole('button', { name: /^guardar$/i }))
 
@@ -330,4 +305,3 @@ describe('Usuarios', () => {
   })
 })
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

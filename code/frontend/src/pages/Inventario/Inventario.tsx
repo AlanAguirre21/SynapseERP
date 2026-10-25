@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { useState } from 'react'
-=======
 import { useMemo, useState } from 'react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
@@ -14,20 +10,13 @@ import type {
   TipoItemInventario,
   TipoMovimientoInventario,
 } from '../../api/inventario'
-<<<<<<< HEAD
-=======
 import type { Sucursal } from '../../api/sucursales'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
 import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-<<<<<<< HEAD
-import styles from './Inventario.module.css'
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { ModalTraslado } from './ModalTraslado'
 
 const ETIQUETAS_TIPO_ITEM: Record<TipoItemInventario, string> = {
@@ -74,13 +63,6 @@ function formatearFecha(fecha: string): string {
   return new Date(fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-<<<<<<< HEAD
-const PESTAÑAS_STOCK: { clave: TipoItemInventario; etiqueta: string }[] = [
-  { clave: 'producto', etiqueta: 'Inventario de productos' },
-  { clave: 'materia_prima', etiqueta: 'Inventario de materia prima' },
-]
-
-=======
 // Cantidad con signo, como en un kárdex: "+2.50" entra, "−2.50" sale (signo
 // menos tipográfico, no guion).
 function cantidadConSigno(movimiento: MovimientoInventario): string {
@@ -201,7 +183,6 @@ const ESTADOS_EXISTENCIA: Record<EstadoExistencia, { etiqueta: string; clase: st
   enExistencia: { etiqueta: 'En existencia', clase: 'status statusSuccess' },
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 interface ErrorEditarStockMinimo {
   stock_minimo?: string[]
   detail?: string
@@ -240,20 +221,12 @@ function CeldaStockMinimoEditable({
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.celdaStockMinimo}>
-=======
     <div className="cellStack">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       <input
         type="number"
         min={0}
         step={1}
-<<<<<<< HEAD
-        className={styles.inputStockMinimo}
-=======
         className="inputCompact numeric"
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         value={valor}
         onChange={(e) => setValor(e.target.value)}
         onBlur={guardar}
@@ -262,41 +235,11 @@ function CeldaStockMinimoEditable({
         }}
         aria-label={`Stock mínimo de ${fila.nombre}`}
       />
-<<<<<<< HEAD
-      {error && <span className={styles.errorStockMinimo}>{error}</span>}
-=======
       {error && <span className="fieldError">{error}</span>}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     </div>
   )
 }
 
-<<<<<<< HEAD
-export function Inventario() {
-  const { data: sucursales } = useSucursales()
-  const sucursalesActivas = (sucursales ?? []).filter((s) => s.activo)
-  const { data: usuario } = useUsuarioActual()
-  const esAdmin = usuario?.rol === 'admin'
-
-  const [tipoStock, setTipoStock] = useState<TipoItemInventario>('producto')
-  // `null` mientras el usuario no elige explícitamente: se usa la primera
-  // sucursal activa como default sin necesitar un efecto para "sincronizar"
-  // el estado una vez cargan las sucursales.
-  const [sucursalStockElegida, setSucursalStockElegida] = useState<number | null>(null)
-  const sucursalStock = sucursalStockElegida ?? sucursalesActivas[0]?.id ?? null
-
-  const { data: stock, isLoading: cargandoStock } = useStock(tipoStock, sucursalStock)
-  const [trasladoAbierto, setTrasladoAbierto] = useState(false)
-
-  const columnasStock: ColumnaTabla<StockItem>[] = [
-    { clave: 'nombre', encabezado: 'Nombre' },
-    { clave: 'stock_actual', encabezado: 'Stock actual' },
-    {
-      clave: 'stock_minimo',
-      encabezado: 'Stock mínimo',
-      render: (fila) =>
-        esAdmin && sucursalStock !== null ? (
-=======
 function PestañaExistencias({
   esAdmin,
   sucursalesActivas,
@@ -330,7 +273,6 @@ function PestañaExistencias({
       encabezado: 'Stock mínimo',
       render: (fila) =>
         esAdmin && sucursal !== null ? (
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           // `key` incluye `stock_minimo` para remontar (resetear el input a
           // su nuevo valor) cuando cambia por otra vía — ej. refetch tras
           // invalidar la cache en otra pestaña — en vez de un efecto que
@@ -338,13 +280,8 @@ function PestañaExistencias({
           <CeldaStockMinimoEditable
             key={`${fila.id}-${fila.stock_minimo}`}
             fila={fila}
-<<<<<<< HEAD
-            tipo={tipoStock}
-            sucursalId={sucursalStock}
-=======
             tipo={tipo}
             sucursalId={sucursal}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           />
         ) : (
           fila.stock_minimo
@@ -353,83 +290,6 @@ function PestañaExistencias({
     {
       clave: 'stock_bajo',
       encabezado: 'Estado',
-<<<<<<< HEAD
-      render: (fila) => (
-        <span className={fila.stock_bajo ? styles.estadoAlerta : styles.estadoNormal}>
-          {fila.stock_bajo ? 'Bajo mínimo' : 'OK'}
-        </span>
-      ),
-    },
-  ]
-
-  // --- Historial de movimientos --------------------------------------
-
-  const [tipoItemHistorial, setTipoItemHistorial] = useState<TipoItemInventario | ''>('')
-  const [itemHistorial, setItemHistorial] = useState<number | ''>('')
-  const [sucursalHistorial, setSucursalHistorial] = useState<number | ''>('')
-  const [tipoMovimientoHistorial, setTipoMovimientoHistorial] = useState<TipoMovimientoInventario | ''>('')
-  const [motivoHistorial, setMotivoHistorial] = useState<FiltroMotivoMovimientoInventario | ''>('')
-
-  const { data: productos } = useProductos()
-  const { data: materiaPrima } = useMateriaPrima()
-
-  const opcionesItem =
-    tipoItemHistorial === 'producto'
-      ? (productos ?? []).map((p) => ({ id: p.id, nombre: p.nombre_producto }))
-      : tipoItemHistorial === 'materia_prima'
-        ? (materiaPrima ?? []).map((m) => ({ id: m.id, nombre: m.nombre_item }))
-        : []
-
-  const { data: movimientos, isLoading: cargandoMovimientos } = useMovimientosInventario({
-    tipo_item: tipoItemHistorial || undefined,
-    item_id: itemHistorial || undefined,
-    sucursal: sucursalHistorial || undefined,
-    tipo_movimiento: tipoMovimientoHistorial || undefined,
-    motivo: motivoHistorial || undefined,
-  })
-
-  const columnasMovimientos: ColumnaTabla<MovimientoInventario>[] = [
-    { clave: 'fecha', encabezado: 'Fecha', render: (fila) => formatearFecha(fila.fecha) },
-    { clave: 'item_nombre', encabezado: 'Ítem' },
-    { clave: 'sucursal_nombre', encabezado: 'Sucursal' },
-    {
-      clave: 'tipo_movimiento',
-      encabezado: 'Tipo',
-      render: (fila) => ETIQUETAS_TIPO_MOVIMIENTO[fila.tipo_movimiento],
-    },
-    { clave: 'cantidad', encabezado: 'Cantidad' },
-    { clave: 'motivo', encabezado: 'Motivo', render: (fila) => textoMotivo(fila) },
-    { clave: 'usuario_nombre', encabezado: 'Usuario' },
-  ]
-
-  return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Inventario</h1>
-      </div>
-
-      <div className={styles.pestañas} role="tablist">
-        {PESTAÑAS_STOCK.map((p) => (
-          <button
-            key={p.clave}
-            type="button"
-            role="tab"
-            aria-selected={tipoStock === p.clave}
-            className={tipoStock === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
-            onClick={() => setTipoStock(p.clave)}
-          >
-            {p.etiqueta}
-          </button>
-        ))}
-      </div>
-
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
-          Sucursal
-          <select
-            value={sucursalStock ?? ''}
-            onChange={(e) => setSucursalStockElegida(e.target.value ? Number(e.target.value) : null)}
-=======
       render: (fila) => {
         const estado = ESTADOS_EXISTENCIA[estadoExistencia(fila)]
         return <span className={estado.clase}>{estado.etiqueta}</span>
@@ -447,7 +307,6 @@ function PestañaExistencias({
           <select
             value={sucursal ?? ''}
             onChange={(e) => onCambiarSucursal(e.target.value ? Number(e.target.value) : null)}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           >
             {sucursalesActivas.map((s) => (
               <option key={s.id} value={s.id}>
@@ -457,42 +316,6 @@ function PestañaExistencias({
           </select>
         </label>
 
-<<<<<<< HEAD
-        <div className={styles.accionesStock}>
-          <BotonPrimario onClick={() => setTrasladoAbierto(true)}>Traslado</BotonPrimario>
-        </div>
-      </div>
-
-      {/* Se monta solo al abrirse: cerrar descarta el estado del formulario. */}
-      {trasladoAbierto && (
-        <ModalTraslado
-          onCerrar={() => setTrasladoAbierto(false)}
-          sucursalInicial={sucursalStock}
-          tipoInicial={tipoStock}
-        />
-      )}
-
-      {cargandoStock ? (
-        <p>Cargando inventario…</p>
-      ) : (
-        <Tabla
-          columnas={columnasStock}
-          datos={stock ?? []}
-          mensajeVacio="No hay ítems para mostrar en esta sucursal."
-        />
-      )}
-
-      <h2 className={styles.tituloSeccion}>Historial de movimientos</h2>
-
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
-          Tipo de ítem
-          <select
-            value={tipoItemHistorial}
-            onChange={(e) => {
-              setTipoItemHistorial(e.target.value as TipoItemInventario | '')
-              setItemHistorial('')
-=======
         <div className="filterField">
           <span>Tipo de ítem</span>
           <div className="segmented" role="tablist" aria-label="Tipo de ítem">
@@ -637,7 +460,6 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
             onChange={(e) => {
               setTipoItem(e.target.value as TipoItemInventario | '')
               setItem('')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             }}
           >
             <option value="">Todos</option>
@@ -649,19 +471,6 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Ítem
-          <select
-            value={itemHistorial}
-            onChange={(e) => setItemHistorial(e.target.value ? Number(e.target.value) : '')}
-            disabled={!tipoItemHistorial}
-          >
-            <option value="">Todos</option>
-            {opcionesItem.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.nombre}
-=======
         <label className="filterField">
           Ítem
           <select
@@ -673,24 +482,14 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
             {opcionesItem.map((opcion) => (
               <option key={opcion.id} value={opcion.id}>
                 {opcion.nombre}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               </option>
             ))}
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Sucursal
-          <select
-            value={sucursalHistorial}
-            onChange={(e) => setSucursalHistorial(e.target.value ? Number(e.target.value) : '')}
-          >
-=======
         <label className="filterField">
           Sucursal
           <select value={sucursal} onChange={(e) => setSucursal(e.target.value ? Number(e.target.value) : '')}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <option value="">Todas</option>
             {sucursalesActivas.map((s) => (
               <option key={s.id} value={s.id}>
@@ -700,19 +499,11 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Tipo de movimiento
-          <select
-            value={tipoMovimientoHistorial}
-            onChange={(e) => setTipoMovimientoHistorial(e.target.value as TipoMovimientoInventario | '')}
-=======
         <label className="filterField">
           Tipo de movimiento
           <select
             value={tipoMovimiento}
             onChange={(e) => setTipoMovimiento(e.target.value as TipoMovimientoInventario | '')}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           >
             <option value="">Todos</option>
             {(Object.keys(ETIQUETAS_TIPO_MOVIMIENTO) as TipoMovimientoInventario[]).map((tipo) => (
@@ -723,18 +514,9 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Motivo
-          <select
-            value={motivoHistorial}
-            onChange={(e) => setMotivoHistorial(e.target.value as FiltroMotivoMovimientoInventario | '')}
-          >
-=======
         <label className="filterField">
           Motivo
           <select value={motivo} onChange={(e) => setMotivo(e.target.value as FiltroMotivoMovimientoInventario | '')}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <option value="">Todos</option>
             {OPCIONES_FILTRO_MOTIVO.map((opcion) => (
               <option key={opcion.valor} value={opcion.valor}>
@@ -743,17 +525,6 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
             ))}
           </select>
         </label>
-<<<<<<< HEAD
-      </div>
-
-      {cargandoMovimientos ? (
-        <p>Cargando historial…</p>
-      ) : (
-        <Tabla
-          columnas={columnasMovimientos}
-          datos={movimientos ?? []}
-          mensajeVacio="No hay movimientos de inventario para los filtros seleccionados."
-=======
 
         {hayFiltros && (
           <button type="button" className="actionLink filtersEnd" onClick={limpiarFiltros}>
@@ -792,7 +563,6 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
               ? 'Ningún movimiento coincide con los filtros.'
               : 'Todavía no hay movimientos de inventario registrados.'
           }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         />
       )}
     </div>

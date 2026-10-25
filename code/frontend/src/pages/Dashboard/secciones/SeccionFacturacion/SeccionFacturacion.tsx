@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import styles from './SeccionFacturacion.module.css'
-
-export function SeccionFacturacion() {
-  return (
-    <section className={styles.seccion}>
-      <h2 className={styles.tituloSeccion}>Resumen facturación</h2>
-      <div className={styles.placeholder}>
-        <span className={styles.placeholderTitulo}>En construcción</span>
-        <span>Esta sección del panel de reportes estará disponible próximamente.</span>
-      </div>
-=======
 import { Link } from 'react-router-dom'
 
 import { ETIQUETAS_ESTADO_FACTURA, type EstadoFactura } from '../../../../api/facturacion'
@@ -143,7 +131,6 @@ export function SeccionFacturacion({ periodo }: SeccionFacturacionProps) {
           />
         </>
       )}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     </section>
   )
 }

@@ -1,9 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-<<<<<<< HEAD
-import { describe, expect, it, vi } from 'vitest'
-=======
 import { afterEach, describe, expect, it, vi } from 'vitest'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 import { useCrearTraslado, useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
@@ -95,8 +91,6 @@ function primero<T>(elementos: T[]): T {
   return elemento
 }
 
-<<<<<<< HEAD
-=======
 // Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
 function indicador(etiqueta: string): HTMLElement {
   const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
@@ -104,7 +98,6 @@ function indicador(etiqueta: string): HTMLElement {
   return recuadro
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 describe('Inventario', () => {
   it('muestra el inventario de productos por defecto', () => {
     mockearHooks()
@@ -120,11 +113,7 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-<<<<<<< HEAD
-    fireEvent.click(screen.getByRole('tab', { name: 'Inventario de materia prima' }))
-=======
     fireEvent.click(screen.getByRole('tab', { name: 'Materia prima' }))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     expect(useStockMock).toHaveBeenLastCalledWith('materia_prima', expect.any(Number))
   })
@@ -138,11 +127,7 @@ describe('Inventario', () => {
     const filaGasa = tablaStock.getByText('Gasa estéril').closest('tr')
 
     expect(filaSuero).toHaveTextContent('Bajo mínimo')
-<<<<<<< HEAD
-    expect(filaGasa).toHaveTextContent('OK')
-=======
     expect(filaGasa).toHaveTextContent('En existencia')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('permite filtrar el stock por sucursal', () => {
@@ -159,11 +144,8 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-<<<<<<< HEAD
-=======
     fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     expect(screen.queryByRole('button', { name: /nuevo|crear|editar|eliminar/i })).not.toBeInTheDocument()
   })
 
@@ -207,11 +189,7 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-<<<<<<< HEAD
-    fireEvent.click(screen.getByRole('tab', { name: 'Inventario de materia prima' }))
-=======
     fireEvent.click(screen.getByRole('tab', { name: 'Materia prima' }))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     fireEvent.change(primero(screen.getAllByLabelText('Sucursal')), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Traslado' }))
 
@@ -223,13 +201,9 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-<<<<<<< HEAD
-    const historial = within(screen.getAllByRole('table')[1] as HTMLElement)
-=======
     fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
 
     const historial = within(screen.getByRole('table'))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     expect(historial.getByText('Traslado #12 (salida) → Norte')).toBeInTheDocument()
     expect(historial.getByText('Traslado #12 (entrada) ← Matriz')).toBeInTheDocument()
     expect(historial.getByText('Compra')).toBeInTheDocument()
@@ -239,16 +213,11 @@ describe('Inventario', () => {
     mockearHooks()
     render(<Inventario />)
 
-<<<<<<< HEAD
-=======
     fireEvent.click(screen.getByRole('tab', { name: 'Movimientos' }))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     fireEvent.change(screen.getByLabelText('Motivo'), { target: { value: 'traslado' } })
 
     expect(useMovimientosInventarioMock).toHaveBeenLastCalledWith(expect.objectContaining({ motivo: 'traslado' }))
   })
-<<<<<<< HEAD
-=======
 
   it('muestra los indicadores de existencias y tiñe solo las alertas con valor', () => {
     mockearHooks()
@@ -372,5 +341,4 @@ describe('Inventario — sucursal inicial desde la URL', () => {
     abrirCon('?sucursal=abc')
     expect(useStockMock).toHaveBeenLastCalledWith('producto', 1)
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

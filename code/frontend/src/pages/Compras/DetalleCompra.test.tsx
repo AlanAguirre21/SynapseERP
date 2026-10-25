@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { render, screen } from '@testing-library/react'
-=======
 import { fireEvent, render, screen } from '@testing-library/react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -91,8 +87,6 @@ describe('DetalleCompra', () => {
     expect(screen.getByText('Suero fisiológico')).toBeInTheDocument()
     expect(screen.getByTestId('total-compra')).toHaveTextContent('55.00')
   })
-<<<<<<< HEAD
-=======
 
   // 012: una compra ajena (o inexistente) llega como 404 y la pantalla lo dice.
   it('sin compra muestra "No se encontró la compra." y "Volver al listado" regresa al listado', () => {
@@ -105,5 +99,4 @@ describe('DetalleCompra', () => {
     expect(screen.getByText('No se encontró la compra.')).toBeInTheDocument()
     expect(navigateMock).toHaveBeenCalledWith('/compras')
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

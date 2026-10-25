@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { useState, type FormEvent } from 'react'
-=======
 import { useMemo, useState, type FormEvent } from 'react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { Navigate } from 'react-router-dom'
 
 import {
@@ -28,10 +24,7 @@ import {
 } from '../../hooks/useCuentasContables'
 import { useExportarContabilidad, useLibroDiario } from '../../hooks/useLibroDiario'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
-<<<<<<< HEAD
-=======
 import { formatearImporte } from '../../utils/numeros'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import styles from './Contabilidad.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
@@ -59,8 +52,6 @@ function descargarBlob(blob: Blob, nombreArchivo: string) {
   URL.revokeObjectURL(url)
 }
 
-<<<<<<< HEAD
-=======
 // Dos sumas "cuadran" si difieren en menos de medio centavo: los Decimal del
 // backend llegan como texto y se suman como Number solo para mostrarlos.
 function cuadran(cargos: number, abonos: number): boolean {
@@ -79,7 +70,6 @@ type LimiteLista = '5' | '10' | 'todos'
 
 const ETIQUETAS_LIMITE: Record<LimiteLista, string> = { '5': '5', '10': '10', todos: 'Todos' }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 type Pestaña = 'cuentas' | 'libro' | 'balance'
 
 const PESTAÑAS: { clave: Pestaña; etiqueta: string }[] = [
@@ -110,14 +100,6 @@ function ContabilidadContenido() {
   const [pestaña, setPestaña] = useState<Pestaña>('cuentas')
 
   return (
-<<<<<<< HEAD
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Contabilidad</h1>
-      </div>
-
-      <div className={styles.pestañas} role="tablist">
-=======
     <div className="page">
       <div className="pageHeader">
         <div className="pageHeading">
@@ -129,18 +111,13 @@ function ContabilidadContenido() {
       </div>
 
       <div className="tabs" role="tablist">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         {PESTAÑAS.map((p) => (
           <button
             key={p.clave}
             type="button"
             role="tab"
             aria-selected={pestaña === p.clave}
-<<<<<<< HEAD
-            className={pestaña === p.clave ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
-=======
             className={pestaña === p.clave ? 'tab tabActive' : 'tab'}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             onClick={() => setPestaña(p.clave)}
           >
             {p.etiqueta}
@@ -159,10 +136,6 @@ function ContabilidadContenido() {
 
 const CUENTA_VACIA: CuentaContableFormulario = { codigo: '', nombre: '', tipo: 'activo', cuenta_padre: null }
 
-<<<<<<< HEAD
-function CatalogoCuentasSeccion() {
-  const { data: cuentas, isLoading } = useCuentasContables()
-=======
 // De qué lado crece el saldo de cada tipo de cuenta.
 const NATURALEZA_POR_TIPO: Record<TipoCuenta, string> = {
   activo: 'Deudora',
@@ -224,7 +197,6 @@ function claseCuenta(cuenta: CuentaEnJerarquia): string {
 function CatalogoCuentasSeccion() {
   const { data: cuentas, isLoading } = useCuentasContables()
   const cuentasOrdenadas = useMemo(() => ordenarJerarquia(cuentas ?? []), [cuentas])
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const crear = useCrearCuentaContable()
   const editar = useEditarCuentaContable()
   const desactivar = useDesactivarCuentaContable()
@@ -289,12 +261,6 @@ function CatalogoCuentasSeccion() {
     setAReactivar(null)
   }
 
-<<<<<<< HEAD
-  const columnas: ColumnaTabla<CuentaContable>[] = [
-    { clave: 'codigo', encabezado: 'Código' },
-    { clave: 'nombre', encabezado: 'Nombre' },
-    { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO_CUENTA[fila.tipo] },
-=======
   const columnas: ColumnaTabla<CuentaEnJerarquia>[] = [
     {
       clave: 'codigo',
@@ -304,17 +270,12 @@ function CatalogoCuentasSeccion() {
     { clave: 'nombre', encabezado: 'Nombre', render: (fila) => <span className={claseCuenta(fila)}>{fila.nombre}</span> },
     { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO_CUENTA[fila.tipo] },
     { clave: 'naturaleza', encabezado: 'Naturaleza' },
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     { clave: 'cuenta_padre_codigo', encabezado: 'Cuenta padre', render: (fila) => fila.cuenta_padre_codigo ?? '—' },
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-<<<<<<< HEAD
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
-=======
         <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -322,15 +283,9 @@ function CatalogoCuentasSeccion() {
   ]
 
   return (
-<<<<<<< HEAD
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.subtitulo}>Catálogo de cuentas contables</h2>
-=======
     <section className="tabPanel">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Catálogo de cuentas contables</h2>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         <BotonPrimario onClick={abrirCrear}>Nueva cuenta</BotonPrimario>
       </div>
 
@@ -339,21 +294,6 @@ function CatalogoCuentasSeccion() {
       ) : (
         <Tabla
           columnas={columnas}
-<<<<<<< HEAD
-          datos={cuentas ?? []}
-          mensajeVacio="Todavía no hay cuentas registradas."
-          renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
-                Editar
-              </button>
-              {fila.activo ? (
-                <button type="button" className={styles.enlaceAccionPeligro} onClick={() => abrirDesactivar(fila)}>
-                  Desactivar
-                </button>
-              ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => setAReactivar(fila)}>
-=======
           datos={cuentasOrdenadas}
           mensajeVacio="Todavía no hay cuentas registradas."
           renderAcciones={(fila) => (
@@ -367,7 +307,6 @@ function CatalogoCuentasSeccion() {
                 </button>
               ) : (
                 <button type="button" className="actionLink" onClick={() => setAReactivar(fila)}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                   Reactivar
                 </button>
               )}
@@ -377,13 +316,8 @@ function CatalogoCuentasSeccion() {
       )}
 
       <Modal titulo={enEdicion ? 'Editar cuenta' : 'Nueva cuenta'} abierto={formularioAbierto} onCerrar={() => setFormularioAbierto(false)}>
-<<<<<<< HEAD
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
-=======
         <form className="form" onSubmit={alGuardar} noValidate>
           <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Código
             <input
               type="text" value={valores.codigo}
@@ -391,11 +325,7 @@ function CatalogoCuentasSeccion() {
             />
           </label>
 
-<<<<<<< HEAD
-          <label className={styles.campo}>
-=======
           <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Nombre
             <input
               type="text" value={valores.nombre}
@@ -403,11 +333,7 @@ function CatalogoCuentasSeccion() {
             />
           </label>
 
-<<<<<<< HEAD
-          <label className={styles.campo}>
-=======
           <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Tipo
             <select
               value={valores.tipo}
@@ -421,11 +347,7 @@ function CatalogoCuentasSeccion() {
             </select>
           </label>
 
-<<<<<<< HEAD
-          <label className={styles.campo}>
-=======
           <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Cuenta padre (opcional)
             <select
               value={valores.cuenta_padre ?? ''}
@@ -443,20 +365,12 @@ function CatalogoCuentasSeccion() {
           </label>
 
           {errorFormulario && (
-<<<<<<< HEAD
-            <p className={styles.error} role="alert">
-=======
             <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {errorFormulario}
             </p>
           )}
 
-<<<<<<< HEAD
-          <div className={styles.accionesFormulario}>
-=======
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario type="button" variante="secundario" onClick={() => setFormularioAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -468,28 +382,16 @@ function CatalogoCuentasSeccion() {
       </Modal>
 
       <Modal titulo="Desactivar cuenta" abierto={Boolean(aDesactivar)} onCerrar={() => setADesactivar(null)}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-=======
         <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres desactivar la cuenta "{aDesactivar?.codigo} — {aDesactivar?.nombre}"? Su historial
           de movimientos se conserva.
         </p>
         {errorDesactivar && (
-<<<<<<< HEAD
-          <p className={styles.error} role="alert">
-            {errorDesactivar}
-          </p>
-        )}
-        <div className={styles.accionesFormulario}>
-=======
           <p className="errorMessage" role="alert">
             {errorDesactivar}
           </p>
         )}
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -500,17 +402,10 @@ function CatalogoCuentasSeccion() {
       </Modal>
 
       <Modal titulo="Reactivar cuenta" abierto={Boolean(aReactivar)} onCerrar={() => setAReactivar(null)}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres reactivar la cuenta "{aReactivar?.codigo} — {aReactivar?.nombre}"?
-        </p>
-        <div className={styles.accionesFormulario}>
-=======
         <p className="confirmText">
           ¿Confirmas que quieres reactivar la cuenta "{aReactivar?.codigo} — {aReactivar?.nombre}"?
         </p>
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setAReactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -525,8 +420,6 @@ function CatalogoCuentasSeccion() {
 
 // --- Libro diario -----------------------------------------------------
 
-<<<<<<< HEAD
-=======
 function sumasAsiento(asiento: AsientoContable) {
   let cargos = 0
   let abonos = 0
@@ -537,7 +430,6 @@ function sumasAsiento(asiento: AsientoContable) {
   return { cargos, abonos }
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 function LibroDiarioSeccion() {
   const { data: cuentas } = useCuentasContables()
   const [origenFiltro, setOrigenFiltro] = useState<TipoOrigenAsiento | ''>('')
@@ -545,10 +437,7 @@ function LibroDiarioSeccion() {
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [expandidos, setExpandidos] = useState<Set<number>>(new Set())
-<<<<<<< HEAD
-=======
   const [limite, setLimite] = useState<LimiteLista>('10')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const filtros = {
     tipo_origen: origenFiltro || undefined,
@@ -559,8 +448,6 @@ function LibroDiarioSeccion() {
   const { data: asientos, isLoading } = useLibroDiario(filtros)
   const exportar = useExportarContabilidad()
 
-<<<<<<< HEAD
-=======
   const hayFiltros = Boolean(origenFiltro || cuentaFiltro || fechaDesde || fechaHasta)
 
   function limpiarFiltros() {
@@ -570,7 +457,6 @@ function LibroDiarioSeccion() {
     setFechaHasta('')
   }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   function alternarExpandido(id: number) {
     setExpandidos((actual) => {
       const nuevo = new Set(actual)
@@ -580,21 +466,12 @@ function LibroDiarioSeccion() {
     })
   }
 
-<<<<<<< HEAD
-=======
   // El CSV exporta todo lo filtrado; el límite solo recorta lo que se ve.
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   async function alExportar() {
     const blob = await exportar.mutateAsync({ tipo: 'libro_diario', filtros })
     descargarBlob(blob, 'libro-diario.csv')
   }
 
-<<<<<<< HEAD
-  return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.subtitulo}>Libro diario</h2>
-=======
   const lista = asientos ?? []
   // La API ya los entrega del más reciente al más antiguo.
   const visibles = limite === 'todos' ? lista : lista.slice(0, Number(limite))
@@ -603,19 +480,13 @@ function LibroDiarioSeccion() {
     <section className="tabPanel">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Libro diario</h2>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         <BotonPrimario variante="secundario" onClick={alExportar} disabled={exportar.isPending}>
           {exportar.isPending ? 'Exportando…' : 'Exportar CSV'}
         </BotonPrimario>
       </div>
 
-<<<<<<< HEAD
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
-=======
       <div className="filters">
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Origen
           <select value={origenFiltro} onChange={(e) => setOrigenFiltro(e.target.value as TipoOrigenAsiento | '')}>
             <option value="">Todos</option>
@@ -627,11 +498,7 @@ function LibroDiarioSeccion() {
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-=======
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Cuenta
           <select value={cuentaFiltro} onChange={(e) => setCuentaFiltro(e.target.value ? Number(e.target.value) : '')}>
             <option value="">Todas</option>
@@ -643,21 +510,11 @@ function LibroDiarioSeccion() {
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-=======
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Hasta
-          <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
-        </label>
-=======
         <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
@@ -668,54 +525,10 @@ function LibroDiarioSeccion() {
             Limpiar filtros
           </button>
         )}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </div>
 
       {isLoading ? (
         <p>Cargando asientos…</p>
-<<<<<<< HEAD
-      ) : (asientos ?? []).length === 0 ? (
-        <p className={styles.mensajeVacio}>Todavía no hay asientos contables registrados.</p>
-      ) : (
-        <div className={styles.listaAsientos}>
-          {(asientos ?? []).map((asiento: AsientoContable) => (
-            <div key={asiento.id} className={styles.asiento}>
-              <button
-                type="button"
-                className={styles.asientoEncabezado}
-                onClick={() => alternarExpandido(asiento.id)}
-                aria-expanded={expandidos.has(asiento.id)}
-              >
-                <span>{expandidos.has(asiento.id) ? '▾' : '▸'}</span>
-                <span>{new Date(asiento.fecha).toLocaleString('es-MX')}</span>
-                <span>{asiento.concepto}</span>
-                <span className={styles.origenAsiento}>{ETIQUETAS_ORIGEN_ASIENTO[asiento.tipo_origen]}</span>
-              </button>
-
-              {expandidos.has(asiento.id) && (
-                <table className={styles.tablaMovimientos}>
-                  <thead>
-                    <tr>
-                      <th>Cuenta</th>
-                      <th>Cargo</th>
-                      <th>Abono</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {asiento.movimientos.map((movimiento) => (
-                      <tr key={movimiento.id}>
-                        <td>{movimiento.cuenta_codigo} — {movimiento.cuenta_nombre}</td>
-                        <td>{movimiento.tipo_movimiento === 'cargo' ? movimiento.monto : ''}</td>
-                        <td>{movimiento.tipo_movimiento === 'abono' ? movimiento.monto : ''}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          ))}
-        </div>
-=======
       ) : lista.length === 0 ? (
         <p className="emptyState">
           {hayFiltros
@@ -809,7 +622,6 @@ function LibroDiarioSeccion() {
             })}
           </div>
         </>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
     </section>
   )
@@ -825,18 +637,13 @@ function BalanceComprobacionSeccion() {
   const { data: filas, isLoading } = useBalanceComprobacion(filtros)
   const exportar = useExportarContabilidad()
 
-<<<<<<< HEAD
-=======
   const hayFiltros = Boolean(fechaDesde || fechaHasta)
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   async function alExportar() {
     const blob = await exportar.mutateAsync({ tipo: 'balance', filtros })
     descargarBlob(blob, 'balance-comprobacion.csv')
   }
 
-<<<<<<< HEAD
-=======
   const sumas = useMemo(() => {
     const lista = filas ?? []
     return {
@@ -845,17 +652,10 @@ function BalanceComprobacionSeccion() {
     }
   }, [filas])
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const columnas: ColumnaTabla<FilaBalance>[] = [
     { clave: 'codigo', encabezado: 'Código' },
     { clave: 'nombre', encabezado: 'Cuenta' },
     { clave: 'tipo', encabezado: 'Tipo', render: (fila) => ETIQUETAS_TIPO_CUENTA[fila.tipo] },
-<<<<<<< HEAD
-    { clave: 'total_cargos', encabezado: 'Total cargos' },
-    { clave: 'total_abonos', encabezado: 'Total abonos' },
-    {
-      clave: 'saldo',
-=======
     {
       clave: 'total_cargos',
       alineacion: 'derecha',
@@ -871,61 +671,37 @@ function BalanceComprobacionSeccion() {
     {
       clave: 'saldo',
       alineacion: 'derecha',
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       encabezado: 'Saldo',
       render: (fila) => {
         const saldo = Number(fila.saldo)
         if (saldo === 0) return '—'
         return saldo > 0 ? (
-<<<<<<< HEAD
-          <span className={styles.saldoDeudor}>{fila.saldo} (deudor)</span>
-        ) : (
-          <span className={styles.saldoAcreedor}>{Math.abs(saldo).toFixed(2)} (acreedor)</span>
-=======
           <span className={`${styles.debitBalance} cellNoWrap`}>{formatearImporte(saldo)} (deudor)</span>
         ) : (
           <span className={`${styles.creditBalance} cellNoWrap`}>{formatearImporte(Math.abs(saldo))} (acreedor)</span>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         )
       },
     },
   ]
 
   return (
-<<<<<<< HEAD
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.subtitulo}>Balance de comprobación</h2>
-=======
     <section className="tabPanel">
       <div className="sectionHeader">
         <div className={styles.titleWithStatus}>
           <h2 className="sectionTitle">Balance de comprobación</h2>
           {filas && filas.length > 0 && <EtiquetaCuadre cargos={sumas.cargos} abonos={sumas.abonos} />}
         </div>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         <BotonPrimario variante="secundario" onClick={alExportar} disabled={exportar.isPending}>
           {exportar.isPending ? 'Exportando…' : 'Exportar CSV'}
         </BotonPrimario>
       </div>
 
-<<<<<<< HEAD
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
-=======
       <div className="filters">
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Hasta
-          <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
-        </label>
-=======
         <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
@@ -943,15 +719,11 @@ function BalanceComprobacionSeccion() {
             Limpiar filtros
           </button>
         )}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </div>
 
       {isLoading ? (
         <p>Cargando balance…</p>
       ) : (
-<<<<<<< HEAD
-        <Tabla columnas={columnas} datos={filas ?? []} claveFila="cuenta" mensajeVacio="No hay cuentas para mostrar." />
-=======
         <Tabla
           columnas={columnas}
           datos={filas ?? []}
@@ -959,7 +731,6 @@ function BalanceComprobacionSeccion() {
           mensajeVacio="No hay cuentas para mostrar."
           filaPie={['Sumas', '', '', formatearImporte(sumas.cargos), formatearImporte(sumas.abonos), '']}
         />
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
     </section>
   )

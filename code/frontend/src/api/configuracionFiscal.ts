@@ -10,8 +10,6 @@ export interface DatosFiscalesEmpresa {
 
 export type DatosFiscalesEmpresaFormulario = Omit<DatosFiscalesEmpresa, 'completa'>
 
-<<<<<<< HEAD
-=======
 // Catálogo c_RegimenFiscal del SAT (CFDI 4.0). Solo se usa para describir el
 // código capturado; el campo acepta cualquier código, así que un catálogo
 // desactualizado no bloquea nada (revisar junto con los demás catálogos del
@@ -38,7 +36,6 @@ export const REGIMENES_FISCALES: { valor: string; etiqueta: string }[] = [
   { valor: '626', etiqueta: '626 — Régimen Simplificado de Confianza' },
 ]
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export interface ConfiguracionPAC {
   proveedor: string
   api_key_configurada: boolean

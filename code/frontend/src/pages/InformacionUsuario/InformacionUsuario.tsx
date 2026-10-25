@@ -1,18 +1,9 @@
-<<<<<<< HEAD
-import { useState, type FormEvent } from 'react'
-=======
 import { useState, type FormEvent, type ReactNode } from 'react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { Link } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Icono } from '../../components/common/Icono'
 import { Modal } from '../../components/common/Modal'
-<<<<<<< HEAD
-import type { InformacionUsuarioFormulario } from '../../api/usuarios'
-import { useActualizarMiInformacion, useUsuarioActual } from '../../hooks/useUsuarioActual'
-import { obtenerIniciales } from '../../utils/texto'
-=======
 import { SelectorFotoPerfil } from '../../components/common/SelectorFotoPerfil'
 import {
   DESCRIPCIONES_ROL,
@@ -22,7 +13,6 @@ import {
   type Usuario,
 } from '../../api/usuarios'
 import { useActualizarMiInformacion, useUsuarioActual } from '../../hooks/useUsuarioActual'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import styles from './InformacionUsuario.module.css'
 
 interface ErrorGuardarInformacion {
@@ -32,10 +22,7 @@ interface ErrorGuardarInformacion {
   first_name?: string[]
   last_name?: string[]
   rol_usuario?: string[]
-<<<<<<< HEAD
-=======
   foto_usuario?: string[]
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 function extraerMensajeError(err: unknown): string {
@@ -50,16 +37,11 @@ function extraerMensajeError(err: unknown): string {
     datos?.first_name?.[0] ??
     datos?.last_name?.[0] ??
     datos?.rol_usuario?.[0] ??
-<<<<<<< HEAD
-=======
     datos?.foto_usuario?.[0] ??
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     'No se pudo guardar la información. Intenta de nuevo.'
   )
 }
 
-<<<<<<< HEAD
-=======
 const CAMPOS: (keyof InformacionUsuarioFormulario)[] = ['username', 'email', 'first_name', 'last_name', 'rol_usuario']
 
 // Valores guardados con la misma forma que el formulario: `rol_usuario` solo
@@ -74,7 +56,6 @@ function valoresDe(usuario: Usuario): InformacionUsuarioFormulario {
   }
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export function InformacionUsuario() {
   const { data: usuario, isLoading } = useUsuarioActual()
   const actualizar = useActualizarMiInformacion()
@@ -87,12 +68,9 @@ export function InformacionUsuario() {
   const [confirmando, setConfirmando] = useState(false)
   const [errorConfirmacion, setErrorConfirmacion] = useState('')
   const [exito, setExito] = useState(false)
-<<<<<<< HEAD
-=======
   // Fotografía: `undefined` sin cambio, archivo nuevo o `null` para quitarla.
   // Se guarda con el resto del formulario, por la misma confirmación.
   const [cambioFoto, setCambioFoto] = useState<CambioFoto | undefined>(undefined)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const esAdmin = usuario?.rol === 'admin'
 
@@ -102,17 +80,6 @@ export function InformacionUsuario() {
   // ediciones en curso ante un refetch posterior en segundo plano.
   if (usuario && usuario.id !== usuarioIdCargado) {
     setUsuarioIdCargado(usuario.id)
-<<<<<<< HEAD
-    setValores({
-      username: usuario.username,
-      email: usuario.email,
-      first_name: usuario.first_name,
-      last_name: usuario.last_name,
-      ...(usuario.rol === 'admin' ? { rol_usuario: usuario.rol } : {}),
-    })
-  }
-
-=======
     setValores(valoresDe(usuario))
   }
 
@@ -124,14 +91,11 @@ export function InformacionUsuario() {
   // Un admin que se cambia a operador pierde los módulos de admin al guardar.
   const seDegrada = esAdmin && valores.rol_usuario === 'operador'
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   function actualizarCampo(campo: keyof InformacionUsuarioFormulario, valor: string) {
     setExito(false)
     setValores((v) => ({ ...v, [campo]: valor }))
   }
 
-<<<<<<< HEAD
-=======
   function cambiarFoto(cambio: CambioFoto | undefined) {
     setExito(false)
     setCambioFoto(cambio)
@@ -145,7 +109,6 @@ export function InformacionUsuario() {
     setExito(false)
   }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     setErrorFormulario('')
@@ -166,122 +129,16 @@ export function InformacionUsuario() {
   async function confirmarGuardar() {
     setErrorConfirmacion('')
     try {
-<<<<<<< HEAD
-      await actualizar.mutateAsync(valores)
-      setConfirmando(false)
-=======
       // Sin cambio de fotografía, la petición es la misma de siempre.
       await actualizar.mutateAsync(cambioFoto === undefined ? valores : { ...valores, foto_usuario: cambioFoto })
       setConfirmando(false)
       setCambioFoto(undefined)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       setExito(true)
     } catch (err) {
       setErrorConfirmacion(extraerMensajeError(err))
     }
   }
 
-<<<<<<< HEAD
-  const rolTexto = usuario?.rol === 'admin' ? 'Administrador' : 'Operador'
-
-  return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Información de Usuario</h1>
-
-      {isLoading ? (
-        <p>Cargando información…</p>
-      ) : (
-        <>
-          <div className={styles.identidad}>
-            <span className={styles.avatar} aria-hidden="true">
-              {obtenerIniciales(usuario?.nombre)}
-            </span>
-            <div>
-              <p className={styles.nombreCompleto}>{usuario?.nombre}</p>
-              <p className={styles.usernameEtiqueta}>@{usuario?.username}</p>
-            </div>
-          </div>
-
-          <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-            <label className={styles.campo}>
-              Nombre de usuario
-              <input
-                type="text"
-                value={valores.username}
-                onChange={(evento) => actualizarCampo('username', evento.target.value)}
-                required
-              />
-            </label>
-
-            <label className={styles.campo}>
-              Correo electrónico
-              <input
-                type="email"
-                value={valores.email}
-                onChange={(evento) => actualizarCampo('email', evento.target.value)}
-                required
-              />
-            </label>
-
-            <Link to="/recuperar-contrasena" className={styles.enlace}>
-              <Icono nombre="candado" tamano={14} />
-              Cambiar contraseña
-            </Link>
-
-            <label className={styles.campo}>
-              Nombre(s)
-              <input
-                type="text"
-                value={valores.first_name}
-                onChange={(evento) => actualizarCampo('first_name', evento.target.value)}
-                required
-              />
-            </label>
-
-            <label className={styles.campo}>
-              Apellidos
-              <input
-                type="text"
-                value={valores.last_name}
-                onChange={(evento) => actualizarCampo('last_name', evento.target.value)}
-                placeholder="Paterno y materno"
-                required
-              />
-            </label>
-
-            {esAdmin ? (
-              <label className={styles.campo}>
-                Rol
-                <select
-                  value={valores.rol_usuario}
-                  onChange={(evento) => actualizarCampo('rol_usuario', evento.target.value)}
-                >
-                  <option value="admin">Administrador</option>
-                  <option value="operador">Operador</option>
-                </select>
-              </label>
-            ) : (
-              <div className={styles.campo}>
-                Rol
-                <p className={styles.valorSoloLectura}>{rolTexto}</p>
-              </div>
-            )}
-
-            {errorFormulario && (
-              <p className={styles.error} role="alert">
-                {errorFormulario}
-              </p>
-            )}
-
-            {exito && (
-              <p className={styles.exito} role="status">
-                Tu información se actualizó correctamente.
-              </p>
-            )}
-
-            <div className={styles.accionesFormulario}>
-              <BotonPrimario type="submit">Guardar cambios</BotonPrimario>
-=======
   const rolGuardado = usuario?.rol ?? 'operador'
   // Para admin, la descripción sigue al valor elegido en el selector.
   const rolDescrito = esAdmin ? (valores.rol_usuario ?? rolGuardado) : rolGuardado
@@ -453,36 +310,23 @@ export function InformacionUsuario() {
                   <BotonPrimario type="submit">Guardar cambios</BotonPrimario>
                 </div>
               </div>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             </div>
           </form>
         </>
       )}
 
       <Modal titulo="¿Estás seguro?" abierto={confirmando} onCerrar={cancelarConfirmacion}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-=======
         <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres guardar los cambios en tu información de usuario?
         </p>
 
         {errorConfirmacion && (
-<<<<<<< HEAD
-          <p className={styles.error} role="alert">
-=======
           <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {errorConfirmacion}
           </p>
         )}
 
-<<<<<<< HEAD
-        <div className={styles.accionesFormulario}>
-=======
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={cancelarConfirmacion}>
             Cancelar
           </BotonPrimario>
@@ -494,8 +338,6 @@ export function InformacionUsuario() {
     </div>
   )
 }
-<<<<<<< HEAD
-=======
 
 // Fila de ajustes: título y explicación a la izquierda, tarjeta a la derecha
 // (mismo marcado que en Configuración Fiscal; las clases son globales).
@@ -510,4 +352,3 @@ function FilaAjustes({ titulo, descripcion, children }: { titulo: string; descri
     </section>
   )
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

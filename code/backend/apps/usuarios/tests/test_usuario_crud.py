@@ -7,7 +7,7 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -15,7 +15,7 @@ def admin(db):
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -52,24 +52,24 @@ def test_operador_no_puede_leer_un_usuario_puntual(operador_client, admin):
 def test_operador_no_puede_crear_usuario(operador_client):
     response = operador_client.post(
         '/api/usuarios/',
-        {'email': 'nuevo@flebosil.test', 'password': 'clave-super-123', 'rol_usuario': 'operador'},
+        {'email': 'nuevo@synapse.test', 'password': 'clave-super-123', 'rol_usuario': 'operador'},
         format='json',
     )
     assert response.status_code == 403
-    assert not Usuario.objects.filter(email='nuevo@flebosil.test').exists()
+    assert not Usuario.objects.filter(email='nuevo@synapse.test').exists()
 
 
 @pytest.mark.django_db
 def test_admin_crea_usuario_con_password_hasheado(admin_client):
     response = admin_client.post(
         '/api/usuarios/',
-        {'email': 'nuevo@flebosil.test', 'password': 'clave-super-123', 'rol_usuario': 'operador'},
+        {'email': 'nuevo@synapse.test', 'password': 'clave-super-123', 'rol_usuario': 'operador'},
         format='json',
     )
     assert response.status_code == 201
     assert 'password' not in response.data
 
-    usuario = Usuario.objects.get(email='nuevo@flebosil.test')
+    usuario = Usuario.objects.get(email='nuevo@synapse.test')
     assert usuario.password != 'clave-super-123'
     assert usuario.check_password('clave-super-123')
 
@@ -77,7 +77,7 @@ def test_admin_crea_usuario_con_password_hasheado(admin_client):
 @pytest.mark.django_db
 def test_crear_usuario_sin_password_es_rechazado(admin_client):
     response = admin_client.post(
-        '/api/usuarios/', {'email': 'sinpass@flebosil.test', 'rol_usuario': 'operador'}, format='json',
+        '/api/usuarios/', {'email': 'sinpass@synapse.test', 'rol_usuario': 'operador'}, format='json',
     )
     assert response.status_code == 400
 
@@ -131,7 +131,7 @@ def test_no_se_puede_desactivar_al_ultimo_admin_activo(admin):
     from apps.usuarios.views import UsuarioViewSet
 
     otro_admin = Usuario.objects.create_user(
-        username='admin2', email='admin2@flebosil.test', password='clave-segura-123',
+        username='admin2', email='admin2@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
     # `admin` (fixture) queda como el único admin activo del sistema.
@@ -149,7 +149,7 @@ def test_no_se_puede_desactivar_al_ultimo_admin_activo(admin):
 @pytest.mark.django_db
 def test_se_puede_desactivar_un_admin_si_existe_otro_admin_activo(admin_client, admin):
     otro_admin = Usuario.objects.create_user(
-        username='admin2', email='admin2@flebosil.test', password='clave-segura-123',
+        username='admin2', email='admin2@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
     response = admin_client.delete(f'/api/usuarios/{otro_admin.id}/')
@@ -170,7 +170,7 @@ def test_empleado_ya_vinculado_no_puede_asignarse_a_otro_usuario(admin_client, o
     response = admin_client.post(
         '/api/usuarios/',
         {
-            'email': 'otro@flebosil.test', 'password': 'clave-super-123', 'rol_usuario': 'operador',
+            'email': 'otro@synapse.test', 'password': 'clave-super-123', 'rol_usuario': 'operador',
             'empleado': empleado.id,
         },
         format='json',

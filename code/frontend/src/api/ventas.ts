@@ -2,8 +2,6 @@ import { apiClient } from './client'
 
 export type EstadoVenta = 'pendiente' | 'entregada' | 'cancelada'
 
-<<<<<<< HEAD
-=======
 // Etiquetas compartidas por Ventas, DetalleVenta y el estado de cuenta de Terceros.
 export const ETIQUETAS_ESTADO_VENTA: Record<EstadoVenta, string> = {
   pendiente: 'Pendiente',
@@ -11,7 +9,6 @@ export const ETIQUETAS_ESTADO_VENTA: Record<EstadoVenta, string> = {
   cancelada: 'Cancelada',
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export interface DetalleVenta {
   id: number
   producto: number
@@ -57,11 +54,8 @@ export interface FiltrosVentas {
   producto?: number
   fecha_desde?: string
   fecha_hasta?: string
-<<<<<<< HEAD
-=======
   // Solo tiene efecto para el admin; el operador siempre recibe solo las suyas.
   usuario?: number
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export async function getVentas(filtros: FiltrosVentas): Promise<Venta[]> {

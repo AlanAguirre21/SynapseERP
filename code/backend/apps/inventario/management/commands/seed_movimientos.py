@@ -32,7 +32,7 @@ class Command(BaseCommand):
             self.stdout.write('Ya existen movimientos de inventario — no se insertó nada nuevo.')
             return
 
-        usuario = Usuario.objects.filter(email='admin@flebosil.test').first() or Usuario.objects.first()
+        usuario = Usuario.objects.filter(email='admin@synapse.test').first() or Usuario.objects.first()
         if usuario is None:
             self.stderr.write(
                 'No hay ningún usuario en la base de datos — corre antes '

@@ -7,11 +7,8 @@ import styles from './Sidebar.module.css'
 interface SidebarProps {
   modulos: ModuloMenu[]
   colapsado: boolean
-<<<<<<< HEAD
-=======
   // Se llama al elegir un destino; el layout lo usa para cerrar el panel en móvil.
   onNavegar?: () => void
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 const ICONO_POR_SLUG: Record<string, NombreIcono> = {
@@ -30,43 +27,6 @@ const ICONO_POR_SLUG: Record<string, NombreIcono> = {
   usuarios: 'usuarios',
 }
 
-<<<<<<< HEAD
-export function Sidebar({ modulos, colapsado }: SidebarProps) {
-  return (
-    <aside className={`${styles.sidebar} ${colapsado ? styles.colapsado : ''}`}>
-      <nav>
-        <ul className={styles.listaInicio}>
-          <li>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                isActive ? `${styles.enlaceInicio} ${styles.activoInicio}` : styles.enlaceInicio
-              }
-            >
-              <Icono nombre="casa" tamano={19} className={styles.iconoInicio} />
-              <span>Inicio</span>
-            </NavLink>
-          </li>
-        </ul>
-        <ul className={styles.lista}>
-          {modulos.map((modulo) => {
-            const icono = ICONO_POR_SLUG[modulo.slug]
-            return (
-              <li key={modulo.slug}>
-                <NavLink
-                  to={modulo.ruta}
-                  className={({ isActive }) =>
-                    isActive ? `${styles.enlace} ${styles.activo}` : styles.enlace
-                  }
-                >
-                  {icono && <Icono nombre={icono} tamano={19} className={styles.icono} />}
-                  <span>{modulo.nombre}</span>
-                </NavLink>
-              </li>
-            )
-          })}
-        </ul>
-=======
 // Agrupación solo de presentación: qué módulos existen y cuáles ve cada rol lo
 // decide el backend (`modulos`); aquí únicamente se ordenan bajo un rótulo.
 const GRUPOS: { titulo: string; slugs: string[] }[] = [
@@ -138,7 +98,6 @@ export function Sidebar({ modulos, colapsado, onNavegar }: SidebarProps) {
             </ul>
           </div>
         ))}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </nav>
     </aside>
   )

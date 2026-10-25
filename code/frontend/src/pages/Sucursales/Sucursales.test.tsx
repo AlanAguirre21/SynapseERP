@@ -1,14 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-<<<<<<< HEAD
-import { describe, expect, it, vi } from 'vitest'
-
-=======
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { AlertaStock } from '../../api/inventario'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import {
   useCrearSucursal,
@@ -21,10 +16,7 @@ import { Sucursales } from './Sucursales'
 
 vi.mock('../../hooks/useUsuarioActual')
 vi.mock('../../hooks/useSucursales')
-<<<<<<< HEAD
-=======
 vi.mock('../../hooks/useAlertasStock')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const useSucursalesMock = vi.mocked(useSucursales)
 const useCrearSucursalMock = vi.mocked(useCrearSucursal)
@@ -41,9 +33,6 @@ const SUCURSALES = [
   { id: 2, nombre_sucursal: 'Norte', ubicacion_sucursal: 'Av. Norte', telefono_sucursal: '555-0002', activo: false },
 ]
 
-<<<<<<< HEAD
-function mockearHooksSucursales(reactivarMock: ReturnType<typeof vi.fn> = vi.fn()) {
-=======
 function mockAlertas(data: AlertaStock[] | undefined) {
   vi.mocked(useAlertasStock).mockReturnValue({ data } as unknown as ReturnType<typeof useAlertasStock>)
 }
@@ -59,7 +48,6 @@ function renderizar() {
 
 function mockearHooksSucursales(reactivarMock: ReturnType<typeof vi.fn> = vi.fn()) {
   mockAlertas([])
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   useSucursalesMock.mockReturnValue(
     { data: SUCURSALES, isLoading: false } as unknown as ReturnType<typeof useSucursales>,
   )
@@ -82,11 +70,7 @@ describe('Sucursales', () => {
     mockearHooksSucursales()
     mockUsuarioActual({ data: { rol: 'operador' } })
 
-<<<<<<< HEAD
-    render(<Sucursales />)
-=======
     renderizar()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     expect(screen.getByText('Matriz')).toBeInTheDocument()
     expect(screen.getByText('Centro')).toBeInTheDocument()
@@ -100,11 +84,7 @@ describe('Sucursales', () => {
     mockearHooksSucursales()
     mockUsuarioActual({ data: { rol: 'operador' } })
 
-<<<<<<< HEAD
-    render(<Sucursales />)
-=======
     renderizar()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     expect(screen.queryByRole('button', { name: /nueva sucursal/i })).not.toBeInTheDocument()
     expect(screen.queryByText('Editar')).not.toBeInTheDocument()
@@ -116,11 +96,7 @@ describe('Sucursales', () => {
     mockearHooksSucursales()
     mockUsuarioActual({ data: { rol: 'admin' } })
 
-<<<<<<< HEAD
-    render(<Sucursales />)
-=======
     renderizar()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     expect(screen.getByRole('button', { name: /nueva sucursal/i })).toBeInTheDocument()
     expect(screen.getAllByText('Editar')).toHaveLength(2)
@@ -135,11 +111,7 @@ describe('Sucursales', () => {
     mockearHooksSucursales(reactivarMock)
     mockUsuarioActual({ data: { rol: 'admin' } })
 
-<<<<<<< HEAD
-    render(<Sucursales />)
-=======
     renderizar()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     fireEvent.click(screen.getByText('Reactivar'))
 
     expect(
@@ -159,11 +131,7 @@ describe('Sucursales', () => {
     mockearHooksSucursales(reactivarMock)
     mockUsuarioActual({ data: { rol: 'admin' } })
 
-<<<<<<< HEAD
-    render(<Sucursales />)
-=======
     renderizar()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     fireEvent.click(screen.getByText('Reactivar'))
 
     const dialogo = screen.getByRole('dialog', { name: /reactivar sucursal/i })
@@ -174,8 +142,6 @@ describe('Sucursales', () => {
     )
   })
 })
-<<<<<<< HEAD
-=======
 
 describe('Sucursales — directorio de ubicaciones', () => {
   function alerta(sucursal: string, stockActual: string, nombre = 'Ítem'): AlertaStock {
@@ -305,4 +271,3 @@ describe('Sucursales — directorio de ubicaciones', () => {
     expect(within(tarjeta('Norte')).queryByRole('link', { name: 'Ver inventario' })).not.toBeInTheDocument()
   })
 })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

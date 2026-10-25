@@ -13,14 +13,14 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
 
 
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123', rol_usuario='operador',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123', rol_usuario='operador',
     )
 
 
@@ -40,7 +40,7 @@ def operador_client(operador):
 
 DATOS_FISCALES_COMPLETOS = {
     'rfc': 'FSI010101ABC',
-    'razon_social': 'FleboSil S.A. de C.V.',
+    'razon_social': 'Synapse S.A. de C.V.',
     'regimen_fiscal': '601',
     'codigo_postal_fiscal': '01000',
 }

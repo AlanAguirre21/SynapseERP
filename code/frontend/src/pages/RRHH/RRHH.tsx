@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { Fragment, useState, type FormEvent } from 'react'
-
-import type { Departamento, Empleado, MotivoCambio, Posicion } from '../../api/rrhh'
-import { BotonPrimario } from '../../components/common/BotonPrimario'
-import { Modal } from '../../components/common/Modal'
-=======
 import { Fragment, useMemo, useState, type FormEvent } from 'react'
 
 import type {
@@ -18,7 +11,6 @@ import type {
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import {
   useContactosEmergencia,
   useCrearContactoEmergencia,
@@ -32,11 +24,7 @@ import {
   useReactivarDepartamento,
 } from '../../hooks/useDepartamentos'
 import { useCrearDependiente, useDependientes, useEliminarDependiente } from '../../hooks/useDependientes'
-<<<<<<< HEAD
-import { useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
-=======
 import { useAsignacionesVigentes, useEmpleadoPosicionesVigentes } from '../../hooks/useEmpleadoPosiciones'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import {
   useContratarEmpleado,
   useDesactivarEmpleado,
@@ -50,16 +38,11 @@ import {
   useEditarPosicion,
   usePosiciones,
   useReactivarPosicion,
-<<<<<<< HEAD
-} from '../../hooks/usePosiciones'
-import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
-=======
   useTodasLasPosiciones,
 } from '../../hooks/usePosiciones'
 import { useCrearSolicitudNomina } from '../../hooks/useSolicitudesNomina'
 import { normalizarBusqueda, obtenerIniciales } from '../../utils/texto'
 import { PestanaNominas } from './PestanaNominas'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import styles from './RRHH.module.css'
 
 function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: string): string {
@@ -79,8 +62,6 @@ function extraerMensajeError(err: unknown, campos: string[], mensajePorDefecto: 
   return mensajePorDefecto
 }
 
-<<<<<<< HEAD
-=======
 // Sangría del árbol de posiciones por nivel de profundidad (clases de
 // RRHH.module.css); los niveles más profundos reutilizan la última.
 const CLASES_NIVEL = [
@@ -96,7 +77,6 @@ function claseNivel(profundidad: number): string {
   return CLASES_NIVEL[Math.min(profundidad, CLASES_NIVEL.length - 1)] ?? ''
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 // Posiciones de un departamento, ordenadas de mayor a menor jerarquía
 // (raíces primero, luego sus subordinadas, profundidad primero) a partir de
 // `reporta_a` — se construye en el frontend porque el árbol de puestos de
@@ -133,11 +113,6 @@ function ordenarPorJerarquia(posiciones: Posicion[]): { posicion: Posicion; prof
 
 type LimiteLista = '5' | '10' | 'todos'
 
-<<<<<<< HEAD
-export function RRHH() {
-  const { data: departamentos, isLoading } = useDepartamentos()
-  const { data: empleados } = useEmpleadosRRHH()
-=======
 type PestañaRRHH = 'organizacion' | 'directorio' | 'nominas'
 
 const PESTAÑAS_RRHH: { clave: PestañaRRHH; etiqueta: string }[] = [
@@ -172,7 +147,6 @@ export function RRHH() {
     todasLasPosiciones && asignacionesVigentes
       ? todasLasPosiciones.filter((p) => p.activo && !ocupacion.get(p.id)).length
       : null
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const [departamentoId, setDepartamentoId] = useState<number | null>(null)
   const [formularioDepto, setFormularioDepto] = useState<'nuevo' | Departamento | null>(null)
   const desactivarDepto = useDesactivarDepartamento()
@@ -196,23 +170,6 @@ export function RRHH() {
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Recursos Humanos</h1>
-
-      {isLoading ? (
-        <p>Cargando departamentos…</p>
-      ) : (
-        <>
-          {/* Pestañas de departamento y sus acciones (editar/desactivar el
-              seleccionado, agregar uno nuevo) comparten la misma fila y el
-              mismo estilo de enlace — no hay una acción "primaria" aquí que
-              deba destacar más que las otras. La barra se muestra aunque no
-              haya departamentos, para que el enlace "Agregar departamento"
-              siga disponible desde el estado vacío. */}
-          <div className={styles.barraDepartamentos}>
-            <div className={styles.pestañas} role="tablist">
-=======
     <div className="page">
       <div className="pageHeader">
         <div className="pageHeading">
@@ -277,18 +234,13 @@ export function RRHH() {
               disponible aunque no haya ninguno. */}
           <div className={styles.departmentBar}>
             <div className={styles.departmentTabs} role="tablist">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {(departamentos ?? []).map((d) => (
                 <button
                   key={d.id}
                   type="button"
                   role="tab"
                   aria-selected={idSeleccionado === d.id}
-<<<<<<< HEAD
-                  className={idSeleccionado === d.id ? `${styles.pestaña} ${styles.pestañaActiva}` : styles.pestaña}
-=======
                   className={idSeleccionado === d.id ? 'tab tabActive' : 'tab'}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                   onClick={() => setDepartamentoId(d.id)}
                 >
                   {d.nombre_departamento}
@@ -297,54 +249,29 @@ export function RRHH() {
               ))}
             </div>
 
-<<<<<<< HEAD
-            <div className={styles.accionesDepartamento}>
-=======
             <div className={styles.departmentActions}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {departamentoSeleccionado && (
                 <>
                   <button
                     type="button"
-<<<<<<< HEAD
-                    className={styles.enlaceAccion}
-=======
                     className="actionLink"
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                     onClick={() => setFormularioDepto(departamentoSeleccionado)}
                   >
                     Editar departamento
                   </button>
                   <button
                     type="button"
-<<<<<<< HEAD
-                    className={departamentoSeleccionado.activo ? styles.enlaceAccionPeligro : styles.enlaceAccion}
-=======
                     className={departamentoSeleccionado.activo ? 'dangerActionLink' : 'actionLink'}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                     onClick={() => setConfirmarDeptoAbierto(true)}
                   >
                     {departamentoSeleccionado.activo ? 'Desactivar departamento' : 'Reactivar departamento'}
                   </button>
                 </>
               )}
-<<<<<<< HEAD
-              <button type="button" className={styles.enlaceAccion} onClick={() => setFormularioDepto('nuevo')}>
-                Agregar departamento
-              </button>
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             </div>
           </div>
 
           {departamentoSeleccionado ? (
-<<<<<<< HEAD
-            <PanelDepartamento departamento={departamentoSeleccionado} empleados={empleados ?? []} />
-          ) : (
-            <p className={styles.vacio}>Todavía no hay departamentos registrados.</p>
-          )}
-        </>
-=======
             <PanelDepartamento
               departamento={departamentoSeleccionado}
               empleados={empleados ?? []}
@@ -354,7 +281,6 @@ export function RRHH() {
             <p className="emptyState">Todavía no hay departamentos registrados.</p>
           )}
         </div>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
 
       <FormularioDepartamento
@@ -371,19 +297,11 @@ export function RRHH() {
           abierto={confirmarDeptoAbierto}
           onCerrar={() => setConfirmarDeptoAbierto(false)}
         >
-<<<<<<< HEAD
-          <p className={styles.textoConfirmacion}>
-            ¿Confirmas que quieres {departamentoSeleccionado.activo ? 'desactivar' : 'reactivar'} "
-            {departamentoSeleccionado.nombre_departamento}"?
-          </p>
-          <div className={styles.accionesFormulario}>
-=======
           <p className="confirmText">
             ¿Confirmas que quieres {departamentoSeleccionado.activo ? 'desactivar' : 'reactivar'} "
             {departamentoSeleccionado.nombre_departamento}"?
           </p>
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario variante="secundario" onClick={() => setConfirmarDeptoAbierto(false)}>
               Cancelar
             </BotonPrimario>
@@ -401,8 +319,6 @@ export function RRHH() {
   )
 }
 
-<<<<<<< HEAD
-=======
 // --- Directorio -------------------------------------------------------------
 
 type FiltroEstadoEmpleado = 'activos' | 'inactivos' | 'todos'
@@ -579,7 +495,6 @@ function PestañaDirectorio({
   )
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 // --- Departamentos ----------------------------------------------------------
 
 function FormularioDepartamento({
@@ -634,26 +549,15 @@ function FormularioDepartamento({
       abierto={abierto}
       onCerrar={onCerrar}
     >
-<<<<<<< HEAD
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
-=======
       <form className="form" onSubmit={alGuardar} noValidate>
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Nombre del departamento
           <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
         </label>
 
-<<<<<<< HEAD
-        {error && <p className={styles.error} role="alert">{error}</p>}
-
-        <div className={styles.accionesFormulario}>
-=======
         {error && <p className="errorMessage" role="alert">{error}</p>}
 
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={guardando}>
             {guardando ? 'Guardando…' : 'Guardar'}
@@ -670,9 +574,6 @@ function formatearMoneda(valor: string) {
   return `$${Number(valor).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-<<<<<<< HEAD
-function PanelDepartamento({ departamento, empleados }: { departamento: Departamento; empleados: Empleado[] }) {
-=======
 function textoOcupacion(cantidad: number): string {
   return cantidad === 1 ? '1 empleado' : `${cantidad} empleados`
 }
@@ -687,7 +588,6 @@ function PanelDepartamento({
   // `null` mientras cargan las asignaciones vigentes.
   ocupacion: Map<number, number> | null
 }) {
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const { data: posiciones, isLoading } = usePosiciones(departamento.id)
   const desactivarPosicion = useDesactivarPosicion()
   const reactivarPosicion = useReactivarPosicion()
@@ -709,92 +609,15 @@ function PanelDepartamento({
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.panel}>
-      <div className={styles.encabezado}>
-        <h2 className={styles.subtitulo}>Posiciones de {departamento.nombre_departamento}</h2>
-=======
     <div className="card">
       <div className="pageHeader">
         <h2 className="sectionTitle">Posiciones de {departamento.nombre_departamento}</h2>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         <BotonPrimario onClick={() => setFormularioPosicion('nueva')}>Agregar posición</BotonPrimario>
       </div>
 
       {isLoading ? (
         <p>Cargando posiciones…</p>
       ) : jerarquia.length === 0 ? (
-<<<<<<< HEAD
-        <p className={styles.vacio}>Este departamento todavía no tiene posiciones.</p>
-      ) : (
-        <table className={styles.tablaPosiciones}>
-          <thead>
-            <tr>
-              <th>Posición</th>
-              <th>Rango salarial</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jerarquia.map(({ posicion, profundidad }) => {
-              const esRaiz = profundidad === 0
-              const expandida = posicionExpandidaId === posicion.id
-              return (
-                <Fragment key={posicion.id}>
-                  <tr
-                    className={styles.filaPosicion}
-                    onClick={() => setPosicionExpandidaId(expandida ? null : posicion.id)}
-                    aria-expanded={expandida}
-                  >
-                    <td className={esRaiz ? styles.celdaPosicionRaiz : undefined}>
-                      <span
-                        className={styles.tituloPosicion}
-                        style={{ paddingLeft: `${profundidad * 24}px` }}
-                      >
-                        <span className={styles.indicadorExpandir}>{expandida ? '▾' : '▸'}</span>
-                        {!esRaiz && <span className={styles.conectorArbol}>└</span>}
-                        <span className={esRaiz ? styles.nombrePosicionRaiz : styles.nombrePosicionHija}>
-                          {posicion.titulo_posicion}
-                        </span>
-                      </span>
-                    </td>
-                    <td className={styles.celdaSalario}>
-                      {formatearMoneda(posicion.salario_minimo)} – {formatearMoneda(posicion.salario_maximo)}
-                    </td>
-                    <td>
-                      <span className={posicion.activo ? styles.estadoActivo : styles.estadoInactivo}>
-                        {posicion.activo ? 'Activa' : 'Inactiva'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.accionesFila} onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className={styles.enlaceAccion} onClick={() => setFormularioPosicion(posicion)}>
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className={posicion.activo ? styles.enlaceAccionPeligro : styles.enlaceAccion}
-                          onClick={() => setPosicionAConfirmar(posicion)}
-                        >
-                          {posicion.activo ? 'Desactivar' : 'Reactivar'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {expandida && (
-                    <tr>
-                      <td colSpan={4} className={styles.celdaExpandida}>
-                        <PanelEmpleadosPorPosicion posicion={posicion} empleados={empleados} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              )
-            })}
-          </tbody>
-        </table>
-=======
         <p className="emptyState">Este departamento todavía no tiene posiciones.</p>
       ) : (
         <div className="tableScroll">
@@ -876,7 +699,6 @@ function PanelDepartamento({
             </tbody>
           </table>
         </div>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
 
       <FormularioPosicion
@@ -893,19 +715,11 @@ function PanelDepartamento({
         abierto={Boolean(posicionAConfirmar)}
         onCerrar={() => setPosicionAConfirmar(null)}
       >
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres {posicionAConfirmar?.activo ? 'desactivar' : 'reactivar'} "
-          {posicionAConfirmar?.titulo_posicion}"?
-        </p>
-        <div className={styles.accionesFormulario}>
-=======
         <p className="confirmText">
           ¿Confirmas que quieres {posicionAConfirmar?.activo ? 'desactivar' : 'reactivar'} "
           {posicionAConfirmar?.titulo_posicion}"?
         </p>
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setPosicionAConfirmar(null)}>
             Cancelar
           </BotonPrimario>
@@ -971,22 +785,13 @@ function FormularioPosicion({
 
   return (
     <Modal titulo={posicionEnEdicion ? 'Editar posición' : 'Nueva posición'} abierto={abierto} onCerrar={onCerrar}>
-<<<<<<< HEAD
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
-=======
       <form className="form" onSubmit={alGuardar} noValidate>
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Título de la posición
           <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campo}>
-=======
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Reporta a (opcional)
           <select
             value={reportaA ?? ''}
@@ -999,33 +804,19 @@ function FormularioPosicion({
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campo}>
-=======
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Salario mínimo
           <input type="number" step="0.01" min="0" value={salarioMinimo} onChange={(e) => setSalarioMinimo(e.target.value)} />
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campo}>
-=======
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Salario máximo
           <input type="number" step="0.01" min="0" value={salarioMaximo} onChange={(e) => setSalarioMaximo(e.target.value)} />
         </label>
 
-<<<<<<< HEAD
-        {error && <p className={styles.error} role="alert">{error}</p>}
-
-        <div className={styles.accionesFormulario}>
-=======
         {error && <p className="errorMessage" role="alert">{error}</p>}
 
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={guardando}>
             {guardando ? 'Guardando…' : 'Guardar'}
@@ -1038,8 +829,6 @@ function FormularioPosicion({
 
 // --- Empleados por posición, con selector 5/10/todos ------------------------
 
-<<<<<<< HEAD
-=======
 // Campos de la ficha, agrupados igual en consulta, edición y alta.
 const GRUPOS_EMPLEADO: {
   titulo: string
@@ -1093,7 +882,6 @@ function AvatarEmpleado({ empleado, tamano }: { empleado: Empleado; tamano: 'chi
   )
 }
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion; empleados: Empleado[] }) {
   const { data: asignaciones, isLoading } = useEmpleadoPosicionesVigentes(posicion.id)
   const [limite, setLimite] = useState<LimiteLista>('5')
@@ -1114,24 +902,14 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
   const empleadoSeleccionado = empleadoSeleccionadoId !== null ? empleadoDe(empleadoSeleccionadoId) ?? null : null
 
   return (
-<<<<<<< HEAD
-    <div className={styles.panelEmpleados}>
-      <div className={styles.encabezadoEmpleados}>
-        <div className={styles.selectorLimite} role="group" aria-label="Cantidad de empleados a mostrar">
-=======
     <div className={styles.employeePanel}>
       <div className="sectionHeader">
         <div className="segmented" role="group" aria-label="Cantidad de empleados a mostrar">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {(['5', '10', 'todos'] as LimiteLista[]).map((valor) => (
             <button
               key={valor}
               type="button"
-<<<<<<< HEAD
-              className={limite === valor ? `${styles.botonLimite} ${styles.botonLimiteActivo}` : styles.botonLimite}
-=======
               className={limite === valor ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               onClick={() => setLimite(valor)}
             >
               {valor === 'todos' ? 'Todos' : valor}
@@ -1144,28 +922,15 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
       {isLoading ? (
         <p>Cargando empleados…</p>
       ) : listaRecortada.length === 0 ? (
-<<<<<<< HEAD
-        <p className={styles.vacio}>Nadie desempeña esta posición actualmente.</p>
-      ) : (
-        <ul className={styles.listaEmpleados}>
-=======
         <p className="emptyState">Nadie desempeña esta posición actualmente.</p>
       ) : (
         <ul className={styles.employeeList}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {listaRecortada.map((asignacion) => {
             const empleado = empleadoDe(asignacion.empleado)
             return (
               <li key={asignacion.id}>
                 <button
                   type="button"
-<<<<<<< HEAD
-                  className={styles.itemEmpleado}
-                  onClick={() => empleado && setEmpleadoSeleccionadoId(empleado.id)}
-                >
-                  <span>{empleado?.nombre_completo ?? `Empleado #${asignacion.empleado}`}</span>
-                  <span className={styles.itemEmpleadoPosicion}>{posicion.titulo_posicion}</span>
-=======
                   className={styles.employeeItem}
                   onClick={() => empleado && setEmpleadoSeleccionadoId(empleado.id)}
                 >
@@ -1176,7 +941,6 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
                     </span>
                     <span className={styles.employeeItemMeta}>Desde {formatearFecha(asignacion.fecha_inicio)}</span>
                   </span>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                 </button>
               </li>
             )
@@ -1191,16 +955,12 @@ function PanelEmpleadosPorPosicion({ posicion, empleados }: { posicion: Posicion
       />
 
       {empleadoSeleccionado && (
-<<<<<<< HEAD
-        <ModalDetalleEmpleado empleado={empleadoSeleccionado} onCerrar={() => setEmpleadoSeleccionadoId(null)} />
-=======
         <ModalDetalleEmpleado
           empleado={empleadoSeleccionado}
           posicion={posicion}
           asignacion={lista.find((a) => a.empleado === empleadoSeleccionado.id)}
           onCerrar={() => setEmpleadoSeleccionadoId(null)}
         />
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       )}
     </div>
   )
@@ -1254,91 +1014,6 @@ function FormularioContratar({
   }
 
   return (
-<<<<<<< HEAD
-    <Modal titulo={`Nuevo empleado — ${posicion.titulo_posicion}`} abierto={abierto} onCerrar={onCerrar}>
-      <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-        <label className={styles.campo}>
-          Nombre completo
-          <input
-            type="text" value={datos.nombre_completo}
-            onChange={(e) => setDatos((v) => ({ ...v, nombre_completo: e.target.value }))}
-            required
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Fotografía (opcional)
-          <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
-        </label>
-
-        <label className={styles.campo}>
-          CURP
-          <input
-            type="text" value={datos.curp}
-            onChange={(e) => setDatos((v) => ({ ...v, curp: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          RFC
-          <input
-            type="text" value={datos.rfc}
-            onChange={(e) => setDatos((v) => ({ ...v, rfc: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          NSS
-          <input
-            type="text" value={datos.nss}
-            onChange={(e) => setDatos((v) => ({ ...v, nss: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Teléfono
-          <input
-            type="text" value={datos.telefono}
-            onChange={(e) => setDatos((v) => ({ ...v, telefono: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Correo
-          <input
-            type="email" value={datos.email}
-            onChange={(e) => setDatos((v) => ({ ...v, email: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Cuenta bancaria
-          <input
-            type="text" value={datos.cuenta_bancaria}
-            onChange={(e) => setDatos((v) => ({ ...v, cuenta_bancaria: e.target.value }))}
-          />
-        </label>
-
-        <label className={styles.campo}>
-          Salario asignado
-          <input
-            type="number" step="0.01" min="0" value={salarioAsignado}
-            onChange={(e) => setSalarioAsignado(e.target.value)}
-          />
-          <span className={styles.ayuda}>
-            Rango de la posición: {posicion.salario_minimo} – {posicion.salario_maximo}
-          </span>
-        </label>
-
-        <label className={styles.campo}>
-          Fecha de inicio
-          <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} required />
-        </label>
-
-        {error && <p className={styles.error} role="alert">{error}</p>}
-
-        <div className={styles.accionesFormulario}>
-=======
     <Modal titulo={`Nuevo empleado — ${posicion.titulo_posicion}`} abierto={abierto} onCerrar={onCerrar} ancho="amplio">
       <form className="form" onSubmit={alGuardar} noValidate>
         {GRUPOS_EMPLEADO.map((grupo) => (
@@ -1389,7 +1064,6 @@ function FormularioContratar({
         {error && <p className="errorMessage" role="alert">{error}</p>}
 
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario type="button" variante="secundario" onClick={onCerrar}>Cancelar</BotonPrimario>
           <BotonPrimario type="submit" disabled={contratar.isPending}>
             {contratar.isPending ? 'Guardando…' : 'Guardar'}
@@ -1407,9 +1081,6 @@ const MOTIVOS_DESACTIVACION: { valor: MotivoCambio; etiqueta: string }[] = [
   { valor: 'despido', etiqueta: 'Despido' },
 ]
 
-<<<<<<< HEAD
-function ModalDetalleEmpleado({ empleado, onCerrar }: { empleado: Empleado; onCerrar: () => void }) {
-=======
 function ModalDetalleEmpleado({
   empleado, posicion, asignacion, onCerrar,
 }: {
@@ -1418,7 +1089,6 @@ function ModalDetalleEmpleado({
   asignacion?: EmpleadoPosicion
   onCerrar: () => void
 }) {
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const editar = useEditarEmpleado()
   const desactivar = useDesactivarEmpleado()
   const reactivar = useReactivarEmpleado()
@@ -1473,79 +1143,6 @@ function ModalDetalleEmpleado({
   }
 
   return (
-<<<<<<< HEAD
-    <Modal titulo={enEdicion ? 'Modificar empleado' : empleado.nombre_completo} abierto onCerrar={onCerrar}>
-      <form className={styles.formulario} onSubmit={pedirConfirmacion} noValidate>
-        <label className={styles.campo}>
-          Fotografía
-          {empleado.fotografia && !foto && (
-            <img src={empleado.fotografia} alt={`Fotografía de ${empleado.nombre_completo}`} className={styles.fotoEmpleado} />
-          )}
-          {enEdicion && (
-            <input
-              type="file" accept="image/*"
-              onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
-            />
-          )}
-        </label>
-        <label className={styles.campo}>
-          Nombre completo
-          <input
-            type="text" value={valores.nombre_completo} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, nombre_completo: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          CURP
-          <input
-            type="text" value={valores.curp} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, curp: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          RFC
-          <input
-            type="text" value={valores.rfc} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, rfc: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          NSS
-          <input
-            type="text" value={valores.nss} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, nss: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Teléfono
-          <input
-            type="text" value={valores.telefono} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, telefono: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Correo
-          <input
-            type="email" value={valores.email} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, email: e.target.value }))}
-          />
-        </label>
-        <label className={styles.campo}>
-          Cuenta bancaria
-          <input
-            type="text" value={valores.cuenta_bancaria} disabled={!enEdicion}
-            onChange={(e) => setValores((v) => ({ ...v, cuenta_bancaria: e.target.value }))}
-          />
-        </label>
-
-        <span className={empleado.activo ? styles.estadoActivo : styles.estadoInactivo}>
-          {empleado.activo ? 'Activo' : 'Inactivo'}
-        </span>
-
-        {error && <p className={styles.error} role="alert">{error}</p>}
-
-        <div className={styles.accionesFormulario}>
-=======
     <Modal
       titulo={enEdicion ? 'Modificar empleado' : empleado.nombre_completo}
       tituloVisible={enEdicion ? 'Modificar empleado' : 'Ficha de empleado'}
@@ -1622,7 +1219,6 @@ function ModalDetalleEmpleado({
         {error && <p className="errorMessage" role="alert">{error}</p>}
 
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           {!enEdicion ? (
             <>
               {empleado.activo ? (
@@ -1647,14 +1243,6 @@ function ModalDetalleEmpleado({
         </div>
       </form>
 
-<<<<<<< HEAD
-      <ContactosYDependientes empleadoId={empleado.id} />
-      <SolicitarNomina empleadoId={empleado.id} />
-
-      <Modal titulo="¿Estás seguro?" abierto={confirmarGuardadoAbierto} onCerrar={() => setConfirmarGuardadoAbierto(false)}>
-        <p className={styles.textoConfirmacion}>¿Confirmas que quieres guardar los cambios de este empleado?</p>
-        <div className={styles.accionesFormulario}>
-=======
       <div className={styles.profilePanels}>
         <ContactosYDependientes empleadoId={empleado.id} />
         <SolicitarNomina empleadoId={empleado.id} />
@@ -1663,7 +1251,6 @@ function ModalDetalleEmpleado({
       <Modal titulo="¿Estás seguro?" abierto={confirmarGuardadoAbierto} onCerrar={() => setConfirmarGuardadoAbierto(false)}>
         <p className="confirmText">¿Confirmas que quieres guardar los cambios de este empleado?</p>
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setConfirmarGuardadoAbierto(false)}>
             Cancelar
           </BotonPrimario>
@@ -1674,20 +1261,12 @@ function ModalDetalleEmpleado({
       </Modal>
 
       <Modal titulo="Desactivar empleado" abierto={confirmarDesactivarAbierto} onCerrar={() => setConfirmarDesactivarAbierto(false)}>
-<<<<<<< HEAD
-        <p className={styles.textoConfirmacion}>
-=======
         <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Confirmas que quieres desactivar a "{empleado.nombre_completo}"? Si tiene una posición vigente, se
           cerrará con la fecha de hoy. Si tiene una cuenta de usuario vinculada, también perderá acceso al sistema
           de inmediato.
         </p>
-<<<<<<< HEAD
-        <label className={styles.campo}>
-=======
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Motivo
           <select value={motivoDesactivacion} onChange={(e) => setMotivoDesactivacion(e.target.value as MotivoCambio)}>
             {MOTIVOS_DESACTIVACION.map((m) => (
@@ -1695,11 +1274,7 @@ function ModalDetalleEmpleado({
             ))}
           </select>
         </label>
-<<<<<<< HEAD
-        <div className={styles.accionesFormulario}>
-=======
         <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           <BotonPrimario variante="secundario" onClick={() => setConfirmarDesactivarAbierto(false)}>
             Cancelar
           </BotonPrimario>
@@ -1741,38 +1316,15 @@ function SolicitarNomina({ empleadoId }: { empleadoId: number }) {
       setPeriodoInicio('')
       setPeriodoFin('')
       setMonto('')
-<<<<<<< HEAD
-      setConfirmacion('Solicitud registrada — aparecerá como pendiente en las notificaciones del Header.')
-    } catch (err) {
-      setError(extraerMensajeError(err, ['periodo_fin', 'monto'], 'No se pudo registrar la solicitud. Intenta de nuevo.'))
-=======
       setConfirmacion('Solicitud registrada — aparecerá como pendiente en la pestaña Nóminas.')
     } catch (err) {
       setError(
         extraerMensajeError(err, ['periodo_inicio', 'periodo_fin', 'monto'], 'No se pudo registrar la solicitud. Intenta de nuevo.'),
       )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     }
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.seccionAnexos}>
-      <h3 className={styles.subtituloAnexo}>Nueva solicitud de nómina</h3>
-      <div className={styles.filaAgregarAnexo}>
-        <input
-          type="date" aria-label="Periodo de inicio" value={periodoInicio}
-          onChange={(e) => setPeriodoInicio(e.target.value)}
-        />
-        <input
-          type="date" aria-label="Periodo de fin" value={periodoFin}
-          onChange={(e) => setPeriodoFin(e.target.value)}
-        />
-        <input
-          type="number" step="0.01" min="0" placeholder="Monto" value={monto}
-          onChange={(e) => setMonto(e.target.value)}
-        />
-=======
     <div className={`${styles.infoPanel} ${styles.infoPanelWide}`}>
       <h3 className="subtitle">Nueva solicitud de nómina</h3>
       <div className={styles.payrollRow}>
@@ -1791,18 +1343,12 @@ function SolicitarNomina({ empleadoId }: { empleadoId: number }) {
             onChange={(e) => setMonto(e.target.value)}
           />
         </label>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         <BotonPrimario type="button" onClick={enviarSolicitud} disabled={crear.isPending}>
           {crear.isPending ? 'Enviando…' : 'Solicitar'}
         </BotonPrimario>
       </div>
-<<<<<<< HEAD
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {confirmacion && <p className={styles.ayuda}>{confirmacion}</p>}
-=======
       {error && <p className="errorMessage" role="alert">{error}</p>}
       {confirmacion && <p className="fieldHint">{confirmacion}</p>}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     </div>
   )
 }
@@ -1834,35 +1380,6 @@ function ContactosYDependientes({ empleadoId }: { empleadoId: number }) {
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.seccionAnexos}>
-      <div>
-        <h3 className={styles.subtituloAnexo}>Contactos de emergencia</h3>
-        <ul className={styles.listaAnexo}>
-          {(contactos ?? []).map((c) => (
-            <li key={c.id}>
-              <span>{c.nombre_contacto} — {c.telefono} ({c.parentesco})</span>
-              <button type="button" className={styles.enlaceAccionPeligro} onClick={() => eliminarContacto.mutate(c.id)}>
-                Eliminar
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className={styles.filaAgregarAnexo}>
-          <input
-            type="text" placeholder="Nombre" value={nuevoContacto.nombre_contacto}
-            onChange={(e) => setNuevoContacto((v) => ({ ...v, nombre_contacto: e.target.value }))}
-          />
-          <input
-            type="text" placeholder="Teléfono" value={nuevoContacto.telefono}
-            onChange={(e) => setNuevoContacto((v) => ({ ...v, telefono: e.target.value }))}
-          />
-          <input
-            type="text" placeholder="Parentesco" value={nuevoContacto.parentesco}
-            onChange={(e) => setNuevoContacto((v) => ({ ...v, parentesco: e.target.value }))}
-          />
-          <BotonPrimario type="button" onClick={agregarContacto} disabled={crearContacto.isPending}>
-=======
     <>
       <div className={styles.infoPanel}>
         <h3 className="subtitle">Contactos de emergencia</h3>
@@ -1900,36 +1417,11 @@ function ContactosYDependientes({ empleadoId }: { empleadoId: number }) {
             onChange={(e) => setNuevoContacto((v) => ({ ...v, parentesco: e.target.value }))}
           />
           <BotonPrimario type="button" variante="secundario" onClick={agregarContacto} disabled={crearContacto.isPending}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Agregar
           </BotonPrimario>
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div>
-        <h3 className={styles.subtituloAnexo}>Dependientes</h3>
-        <ul className={styles.listaAnexo}>
-          {(dependientes ?? []).map((d) => (
-            <li key={d.id}>
-              <span>{d.nombre_dependiente} ({d.parentesco})</span>
-              <button type="button" className={styles.enlaceAccionPeligro} onClick={() => eliminarDependiente.mutate(d.id)}>
-                Eliminar
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className={styles.filaAgregarAnexo}>
-          <input
-            type="text" placeholder="Nombre" value={nuevoDependiente.nombre_dependiente}
-            onChange={(e) => setNuevoDependiente((v) => ({ ...v, nombre_dependiente: e.target.value }))}
-          />
-          <input
-            type="text" placeholder="Parentesco" value={nuevoDependiente.parentesco}
-            onChange={(e) => setNuevoDependiente((v) => ({ ...v, parentesco: e.target.value }))}
-          />
-          <BotonPrimario type="button" onClick={agregarDependiente} disabled={crearDependiente.isPending}>
-=======
       <div className={styles.infoPanel}>
         <h3 className="subtitle">Dependientes</h3>
         {(dependientes ?? []).length === 0 ? (
@@ -1959,15 +1451,10 @@ function ContactosYDependientes({ empleadoId }: { empleadoId: number }) {
             onChange={(e) => setNuevoDependiente((v) => ({ ...v, parentesco: e.target.value }))}
           />
           <BotonPrimario type="button" variante="secundario" onClick={agregarDependiente} disabled={crearDependiente.isPending}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             Agregar
           </BotonPrimario>
         </div>
       </div>
-<<<<<<< HEAD
-    </div>
-=======
     </>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   )
 }

@@ -17,7 +17,7 @@ from apps.ventas.models import DetalleVenta, Venta
 @pytest.fixture
 def usuario(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
     )
 
 
@@ -29,14 +29,12 @@ def api_client(usuario):
 
 
 @pytest.fixture
-<<<<<<< HEAD
-=======
 def admin_client(db):
     # Ganancia, su serie, el monto del top de clientes y los movimientos de
     # caja son solo de admin desde `016`, "Actualización: ganancias y
     # movimientos de caja solo para admin".
     admin = Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
     client = APIClient()
     client.force_authenticate(user=admin)
@@ -44,7 +42,6 @@ def admin_client(db):
 
 
 @pytest.fixture
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 def sucursal(db):
     return Sucursal.objects.create(nombre_sucursal='Matriz')
 
@@ -104,20 +101,12 @@ def test_periodo_anio_es_aceptado(api_client):
 
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_periodo_anio_agrupa_por_mes(api_client, sucursal, usuario):
-=======
 def test_periodo_anio_agrupa_por_mes(admin_client, sucursal, usuario):
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     ahora = timezone.localtime()
     _crear_venta(sucursal, usuario, Decimal('100.00'), fecha=ahora)
     _crear_venta(sucursal, usuario, Decimal('50.00'), fecha=ahora - timedelta(days=10))
 
-<<<<<<< HEAD
-    response = api_client.get('/api/reportes/resumen/', {'periodo': 'año'})
-=======
     response = admin_client.get('/api/reportes/resumen/', {'periodo': 'año'})
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     puntos_con_ganancia = [p for p in response.data['serie'] if Decimal(p['ganancia']) != 0]
     assert len(puntos_con_ganancia) == 1
@@ -274,19 +263,11 @@ def test_productos_top_orden_invalido_es_rechazado(api_client):
 # --- /api/reportes/clientes-top/ ------------------------------------------
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_clientes_top_excluye_ventas_sin_cliente(api_client, sucursal, usuario, cliente):
-    _crear_venta(sucursal, usuario, total=Decimal('500.00'), cliente=None)
-    _crear_venta(sucursal, usuario, total=Decimal('100.00'), cliente=cliente)
-
-    response = api_client.get('/api/reportes/clientes-top/', {'periodo': 'mes', 'orden': 'mas'})
-=======
 def test_clientes_top_excluye_ventas_sin_cliente(admin_client, sucursal, usuario, cliente):
     _crear_venta(sucursal, usuario, total=Decimal('500.00'), cliente=None)
     _crear_venta(sucursal, usuario, total=Decimal('100.00'), cliente=cliente)
 
     response = admin_client.get('/api/reportes/clientes-top/', {'periodo': 'mes', 'orden': 'mas'})
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     assert len(response.data) == 1
     assert response.data[0]['cliente'] == 'María Pérez'
@@ -296,15 +277,6 @@ def test_clientes_top_excluye_ventas_sin_cliente(admin_client, sucursal, usuario
 # --- /api/reportes/movimientos-caja/ ---------------------------------------
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_movimientos_caja_reporte_no_requiere_rol_admin(api_client):
-    response = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes'})
-    assert response.status_code == 200
-
-
-@pytest.mark.django_db
-def test_movimientos_caja_reporte_solo_expone_fecha_tipo_descripcion(api_client, usuario):
-=======
 def test_movimientos_caja_reporte_es_solo_de_admin(api_client):
     # Antes abierto a cualquier usuario; solo admin desde `016`,
     # "Actualización: ganancias y movimientos de caja solo para admin".
@@ -362,17 +334,12 @@ def test_admin_ve_el_top_de_clientes_por_monto(admin_client, sucursal, usuario, 
 
 @pytest.mark.django_db
 def test_movimientos_caja_reporte_solo_expone_fecha_tipo_descripcion(admin_client, usuario):
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     MovimientoCaja.objects.create(
         monto=Decimal('500.00'), tipo_movimiento=MovimientoCaja.INGRESO, motivo=MovimientoCaja.MOTIVO_MANUAL,
         saldo_resultante=Decimal('500.00'), observacion='Aportación de capital', usuario=usuario,
     )
 
-<<<<<<< HEAD
-    response = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes'})
-=======
     response = admin_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes'})
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     assert response.status_code == 200
     assert set(response.data[0].keys()) == {'fecha', 'tipo_movimiento', 'observacion'}
@@ -380,26 +347,16 @@ def test_movimientos_caja_reporte_solo_expone_fecha_tipo_descripcion(admin_clien
 
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_movimientos_caja_reporte_respeta_limite(api_client, usuario):
-=======
 def test_movimientos_caja_reporte_respeta_limite(admin_client, usuario):
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     for i in range(12):
         MovimientoCaja.objects.create(
             monto=Decimal('10.00'), tipo_movimiento=MovimientoCaja.INGRESO, motivo=MovimientoCaja.MOTIVO_MANUAL,
             saldo_resultante=Decimal('10.00'), observacion=f'Movimiento {i}', usuario=usuario,
         )
 
-<<<<<<< HEAD
-    respuesta_5 = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '5'})
-    respuesta_10 = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '10'})
-    respuesta_todos = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': 'todos'})
-=======
     respuesta_5 = admin_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '5'})
     respuesta_10 = admin_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '10'})
     respuesta_todos = admin_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': 'todos'})
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     assert len(respuesta_5.data) == 5
     assert len(respuesta_10.data) == 10
@@ -407,11 +364,6 @@ def test_movimientos_caja_reporte_respeta_limite(admin_client, usuario):
 
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_movimientos_caja_reporte_limite_invalido_es_rechazado(api_client):
-    response = api_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '3'})
-=======
 def test_movimientos_caja_reporte_limite_invalido_es_rechazado(admin_client):
     response = admin_client.get('/api/reportes/movimientos-caja/', {'periodo': 'mes', 'limite': '3'})
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     assert response.status_code == 400

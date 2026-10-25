@@ -20,14 +20,14 @@ URL = '/api/reportes/facturacion/'
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
     )
 
 
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
 
 

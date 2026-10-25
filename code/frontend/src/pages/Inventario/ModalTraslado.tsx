@@ -5,10 +5,6 @@ import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { useCrearTraslado, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
-<<<<<<< HEAD
-import styles from './ModalTraslado.module.css'
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const ETIQUETAS_TIPO: Record<TipoItemInventario, string> = {
   producto: 'Producto',
@@ -153,15 +149,9 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
   return (
     <Modal titulo="Traslado entre sucursales" abierto onCerrar={onCerrar} ancho="amplio">
       {paso === 'formulario' ? (
-<<<<<<< HEAD
-        <div className={styles.contenido}>
-          <div className={styles.filaSucursales}>
-            <label className={styles.campo}>
-=======
         <div className="form">
           <div className="fieldRow">
             <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               Sucursal origen
               <select
                 value={origen}
@@ -175,11 +165,7 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
                 ))}
               </select>
             </label>
-<<<<<<< HEAD
-            <label className={styles.campo}>
-=======
             <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               Sucursal destino
               <select value={destino} onChange={(e) => setDestino(e.target.value ? Number(e.target.value) : '')}>
                 <option value="">Selecciona…</option>
@@ -194,93 +180,6 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
             </label>
           </div>
 
-<<<<<<< HEAD
-          <table className={styles.tablaLineas}>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Ítem</th>
-                <th>Cantidad</th>
-                <th>Disponible en origen</th>
-                <th aria-label="Acciones" />
-              </tr>
-            </thead>
-            <tbody>
-              {lineas.map((linea, indice) => {
-                const numero = indice + 1
-                const elegidosEnOtras = new Set(
-                  lineas
-                    .filter((l) => l.clave !== linea.clave && l.tipo === linea.tipo && l.itemId !== '')
-                    .map((l) => l.itemId),
-                )
-                const opciones = stockDe(linea.tipo).filter((i) => !elegidosEnOtras.has(i.id))
-                const item = itemDe(linea)
-                const excede = item !== undefined && linea.cantidad !== '' && Number(linea.cantidad) > Number(item.stock_actual)
-
-                return (
-                  <tr key={linea.clave}>
-                    <td>
-                      <select
-                        aria-label={`Tipo de la línea ${numero}`}
-                        value={linea.tipo}
-                        onChange={(e) =>
-                          actualizarLinea(linea.clave, { tipo: e.target.value as TipoItemInventario, itemId: '' })
-                        }
-                      >
-                        {(Object.keys(ETIQUETAS_TIPO) as TipoItemInventario[]).map((tipo) => (
-                          <option key={tipo} value={tipo}>
-                            {ETIQUETAS_TIPO[tipo]}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        aria-label={`Ítem de la línea ${numero}`}
-                        value={linea.itemId}
-                        onChange={(e) =>
-                          actualizarLinea(linea.clave, { itemId: e.target.value ? Number(e.target.value) : '' })
-                        }
-                      >
-                        <option value="">Selecciona…</option>
-                        {opciones.map((i) => (
-                          <option key={i.id} value={i.id}>
-                            {i.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        aria-label={`Cantidad de la línea ${numero}`}
-                        className={styles.inputCantidad}
-                        value={linea.cantidad}
-                        onChange={(e) => actualizarLinea(linea.clave, { cantidad: e.target.value })}
-                      />
-                    </td>
-                    <td>
-                      <span data-testid={`disponible-linea-${numero}`}>{item ? item.stock_actual : '—'}</span>
-                      {excede && <span className={styles.aviso}>Supera el disponible</span>}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.enlacePeligro}
-                        onClick={() => quitarLinea(linea.clave)}
-                        aria-label={`Quitar línea ${numero}`}
-                      >
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-=======
           <div className="tableScroll">
             <table className="linesTable">
               <thead>
@@ -370,7 +269,6 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
               </tbody>
             </table>
           </div>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
           <div>
             <BotonPrimario variante="secundario" onClick={agregarLinea}>
@@ -379,20 +277,12 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
           </div>
 
           {error && (
-<<<<<<< HEAD
-            <p className={styles.error} role="alert">
-=======
             <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {error}
             </p>
           )}
 
-<<<<<<< HEAD
-          <div className={styles.acciones}>
-=======
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario variante="secundario" onClick={onCerrar}>
               Cancelar
             </BotonPrimario>
@@ -400,40 +290,12 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
           </div>
         </div>
       ) : (
-<<<<<<< HEAD
-        <div className={styles.contenido}>
-          <p className={styles.textoResumen}>
-=======
         <div className="form">
           <p className="confirmText">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             ¿Confirmar el traslado de <strong>{nombreSucursal(origen)}</strong> a{' '}
             <strong>{nombreSucursal(destino)}</strong>?
           </p>
 
-<<<<<<< HEAD
-          <table className={styles.tablaLineas}>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Ítem</th>
-                <th>Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lineas.map((linea) => (
-                <tr key={linea.clave}>
-                  <td>{ETIQUETAS_TIPO[linea.tipo]}</td>
-                  <td>{itemDe(linea)?.nombre ?? `#${linea.itemId}`}</td>
-                  <td>{linea.cantidad}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {error && (
-            <p className={styles.error} role="alert">
-=======
           {/* Ruta del traslado: lo primero que hay que verificar antes de confirmar. */}
           <div className="fieldGroup">
             <dl className="factGrid factGridThree">
@@ -475,16 +337,11 @@ export function ModalTraslado({ onCerrar, sucursalInicial, tipoInicial }: ModalT
 
           {error && (
             <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {error}
             </p>
           )}
 
-<<<<<<< HEAD
-          <div className={styles.acciones}>
-=======
           <div className="formActions">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <BotonPrimario
               variante="secundario"
               onClick={() => {

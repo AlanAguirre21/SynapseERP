@@ -22,7 +22,7 @@ vi.mock('../../hooks/useConfiguracionFiscal')
 
 const DATOS_FISCALES_COMPLETOS: DatosFiscalesEmpresa = {
   rfc: 'FSI010101ABC',
-  razon_social: 'FleboSil S.A. de C.V.',
+  razon_social: 'Synapse S.A. de C.V.',
   regimen_fiscal: '601',
   codigo_postal_fiscal: '01000',
   completa: true,
@@ -278,8 +278,6 @@ describe('ConfiguracionFiscal', () => {
 
     await waitFor(() => expect(reactivarSerieMock).toHaveBeenCalledWith(2))
   })
-<<<<<<< HEAD
-=======
 
   it('el estado para timbrar marca todo listo cuando datos, PAC y series lo están', () => {
     mockearHooks()
@@ -362,5 +360,4 @@ describe('ConfiguracionFiscal', () => {
     expect(tabla.getByRole('cell', { name: 'A' }).closest('tr')).toHaveTextContent('A-101')
     expect(tabla.getByRole('cell', { name: 'B' }).closest('tr')).toHaveTextContent('B-1')
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

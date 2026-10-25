@@ -12,7 +12,7 @@ from apps.usuarios.models import CodigoRecuperacion, Usuario
 @pytest.fixture
 def usuario_activo(db):
     return Usuario.objects.create_user(
-        username='ana', email='ana@flebosil.test', password='clave-super-123',
+        username='ana', email='ana@synapse.test', password='clave-super-123',
         rol_usuario='operador',
     )
 
@@ -21,7 +21,7 @@ def usuario_activo(db):
 def test_recuperar_correo_existente_envia_codigo(usuario_activo):
     cache.clear()
     client = APIClient()
-    response = client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    response = client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
 
     assert response.status_code == 200
     assert len(mail.outbox) == 1
@@ -33,7 +33,7 @@ def test_recuperar_correo_inexistente_no_envia_correo(db):
     cache.clear()
     client = APIClient()
     response = client.post(
-        '/api/auth/recuperar/', {'email': 'no-existe@flebosil.test'}, format='json',
+        '/api/auth/recuperar/', {'email': 'no-existe@synapse.test'}, format='json',
     )
 
     assert response.status_code == 200
@@ -45,11 +45,11 @@ def test_recuperar_mensaje_identico_exista_o_no_el_correo(usuario_activo):
     cache.clear()
     client = APIClient()
     respuesta_existente = client.post(
-        '/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json',
+        '/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json',
     )
     cache.clear()
     respuesta_inexistente = client.post(
-        '/api/auth/recuperar/', {'email': 'no-existe@flebosil.test'}, format='json',
+        '/api/auth/recuperar/', {'email': 'no-existe@synapse.test'}, format='json',
     )
 
     assert respuesta_existente.data == respuesta_inexistente.data
@@ -59,7 +59,7 @@ def test_recuperar_mensaje_identico_exista_o_no_el_correo(usuario_activo):
 def test_recuperar_correo_incluye_version_html_con_marca_y_codigo(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
 
     registro = CodigoRecuperacion.objects.get(usuario=usuario_activo, usado=False)
     mensaje = mail.outbox[0]
@@ -71,27 +71,20 @@ def test_recuperar_correo_incluye_version_html_con_marca_y_codigo(usuario_activo
 
     html = next(contenido for contenido, tipo in mensaje.alternatives if tipo == 'text/html')
     assert registro.codigo in html
-<<<<<<< HEAD
     assert 'cid:logo_synapse' in html
 
     assert len(mensaje.attachments) == 1
     assert mensaje.attachments[0].get('Content-ID') == '<logo_synapse>'
-=======
-    assert 'cid:logo_flebosil' in html
-
-    assert len(mensaje.attachments) == 1
-    assert mensaje.attachments[0].get('Content-ID') == '<logo_flebosil>'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db
 def test_reenviar_codigo_invalida_el_anterior(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
     codigo_anterior = CodigoRecuperacion.objects.get(usuario=usuario_activo, usado=False)
 
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
 
     codigo_anterior.refresh_from_db()
     assert codigo_anterior.usado is True
@@ -102,12 +95,12 @@ def test_reenviar_codigo_invalida_el_anterior(usuario_activo):
 def test_verificar_codigo_correcto(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
     registro = CodigoRecuperacion.objects.get(usuario=usuario_activo, usado=False)
 
     response = client.post(
         '/api/auth/verificar-codigo/',
-        {'email': 'ana@flebosil.test', 'codigo': registro.codigo},
+        {'email': 'ana@synapse.test', 'codigo': registro.codigo},
         format='json',
     )
 
@@ -120,11 +113,11 @@ def test_verificar_codigo_correcto(usuario_activo):
 def test_verificar_codigo_incorrecto(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
 
     response = client.post(
         '/api/auth/verificar-codigo/',
-        {'email': 'ana@flebosil.test', 'codigo': '000000'},
+        {'email': 'ana@synapse.test', 'codigo': '000000'},
         format='json',
     )
 
@@ -136,14 +129,14 @@ def test_verificar_codigo_incorrecto(usuario_activo):
 def test_verificar_codigo_expirado(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
     registro = CodigoRecuperacion.objects.get(usuario=usuario_activo, usado=False)
     registro.expira_en = timezone.now() - timedelta(minutes=1)
     registro.save(update_fields=['expira_en'])
 
     response = client.post(
         '/api/auth/verificar-codigo/',
-        {'email': 'ana@flebosil.test', 'codigo': registro.codigo},
+        {'email': 'ana@synapse.test', 'codigo': registro.codigo},
         format='json',
     )
 
@@ -157,12 +150,12 @@ def test_throttling_recuperar_por_correo(usuario_activo):
     client = APIClient()
     for _ in range(3):
         respuesta = client.post(
-            '/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json',
+            '/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json',
         )
         assert respuesta.status_code == 200
 
     respuesta_bloqueada = client.post(
-        '/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json',
+        '/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json',
     )
     assert respuesta_bloqueada.status_code == 429
 
@@ -171,19 +164,19 @@ def test_throttling_recuperar_por_correo(usuario_activo):
 def test_throttling_verificar_codigo_por_correo(usuario_activo):
     cache.clear()
     client = APIClient()
-    client.post('/api/auth/recuperar/', {'email': 'ana@flebosil.test'}, format='json')
+    client.post('/api/auth/recuperar/', {'email': 'ana@synapse.test'}, format='json')
 
     for _ in range(5):
         respuesta = client.post(
             '/api/auth/verificar-codigo/',
-            {'email': 'ana@flebosil.test', 'codigo': '000000'},
+            {'email': 'ana@synapse.test', 'codigo': '000000'},
             format='json',
         )
         assert respuesta.status_code == 401
 
     respuesta_bloqueada = client.post(
         '/api/auth/verificar-codigo/',
-        {'email': 'ana@flebosil.test', 'codigo': '000000'},
+        {'email': 'ana@synapse.test', 'codigo': '000000'},
         format='json',
     )
     assert respuesta_bloqueada.status_code == 429

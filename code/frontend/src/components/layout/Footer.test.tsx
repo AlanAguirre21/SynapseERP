@@ -15,6 +15,6 @@ describe('Footer', () => {
     render(<Footer />)
 
     const anioActual = new Date().getFullYear()
-    expect(screen.getByText(`© ${anioActual} FleboSil`)).toBeInTheDocument()
+    expect(screen.getByText(`© ${anioActual} SynapseERP`)).toBeInTheDocument()
   })
 })

@@ -1,29 +1,10 @@
-<<<<<<< HEAD
-import { useState } from 'react'
-=======
 import { useMemo, useState } from 'react'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useNavigate } from 'react-router-dom'
 
 import { ETIQUETAS_ESTADO_FACTURA, type EstadoFactura, type Factura } from '../../api/facturacion'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useClientes } from '../../hooks/useClientes'
 import { useFacturas } from '../../hooks/useFacturas'
-<<<<<<< HEAD
-import styles from './Facturacion.module.css'
-
-function claseEstado(estado: EstadoFactura) {
-  if (estado === 'timbrada') return styles.estadoTimbrada
-  if (estado === 'cancelada') return styles.estadoCancelada
-  if (estado === 'error') return styles.estadoError
-  if (estado === 'pendiente_cancelacion') return styles.estadoPendienteCancelacion
-  return styles.estadoPendiente
-}
-
-export function Facturacion() {
-  const navigate = useNavigate()
-  const { data: clientes } = useClientes()
-=======
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { formatearMoneda } from '../../utils/moneda'
 
@@ -45,7 +26,6 @@ export function Facturacion() {
   // El operador solo ve las facturas de sus propias ventas (lo filtra el backend).
   const { data: usuarioActual } = useUsuarioActual()
   const esAdmin = usuarioActual?.rol === 'admin'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoFactura | ''>('')
   const [clienteFiltro, setClienteFiltro] = useState<number | ''>('')
@@ -59,8 +39,6 @@ export function Facturacion() {
     fecha_hasta: fechaHasta || undefined,
   })
 
-<<<<<<< HEAD
-=======
   const hayFiltros = Boolean(estadoFiltro || clienteFiltro || fechaDesde || fechaHasta)
 
   function limpiarFiltros() {
@@ -83,22 +61,10 @@ export function Facturacion() {
     }
   }, [facturas])
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   const columnas: ColumnaTabla<Factura>[] = [
     {
       clave: 'fecha_creacion',
       encabezado: 'Fecha',
-<<<<<<< HEAD
-      render: (fila) => new Date(fila.fecha_creacion).toLocaleDateString('es-MX'),
-    },
-    { clave: 'cliente_nombre', encabezado: 'Cliente' },
-    {
-      clave: 'folio_fiscal',
-      encabezado: 'Folio fiscal',
-      render: (fila) => (fila.serie && fila.folio_interno ? `${fila.serie}-${fila.folio_interno}` : '—'),
-    },
-    { clave: 'venta_total', encabezado: 'Total' },
-=======
       render: (fila) => <span className="cellNoWrap">{new Date(fila.fecha_creacion).toLocaleDateString('es-MX')}</span>,
     },
     {
@@ -122,7 +88,6 @@ export function Facturacion() {
       encabezado: 'Total',
       render: (fila) => formatearMoneda(fila.venta_total),
     },
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     {
       clave: 'estado',
       encabezado: 'Estado',
@@ -130,16 +95,6 @@ export function Facturacion() {
     },
   ]
 
-<<<<<<< HEAD
-  return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Facturación</h1>
-      </div>
-
-      <div className={styles.filtros}>
-        <label className={styles.campoFiltro}>
-=======
   const cifra = (valor: number | string) => (facturas ? valor : '…')
 
   return (
@@ -176,7 +131,6 @@ export function Facturacion() {
 
       <div className="filters">
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Estado
           <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value as EstadoFactura | '')}>
             <option value="">Todos</option>
@@ -188,11 +142,7 @@ export function Facturacion() {
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-=======
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Cliente
           <select
             value={clienteFiltro}
@@ -207,21 +157,11 @@ export function Facturacion() {
           </select>
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-=======
         <label className="filterField">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Desde
           <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
         </label>
 
-<<<<<<< HEAD
-        <label className={styles.campoFiltro}>
-          Hasta
-          <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
-        </label>
-=======
         <label className="filterField">
           Hasta
           <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
@@ -232,7 +172,6 @@ export function Facturacion() {
             Limpiar filtros
           </button>
         )}
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
       </div>
 
       {isLoading ? (
@@ -241,15 +180,9 @@ export function Facturacion() {
         <Tabla
           columnas={columnas}
           datos={facturas ?? []}
-<<<<<<< HEAD
-          mensajeVacio="Todavía no hay facturas generadas."
-          renderAcciones={(fila) => (
-            <button type="button" className={styles.enlaceAccion} onClick={() => navigate(`/facturacion/${fila.id}`)}>
-=======
           mensajeVacio={hayFiltros ? 'Ninguna factura coincide con los filtros.' : 'Todavía no hay facturas generadas.'}
           renderAcciones={(fila) => (
             <button type="button" className="actionLink" onClick={() => navigate(`/facturacion/${fila.id}`)}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               Ver detalle
             </button>
           )}

@@ -99,8 +99,6 @@ describe('DetalleFactura', () => {
 
     expect(screen.getByRole('button', { name: /registrar pago/i })).toBeDisabled()
   })
-<<<<<<< HEAD
-=======
 
   it('muestra los códigos del SAT con su descripción y el total en moneda', () => {
     mockearHooks(facturaBase({ uso_cfdi: 'G03', forma_pago: '99', metodo_pago: 'PUE' }))
@@ -159,5 +157,4 @@ describe('DetalleFactura', () => {
     expect(screen.queryByRole('button', { name: 'Copiar folio fiscal' })).not.toBeInTheDocument()
     Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

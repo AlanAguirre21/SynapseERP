@@ -47,12 +47,8 @@ class MeView(RetrieveAPIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-<<<<<<< HEAD
-        return Response(UsuarioActualSerializer(usuario).data)
-=======
         # `request` en el contexto para devolver la URL absoluta de la foto.
         return Response(UsuarioActualSerializer(usuario, context={'request': request}).data)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 class LoginView(GenericAPIView):

@@ -5,10 +5,6 @@ import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { CampoContrasena } from '../../components/common/CampoContrasena'
 import { PaginaAuth } from '../../components/common/PaginaAuth'
 import { useAuth } from '../../context/AuthContext'
-<<<<<<< HEAD
-import styles from './Login.module.css'
-=======
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 const MENSAJE_ERROR_PREDETERMINADO = 'Correo o contraseña incorrectos.'
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -56,13 +52,8 @@ export function Login() {
 
   return (
     <PaginaAuth titulo="Bienvenido" subtitulo="Ingresa a tu cuenta para continuar">
-<<<<<<< HEAD
-      <form className={styles.formulario} onSubmit={alEnviar} noValidate>
-        <label className={styles.campo}>
-=======
       <form className="form" onSubmit={alEnviar} noValidate>
         <label className="field">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           Correo electrónico
           <input
             type="email"
@@ -82,11 +73,7 @@ export function Login() {
         />
 
         {error && (
-<<<<<<< HEAD
-          <p className={styles.error} role="alert">
-=======
           <p className="errorMessage" role="alert">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             {error}
           </p>
         )}
@@ -95,11 +82,7 @@ export function Login() {
           {cargando ? 'Ingresando…' : 'Ingresar'}
         </BotonPrimario>
 
-<<<<<<< HEAD
-        <Link to="/recuperar-contrasena" className={styles.enlace}>
-=======
         <Link to="/recuperar-contrasena" className="link linkCentered">
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
           ¿Olvidaste tu contraseña?
         </Link>
       </form>

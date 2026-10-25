@@ -2,22 +2,15 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-<<<<<<< HEAD
-import type { ResumenDashboard, ResumenVentas, ResumenCompras, ProductoTop, ClienteTop, MovimientoCajaReporte } from '../../api/reportes'
-=======
 import type {
   ResumenDashboard, ResumenVentas, ResumenCompras, ProductoTop, ClienteTop, MovimientoCajaReporte, ResumenFacturacion,
 } from '../../api/reportes'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useResumenDashboard } from '../../hooks/useResumenDashboard'
 import { useResumenVentas } from '../../hooks/useResumenVentas'
 import { useResumenCompras } from '../../hooks/useResumenCompras'
 import { useProductosTop } from '../../hooks/useProductosTop'
 import { useClientesTop } from '../../hooks/useClientesTop'
-<<<<<<< HEAD
-=======
 import { useResumenFacturacion } from '../../hooks/useResumenFacturacion'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 import { useMovimientosCajaDashboard } from '../../hooks/useMovimientosCajaDashboard'
 import { useSaldoCaja } from '../../hooks/useMovimientosCaja'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
@@ -35,10 +28,7 @@ vi.mock('../../hooks/useResumenVentas')
 vi.mock('../../hooks/useResumenCompras')
 vi.mock('../../hooks/useProductosTop')
 vi.mock('../../hooks/useClientesTop')
-<<<<<<< HEAD
-=======
 vi.mock('../../hooks/useResumenFacturacion')
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 vi.mock('../../hooks/useMovimientosCajaDashboard')
 vi.mock('../../hooks/useMovimientosCaja')
 vi.mock('../../hooks/useUsuarioActual')
@@ -91,14 +81,6 @@ const movimientosBase: MovimientoCajaReporte[] = [
   { fecha: '2026-08-25T08:00:00-06:00', tipo_movimiento: 'ingreso', observacion: 'Venta #1' },
 ]
 
-<<<<<<< HEAD
-function mockearTodo({
-  usuario = { nombre: 'Ana', rol: 'admin' as const },
-  saldo = { saldo_actual: '1000.00', saldo_adicional: '0.00', saldo_total: '1000.00' },
-}: {
-  usuario?: { nombre: string; rol: 'admin' | 'operador' } | undefined
-  saldo?: { saldo_actual: string; saldo_adicional: string; saldo_total: string }
-=======
 function resumenFacturacionBase(overrides: Partial<ResumenFacturacion> = {}): ResumenFacturacion {
   return {
     periodo: 'dia',
@@ -130,7 +112,6 @@ function mockearTodo({
   usuario?: { nombre: string; rol: 'admin' | 'operador' } | undefined
   saldo?: { saldo_actual: string; saldo_adicional: string; saldo_total: string }
   resumenFacturacion?: ResumenFacturacion
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 } = {}) {
   vi.mocked(useResumenDashboard).mockReturnValue(
     { data: resumenBase(), isLoading: false } as unknown as ReturnType<typeof useResumenDashboard>,
@@ -156,12 +137,9 @@ function mockearTodo({
   vi.mocked(useUsuarioActual).mockReturnValue(
     { data: usuario, isLoading: false } as unknown as ReturnType<typeof useUsuarioActual>,
   )
-<<<<<<< HEAD
-=======
   vi.mocked(useResumenFacturacion).mockReturnValue(
     { data: resumenFacturacion, isLoading: false } as unknown as ReturnType<typeof useResumenFacturacion>,
   )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 function renderDashboard() {
@@ -177,13 +155,8 @@ describe('Dashboard', () => {
     mockearTodo()
     renderDashboard()
 
-<<<<<<< HEAD
     expect(screen.getByRole('img', { name: 'SynapseERP' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Resumen SynapseERP' })).not.toBeInTheDocument()
-=======
-    expect(screen.getByRole('img', { name: 'FleboSil' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Resumen FleboSil' })).not.toBeInTheDocument()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('muestra las 4 pestañas de periodo, incluyendo Año', () => {
@@ -308,13 +281,6 @@ describe('Dashboard', () => {
     expect(fila).not.toHaveTextContent(/\$\d/)
   })
 
-<<<<<<< HEAD
-  it('"Resumen facturación" muestra un mensaje de construcción, sin gráficas', () => {
-    mockearTodo()
-    renderDashboard()
-
-    expect(screen.getByText('En construcción')).toBeInTheDocument()
-=======
   // 016, "Actualización: Resumen facturación con datos" — reemplaza el
   // test del placeholder "En construcción".
   it('"Resumen facturación" muestra sus indicadores en lugar del mensaje de construcción', () => {
@@ -364,7 +330,6 @@ describe('Dashboard', () => {
 
     expect(screen.getByText('Facturado', { selector: '.statLabel' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'A-12' })).toBeInTheDocument()
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   })
 
   it('muestra un estado vacío en Ganancias del periodo cuando no hay datos suficientes', () => {
@@ -379,8 +344,6 @@ describe('Dashboard', () => {
 
     expect(screen.getByText(/todavía no hay suficientes datos/i)).toBeInTheDocument()
   })
-<<<<<<< HEAD
-=======
 
   // 016, "Actualización: ganancias y movimientos de caja solo para admin".
   it('el operador no ve la sección de ganancias ni los movimientos financieros', () => {
@@ -416,5 +379,4 @@ describe('Dashboard', () => {
     renderDashboard()
     expect(screen.queryByText('Cifras de tus propias ventas, compras y facturas.')).not.toBeInTheDocument()
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

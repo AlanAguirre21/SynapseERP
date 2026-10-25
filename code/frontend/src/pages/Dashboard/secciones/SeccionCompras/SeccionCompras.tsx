@@ -24,15 +24,6 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
   const datosConteo = (resumen?.conteo_estado ?? []).map((fila) => ({ etiqueta: fila.tipo, valor: fila.cantidad }))
 
   return (
-<<<<<<< HEAD
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.tituloSeccion}>Resumen de compras</h2>
-        <div className={styles.accionesSeccion}>
-          <span className={styles.indicadorSeccion}>
-            <span className={styles.indicadorEtiqueta}>Gasto en compras</span>
-            <span className={styles.indicadorMonto}>
-=======
     <section className="card">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Resumen de compras</h2>
@@ -40,7 +31,6 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
           <span className={styles.indicator}>
             <span className={styles.indicatorLabel}>Gasto en compras</span>
             <span className={styles.indicatorAmount}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
               {resumenGeneral ? formatearMoneda(resumenGeneral.compras_total) : '…'}
             </span>
           </span>
@@ -54,21 +44,12 @@ export function SeccionCompras({ periodo }: SeccionComprasProps) {
         <p>Cargando resumen de compras…</p>
       ) : (
         <>
-<<<<<<< HEAD
-          <div className={styles.filaTresGraficas}>
-            <GraficaLinea titulo="Todas las compras" datos={mapear(resumen.todas)} color="var(--color-primario)" />
-            <GraficaLinea titulo="Compras de productos" datos={mapear(resumen.productos)} color="var(--color-secundario)" />
-            <GraficaLinea titulo="Compras de insumos" datos={mapear(resumen.insumos)} color="var(--color-advertencia)" />
-          </div>
-          <div className={styles.filaUnaGrafica}>
-=======
           <div className={styles.chartRowThree}>
             <GraficaLinea titulo="Todas las compras" datos={mapear(resumen.todas)} color="var(--color-primario)" />
             <GraficaLinea titulo="Compras de productos" datos={mapear(resumen.productos)} color="var(--color-secundario)" />
             <GraficaLinea titulo="Compras de insumos" datos={mapear(resumen.insumos)} color="var(--color-inicio)" />
           </div>
           <div className={styles.chartRowOne}>
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             <GraficaBarras
               titulo="Compras pendientes y recibidas"
               datos={datosConteo}

@@ -161,8 +161,6 @@ describe('Contabilidad', () => {
       expect(exportarMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'balance' }))
     })
   })
-<<<<<<< HEAD
-=======
 
   it('el catálogo se ordena como jerarquía, con la naturaleza de cada cuenta', () => {
     mockUsuarioActual('admin')
@@ -305,5 +303,4 @@ describe('Contabilidad', () => {
 
     expect(screen.getByText('Descuadre de 24.50')).toBeInTheDocument()
   })
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 })

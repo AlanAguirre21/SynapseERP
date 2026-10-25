@@ -8,7 +8,7 @@ from apps.usuarios.models import RegistroAcceso, Usuario
 @pytest.fixture
 def usuario(db):
     return Usuario.objects.create_user(
-        username='ana', email='ana@flebosil.test', password='clave-super-123',
+        username='ana', email='ana@synapse.test', password='clave-super-123',
         rol_usuario='operador',
     )
 

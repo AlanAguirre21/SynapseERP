@@ -7,7 +7,7 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -15,7 +15,7 @@ def operador(db):
 @pytest.fixture
 def otro_operador(db):
     return Usuario.objects.create_user(
-        username='operador2', email='operador2@flebosil.test', password='clave-segura-123',
+        username='operador2', email='operador2@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -30,7 +30,7 @@ def operador_client(operador):
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -38,7 +38,7 @@ def admin(db):
 @pytest.fixture
 def otro_admin(db):
     return Usuario.objects.create_user(
-        username='admin2', email='admin2@flebosil.test', password='clave-segura-123',
+        username='admin2', email='admin2@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -53,15 +53,15 @@ def admin_client(admin):
 @pytest.mark.django_db
 def test_usuario_edita_su_propio_username_y_email(operador_client, operador):
     response = operador_client.patch(
-        '/api/usuarios/me/', {'username': 'nuevo_nombre', 'email': 'nuevo@flebosil.test'}, format='json',
+        '/api/usuarios/me/', {'username': 'nuevo_nombre', 'email': 'nuevo@synapse.test'}, format='json',
     )
     assert response.status_code == 200
     assert response.data['username'] == 'nuevo_nombre'
-    assert response.data['email'] == 'nuevo@flebosil.test'
+    assert response.data['email'] == 'nuevo@synapse.test'
 
     operador.refresh_from_db()
     assert operador.username == 'nuevo_nombre'
-    assert operador.email == 'nuevo@flebosil.test'
+    assert operador.email == 'nuevo@synapse.test'
 
 
 @pytest.mark.django_db

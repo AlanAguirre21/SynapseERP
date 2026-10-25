@@ -17,7 +17,7 @@ URL_COMPLEMENTOS = '/api/facturacion/complementos-pago/'
 
 def _usuario(nombre, rol='operador'):
     return Usuario.objects.create_user(
-        username=nombre, email=f'{nombre}@flebosil.test', password='clave-segura-123', rol_usuario=rol,
+        username=nombre, email=f'{nombre}@synapse.test', password='clave-segura-123', rol_usuario=rol,
     )
 
 

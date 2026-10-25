@@ -15,10 +15,6 @@ export interface Usuario {
   nombre: string
   rol: 'admin' | 'operador'
   modulos: ModuloMenu[]
-<<<<<<< HEAD
-}
-
-=======
   // URL absoluta de la fotografía de perfil, o `null` (017 / 010).
   foto_usuario: string | null
 }
@@ -28,15 +24,12 @@ export interface Usuario {
 // de siempre (JSON sin fotografía).
 export type CambioFoto = File | null
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export interface InformacionUsuarioFormulario {
   username: string
   email: string
   first_name: string
   last_name: string
   rol_usuario?: 'admin' | 'operador'
-<<<<<<< HEAD
-=======
   foto_usuario?: CambioFoto
 }
 
@@ -79,7 +72,6 @@ function cuerpoConFoto<T extends { foto_usuario?: CambioFoto }>(datos: T): T | F
     formData.append(clave, valor instanceof File ? valor : valor === null ? '' : String(valor))
   })
   return formData
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export async function getUsuarioActual(): Promise<Usuario> {
@@ -92,11 +84,7 @@ export async function getUsuarioActual(): Promise<Usuario> {
 // terceros y es exclusivo de admin.
 
 export async function actualizarMiInformacion(datos: InformacionUsuarioFormulario): Promise<Usuario> {
-<<<<<<< HEAD
-  const { data } = await apiClient.patch<Usuario>('/usuarios/me/', datos)
-=======
   const { data } = await apiClient.patch<Usuario>('/usuarios/me/', cuerpoConFoto(datos))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   return data
 }
 
@@ -113,29 +101,18 @@ export interface UsuarioCuenta {
   rol_usuario: 'admin' | 'operador'
   empleado: number | null
   activo: boolean
-<<<<<<< HEAD
-=======
   foto_usuario: string | null
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export type UsuarioCuentaFormularioCreacion = Pick<
   UsuarioCuenta,
   'first_name' | 'last_name' | 'email' | 'rol_usuario' | 'empleado'
-<<<<<<< HEAD
-> & { password: string }
-=======
 > & { password: string; foto_usuario?: CambioFoto }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 export type UsuarioCuentaFormularioEdicion = Pick<
   UsuarioCuenta,
   'first_name' | 'last_name' | 'email' | 'rol_usuario' | 'empleado'
-<<<<<<< HEAD
->
-=======
 > & { foto_usuario?: CambioFoto }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 export async function getUsuariosCuentas(): Promise<UsuarioCuenta[]> {
   const { data } = await apiClient.get<UsuarioCuenta[]>('/usuarios/')
@@ -143,11 +120,7 @@ export async function getUsuariosCuentas(): Promise<UsuarioCuenta[]> {
 }
 
 export async function crearUsuarioCuenta(datos: UsuarioCuentaFormularioCreacion): Promise<UsuarioCuenta> {
-<<<<<<< HEAD
-  const { data } = await apiClient.post<UsuarioCuenta>('/usuarios/', datos)
-=======
   const { data } = await apiClient.post<UsuarioCuenta>('/usuarios/', cuerpoConFoto(datos))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   return data
 }
 
@@ -155,11 +128,7 @@ export async function editarUsuarioCuenta(
   id: number,
   datos: UsuarioCuentaFormularioEdicion,
 ): Promise<UsuarioCuenta> {
-<<<<<<< HEAD
-  const { data } = await apiClient.patch<UsuarioCuenta>(`/usuarios/${id}/`, datos)
-=======
   const { data } = await apiClient.patch<UsuarioCuenta>(`/usuarios/${id}/`, cuerpoConFoto(datos))
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
   return data
 }
 

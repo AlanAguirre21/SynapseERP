@@ -13,10 +13,7 @@ from rest_framework.response import Response
 
 from apps.configuracion_fiscal.models import SerieFolio
 from apps.ventas.models import Venta
-<<<<<<< HEAD
-=======
 from core.permissions import es_admin
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 from .models import ComplementoPago, Factura
 from .serializers import ComplementoPagoSerializer, FacturaSerializer
@@ -59,15 +56,12 @@ class FacturaViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Cr
         queryset = super().get_queryset()
         params = self.request.query_params
 
-<<<<<<< HEAD
-=======
         # Las facturas siguen a sus ventas: el operador solo ve las de las
         # ventas que él registró (`019`, "Actualización: el operador solo ve
         # las facturas de sus ventas").
         if not es_admin(self.request.user):
             queryset = queryset.filter(venta__usuario=self.request.user)
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         estado = params.get('estado')
         if estado:
             queryset = queryset.filter(estado=estado)
@@ -214,11 +208,8 @@ class ComplementoPagoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, m
 
     def get_queryset(self):
         queryset = super().get_queryset()
-<<<<<<< HEAD
-=======
         if not es_admin(self.request.user):
             queryset = queryset.filter(factura__venta__usuario=self.request.user)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         factura_id = self.request.query_params.get('factura')
         if factura_id:
             queryset = queryset.filter(factura_id=factura_id)

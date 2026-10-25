@@ -1,8 +1,5 @@
 import { apiClient } from './client'
-<<<<<<< HEAD
-=======
 import type { EstadoFactura } from './facturacion'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 export type PeriodoDashboard = 'dia' | 'semana' | 'mes' | 'año'
 
@@ -11,23 +8,15 @@ export interface PuntoResumenDashboard {
   ganancia: string
 }
 
-<<<<<<< HEAD
-=======
 // `ganancia` y `serie` solo llegan al admin; el operador recibe los totales
 // que usan Ventas y Compras (016, "Actualización: ganancias y movimientos de
 // caja solo para admin").
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 export interface ResumenDashboard {
   periodo: PeriodoDashboard
   ventas_total: string
   compras_total: string
-<<<<<<< HEAD
-  ganancia: string
-  serie: PuntoResumenDashboard[]
-=======
   ganancia?: string
   serie?: PuntoResumenDashboard[]
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export async function getResumenDashboard(periodo: PeriodoDashboard): Promise<ResumenDashboard> {
@@ -83,17 +72,11 @@ export async function getProductosTop(periodo: PeriodoDashboard, orden: OrdenTop
   return data
 }
 
-<<<<<<< HEAD
-export interface ClienteTop {
-  cliente: string
-  monto: string
-=======
 // Admin: monto comprado. Operador: número de compras, sin importes.
 export interface ClienteTop {
   cliente: string
   monto?: string
   compras?: number
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 }
 
 export async function getClientesTop(periodo: PeriodoDashboard, orden: OrdenTop): Promise<ClienteTop[]> {
@@ -118,8 +101,6 @@ export async function getMovimientosCajaReporte(
   })
   return data
 }
-<<<<<<< HEAD
-=======
 
 // --- Resumen facturación (016, "Actualización: Resumen facturación con datos")
 
@@ -163,4 +144,3 @@ export async function getResumenFacturacion(periodo: PeriodoDashboard): Promise<
   const { data } = await apiClient.get<ResumenFacturacion>('/reportes/facturacion/', { params: { periodo } })
   return data
 }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

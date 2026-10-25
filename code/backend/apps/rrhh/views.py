@@ -1,26 +1,17 @@
 from django.db import transaction
-<<<<<<< HEAD
-=======
 from django.db.models import Prefetch
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-<<<<<<< HEAD
-from core.permissions import EsAdmin
-
-from .models import (
-=======
 from apps.caja.services import SaldoInsuficienteError
 from core.permissions import EsAdmin
 
 from .models import (
     ESTADO_NOMINA_PENDIENTE,
     ESTADO_NOMINA_RECHAZADO,
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     MOTIVOS_CAMBIO,
     ContactoEmergencia,
     Departamento,
@@ -37,11 +28,6 @@ from .serializers import (
     DependienteSerializer,
     EmpleadoPosicionSerializer,
     EmpleadoSerializer,
-<<<<<<< HEAD
-    PosicionSerializer,
-    SolicitudNominaSerializer,
-)
-=======
     GenerarNominaSerializer,
     PagarLoteNominaSerializer,
     PosicionSerializer,
@@ -54,7 +40,6 @@ from .services.nomina import (
     pagar_solicitudes,
     revertir_pago,
 )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 # Admin-only en todo RRHH (7 ViewSets): a diferencia del patrón estándar de
 # catálogo (LecturaParaTodosEscrituraSoloAdmin), aquí el operador no debe
@@ -264,15 +249,6 @@ class DependienteViewSet(viewsets.ModelViewSet):
 
 
 class SolicitudNominaViewSet(viewsets.ModelViewSet):
-<<<<<<< HEAD
-    """`aprobar`/`rechazar` son las únicas formas de tocar `estado` — ver
-    nota en `SolicitudNominaSerializer`. No genera movimientos de caja
-    (spec.md, "Fuera de alcance"): es un registro informativo con
-    historial de aprobación.
-    """
-
-    queryset = SolicitudNomina.objects.select_related('empleado', 'resuelto_por').all()
-=======
     """Nómina con pago en caja (`spec.md`, "Actualización: nómina con pago en
     caja"). `aprobar` aprueba **y paga**: registra el retiro de Caja en la
     misma transacción. Toda la lógica de pago, pago en bloque y reverso vive
@@ -280,45 +256,10 @@ class SolicitudNominaViewSet(viewsets.ModelViewSet):
     `{"detail": ...}`. Exclusivo de admin, como todo RRHH.
     """
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     serializer_class = SolicitudNominaSerializer
     permission_classes = [EsAdmin]
 
     def get_queryset(self):
-<<<<<<< HEAD
-        queryset = super().get_queryset()
-        estado = self.request.query_params.get('estado')
-        return queryset.filter(estado=estado) if estado else queryset
-
-    @action(detail=True, methods=['post'])
-    def aprobar(self, request, pk=None):
-        return self._resolver(request, 'aprobado')
-
-    @action(detail=True, methods=['post'])
-    def rechazar(self, request, pk=None):
-        return self._resolver(request, 'rechazado')
-
-    def _resolver(self, request, nuevo_estado):
-        solicitud = self.get_object()
-
-        if solicitud.estado != 'pendiente':
-            return Response(
-                {
-                    'detail': (
-                        f'Esta solicitud ya fue {solicitud.get_estado_display().lower()}, '
-                        'no se puede volver a resolver.'
-                    ),
-                },
-                status=400,
-            )
-
-        solicitud.estado = nuevo_estado
-        solicitud.fecha_resolucion = timezone.now()
-        solicitud.resuelto_por = request.user
-        solicitud.save(update_fields=['estado', 'fecha_resolucion', 'resuelto_por'])
-
-        return Response(self.get_serializer(solicitud).data)
-=======
         queryset = (
             SolicitudNomina.objects.select_related('empleado', 'resuelto_por', 'revertido_por')
             .prefetch_related(Prefetch(
@@ -421,4 +362,3 @@ class SolicitudNominaViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

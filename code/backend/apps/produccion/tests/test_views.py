@@ -17,14 +17,14 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
 
 
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123', rol_usuario='operador',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123', rol_usuario='operador',
     )
 
 
@@ -105,25 +105,17 @@ def test_operador_puede_listar_recetas(operador_client, receta):
 
 
 @pytest.mark.django_db
-<<<<<<< HEAD
-def test_operador_no_puede_crear_receta(operador_client, producto, cloruro):
-=======
 def test_operador_puede_crear_receta(operador_client, operador, producto, cloruro):
     # Antes el operador recibía 403; desde "Actualización: el operador puede
     # crear recetas" puede darlas de alta y queda como su creador.
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     response = operador_client.post(
         '/api/produccion/recetas/',
         {'producto': producto.id, 'materia_prima': cloruro.id, 'cantidad_requerida': '0.50'},
         format='json',
     )
-<<<<<<< HEAD
-    assert response.status_code == 403
-=======
     assert response.status_code == 201
     assert response.data['creado_por'] == operador.id
     assert response.data['creado_por_nombre'] == 'operador1'
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db
@@ -145,12 +137,9 @@ def test_admin_no_puede_duplicar_ingrediente_en_la_misma_receta(admin_client, pr
         format='json',
     )
     assert response.status_code == 400
-<<<<<<< HEAD
-=======
     assert response.json()['non_field_errors'] == [
         'Esta materia prima ya forma parte de la receta de este producto.',
     ]
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 @pytest.mark.django_db
@@ -324,8 +313,6 @@ def test_no_permite_editar_ni_borrar_una_produccion(admin_client, sucursal, prod
     assert admin_client.put(f'/api/produccion/{id_produccion}/', {}, format='json').status_code == 405
     assert admin_client.patch(f'/api/produccion/{id_produccion}/', {}, format='json').status_code == 405
     assert admin_client.delete(f'/api/produccion/{id_produccion}/').status_code == 405
-<<<<<<< HEAD
-=======
 
 
 # --- "Actualización: el operador puede crear recetas" ------------------------
@@ -407,4 +394,3 @@ def test_las_lineas_anteriores_no_tienen_creador(operador_client, producto, clor
 
     assert (fila['creado_por'], fila['creado_por_nombre']) == (None, None)
 
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

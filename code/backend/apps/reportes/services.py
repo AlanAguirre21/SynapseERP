@@ -6,9 +6,6 @@ modelo, solo `Sum()`/`Count()` sobre tablas ya existentes.
 from datetime import timedelta
 from decimal import Decimal
 
-<<<<<<< HEAD
-from django.db.models import QuerySet, Sum
-=======
 from django.db.models import (
     Count,
     DecimalField,
@@ -19,15 +16,11 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from django.utils import timezone
 
 from apps.caja.models import MovimientoCaja
 from apps.compras.models import Compra, DetalleCompraMateriaPrima, DetalleCompraProducto
-<<<<<<< HEAD
-=======
 from apps.facturacion.models import ComplementoPago, Factura
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 from apps.ventas.models import DetalleVenta, Venta
 
 PERIODO_DIA = 'dia'
@@ -139,13 +132,6 @@ def _serie_desde_totales(totales_por_bucket, claves):
     return [{'fecha': clave.isoformat(), 'monto': totales_por_bucket.get(clave, CERO)} for clave in claves]
 
 
-<<<<<<< HEAD
-def calcular_resumen(periodo: str) -> dict:
-    inicio, ahora, granularidad = _rango_periodo(periodo)
-
-    ventas_qs = Venta.objects.filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN)
-    compras_qs = Compra.objects.filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_COMPRA_CUENTAN)
-=======
 # Alcance por usuario (`016`, "Actualización: cifras propias para el
 # operador"): `usuario=None` es toda la empresa (admin); con un usuario, solo
 # sus ventas, compras y las facturas de sus ventas — mismo criterio de
@@ -172,7 +158,6 @@ def calcular_resumen(periodo: str, usuario=None) -> dict:
 
     ventas_qs = _ventas(usuario).filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN)
     compras_qs = _compras(usuario).filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_COMPRA_CUENTAN)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     ventas_total = ventas_qs.aggregate(total=Sum('total'))['total'] or CERO
     compras_total = compras_qs.aggregate(total=Sum('total'))['total'] or CERO
@@ -197,11 +182,7 @@ def calcular_resumen(periodo: str, usuario=None) -> dict:
     }
 
 
-<<<<<<< HEAD
-def calcular_resumen_ventas(periodo: str) -> dict:
-=======
 def calcular_resumen_ventas(periodo: str, usuario=None) -> dict:
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """Desglose para la sección 'Resumen de ventas' del Dashboard: series
     con envío / sin envío / solo envío, más conteo por estado para la
     gráfica de barras Pendiente/Entregada.
@@ -210,11 +191,7 @@ def calcular_resumen_ventas(periodo: str, usuario=None) -> dict:
     inicio, ahora, granularidad = _rango_periodo(periodo)
     claves = _generar_claves(inicio, ahora, granularidad)
 
-<<<<<<< HEAD
-    ventas_qs = Venta.objects.filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN)
-=======
     ventas_qs = _ventas(usuario).filter(fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN)
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
     con_envio_por_bucket = _totales_por_bucket(ventas_qs, granularidad, campo='total')
     envio_por_bucket = _totales_por_bucket(ventas_qs, granularidad, campo='gasto_envio')
@@ -225,21 +202,13 @@ def calcular_resumen_ventas(periodo: str, usuario=None) -> dict:
     conteo_estado = [
         {
             'tipo': 'Pendiente',
-<<<<<<< HEAD
-            'cantidad': Venta.objects.filter(
-=======
             'cantidad': _ventas(usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                 fecha__gte=inicio, fecha__lte=ahora, estado=Venta.ESTADO_PENDIENTE,
             ).count(),
         },
         {
             'tipo': 'Entregada',
-<<<<<<< HEAD
-            'cantidad': Venta.objects.filter(
-=======
             'cantidad': _ventas(usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                 fecha__gte=inicio, fecha__lte=ahora, estado=Venta.ESTADO_ENTREGADA,
             ).count(),
         },
@@ -254,11 +223,7 @@ def calcular_resumen_ventas(periodo: str, usuario=None) -> dict:
     }
 
 
-<<<<<<< HEAD
-def calcular_resumen_compras(periodo: str) -> dict:
-=======
 def calcular_resumen_compras(periodo: str, usuario=None) -> dict:
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """Desglose para la sección 'Resumen de compras': series todas /
     productos / insumos, más conteo por estado para la gráfica de barras
     Pendiente/Recibida. Una `Compra` puede incluir líneas de producto y
@@ -270,19 +235,11 @@ def calcular_resumen_compras(periodo: str, usuario=None) -> dict:
     inicio, ahora, granularidad = _rango_periodo(periodo)
     claves = _generar_claves(inicio, ahora, granularidad)
 
-<<<<<<< HEAD
-    detalles_producto = DetalleCompraProducto.objects.filter(
-        compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado__in=ESTADOS_COMPRA_CUENTAN,
-    ).values_list('compra__fecha', 'subtotal')
-
-    detalles_materia_prima = DetalleCompraMateriaPrima.objects.filter(
-=======
     detalles_producto = _por_usuario(DetalleCompraProducto.objects, 'compra__usuario', usuario).filter(
         compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado__in=ESTADOS_COMPRA_CUENTAN,
     ).values_list('compra__fecha', 'subtotal')
 
     detalles_materia_prima = _por_usuario(DetalleCompraMateriaPrima.objects, 'compra__usuario', usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
         compra__fecha__gte=inicio, compra__fecha__lte=ahora, compra__estado__in=ESTADOS_COMPRA_CUENTAN,
     ).values_list('compra__fecha', 'subtotal')
 
@@ -295,21 +252,13 @@ def calcular_resumen_compras(periodo: str, usuario=None) -> dict:
     conteo_estado = [
         {
             'tipo': 'Pendiente',
-<<<<<<< HEAD
-            'cantidad': Compra.objects.filter(
-=======
             'cantidad': _compras(usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                 fecha__gte=inicio, fecha__lte=ahora, estado=Compra.ESTADO_PENDIENTE,
             ).count(),
         },
         {
             'tipo': 'Recibida',
-<<<<<<< HEAD
-            'cantidad': Compra.objects.filter(
-=======
             'cantidad': _compras(usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
                 fecha__gte=inicio, fecha__lte=ahora, estado=Compra.ESTADO_RECIBIDA,
             ).count(),
         },
@@ -324,11 +273,7 @@ def calcular_resumen_compras(periodo: str, usuario=None) -> dict:
     }
 
 
-<<<<<<< HEAD
-def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS) -> list:
-=======
 def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS, usuario=None) -> list:
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """Top 5 productos por cantidad vendida. `orden='menos'` solo
     considera productos con al menos una unidad vendida en el periodo —
     nunca lista productos sin ventas, que no tendrían un ranking con
@@ -338,11 +283,7 @@ def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS, usuario=None) -
     inicio, ahora, _ = _rango_periodo(periodo)
 
     query = (
-<<<<<<< HEAD
-        DetalleVenta.objects.filter(
-=======
         _por_usuario(DetalleVenta.objects, 'venta__usuario', usuario).filter(
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
             venta__fecha__gte=inicio, venta__fecha__lte=ahora, venta__estado__in=ESTADOS_VENTA_CUENTAN,
         )
         .values('producto__nombre_producto')
@@ -354,12 +295,6 @@ def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS, usuario=None) -
     return [{'producto': fila['producto__nombre_producto'], 'cantidad': fila['cantidad']} for fila in query[:5]]
 
 
-<<<<<<< HEAD
-def calcular_top_clientes(periodo: str, orden: str = ORDEN_MAS) -> list:
-    """Top 5 clientes por monto comprado. Excluye ventas sin cliente
-    (venta de mostrador) y, con `orden='menos'`, clientes sin compras en
-    el periodo.
-=======
 TOP_CLIENTES_POR_MONTO = 'monto'
 TOP_CLIENTES_POR_COMPRAS = 'compras'
 
@@ -371,24 +306,11 @@ def calcular_top_clientes(
     de compras (`por='compras'`, operador: sin importes). Excluye ventas sin
     cliente (venta de mostrador) y, con `orden='menos'`, clientes sin
     compras en el periodo.
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
     """
 
     inicio, ahora, _ = _rango_periodo(periodo)
 
     query = (
-<<<<<<< HEAD
-        Venta.objects.filter(
-            fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN, cliente__isnull=False,
-        )
-        .values('cliente__nombre_cliente')
-        .annotate(monto=Sum('total'))
-        .filter(monto__gt=0)
-    )
-    query = query.order_by('monto' if orden == ORDEN_MENOS else '-monto')
-
-    return [{'cliente': fila['cliente__nombre_cliente'], 'monto': fila['monto']} for fila in query[:5]]
-=======
         _ventas(usuario).filter(
             fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN, cliente__isnull=False,
         )
@@ -401,7 +323,6 @@ def calcular_top_clientes(
     query = query.order_by(por if orden == ORDEN_MENOS else f'-{por}')
 
     return [{'cliente': fila['cliente__nombre_cliente'], por: fila[por]} for fila in query[:5]]
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b
 
 
 def obtener_movimientos_caja(periodo: str, limite: str = LIMITE_10):
@@ -418,8 +339,6 @@ def obtener_movimientos_caja(periodo: str, limite: str = LIMITE_10):
         return queryset
 
     return queryset[: int(limite)]
-<<<<<<< HEAD
-=======
 
 
 # --- Resumen facturación (`016`, "Actualización: Resumen facturación con datos")
@@ -541,4 +460,3 @@ def calcular_resumen_facturacion(periodo: str, usuario=None) -> dict:
         'conteo_estado': conteo_estado,
         'requiere_atencion': requiere_atencion,
     }
->>>>>>> 52489aadf81c4c4204fa1b05f16a93923b146d1b

@@ -7,7 +7,7 @@ vi.mock('./client', () => ({ apiClient: { patch: vi.fn(), post: vi.fn() } }))
 
 const patchMock = vi.mocked(apiClient.patch)
 
-const DATOS = { username: 'juanp', email: 'juanp@flebosil.test', first_name: 'Juan', last_name: 'Pérez' }
+const DATOS = { username: 'juanp', email: 'juanp@synapse.test', first_name: 'Juan', last_name: 'Pérez' }
 
 describe('api/usuarios — fotografía de perfil', () => {
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('api/usuarios — fotografía de perfil', () => {
     const foto = new File([new Uint8Array(4)], 'foto.png', { type: 'image/png' })
 
     await editarUsuarioCuenta(3, {
-      first_name: 'Ana', last_name: 'Torres', email: 'ana@flebosil.test', rol_usuario: 'operador',
+      first_name: 'Ana', last_name: 'Torres', email: 'ana@synapse.test', rol_usuario: 'operador',
       empleado: null, foto_usuario: foto,
     })
 
