@@ -21,6 +21,8 @@ export type NombreIcono =
   | 'contabilidad'
   | 'configuracionFiscal'
   | 'usuarios'
+  | 'auditoria'
+  | 'asistente'
   | 'mas'
   | 'desplegar'
 
@@ -169,6 +171,21 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <circle cx="8.5" cy="11" r="2" />
       <path d="M6 16c.5-1.8 1.8-2.6 2.5-2.6s2 .8 2.5 2.6" />
       <path d="M14 10h5M14 13h5M14 16h3" />
+    </>
+  ),
+  // Portapapeles con palomita: auditoría y análisis.
+  auditoria: (
+    <>
+      <rect x="5" y="4" width="14" height="17" rx="2" />
+      <path d="M9 4V3h6v1" />
+      <path d="M9 12.5l2 2 4-4.5" />
+    </>
+  ),
+  // Globo de diálogo: asistente conversacional (024).
+  asistente: (
+    <>
+      <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+      <path d="M8 10h8M8 13h5" />
     </>
   ),
   mas: (

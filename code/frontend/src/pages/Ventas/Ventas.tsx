@@ -11,6 +11,7 @@ import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { useUsuarios } from '../../hooks/useUsuarios'
 import { useVentas } from '../../hooks/useVentas'
 import { formatearMoneda } from '../../utils/moneda'
+import { PronosticoVinculado } from '../Dashboard/compartido/PronosticoVinculado'
 
 function claseEstado(estado: EstadoVenta) {
   if (estado === 'entregada') return 'status statusSuccess'
@@ -114,6 +115,17 @@ export function Ventas() {
           <span className="statValue">{ventas ? entregadas : '…'}</span>
         </div>
       </div>
+
+      {/* 023 · Analítica predictiva: solo admin (el backend tampoco se lo da al operador). */}
+      {esAdmin && (
+        <PronosticoVinculado
+          titulo="Pronóstico de ventas"
+          metricas={[
+            { metrica: 'monto_ventas', titulo: 'Monto vendido', ejeY: 'Monto ($)', formato: formatearMoneda },
+            { metrica: 'numero_ventas', titulo: 'Número de ventas', ejeY: 'Ventas', formato: (valor) => valor.toLocaleString('es-MX', { maximumFractionDigits: 0 }) },
+          ]}
+        />
+      )}
 
       <div className="filters">
         <label className="filterField">

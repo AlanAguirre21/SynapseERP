@@ -40,6 +40,8 @@ LIMITES_VALIDOS = [LIMITE_5, LIMITE_10, LIMITE_TODOS]
 
 GRANULARIDAD_HORA = 'hora'
 GRANULARIDAD_DIA = 'dia'
+# Semanas de lunes a domingo; solo la usa `023 · Analítica predictiva`.
+GRANULARIDAD_SEMANA = 'semana'
 GRANULARIDAD_MES = 'mes'
 
 # Solo cuentan los estados donde la venta/compra ya tuvo un efecto
@@ -81,12 +83,22 @@ def _rango_periodo(periodo: str):
     return inicio, ahora, granularidad
 
 
-def _clave_bucket(fecha_local, granularidad):
+def clave_bucket(fecha_local, granularidad):
+    """Inicio del bucket (en hora local) al que pertenece `fecha_local`.
+    Compartida con `023 · Analítica predictiva` para que Dashboard y
+    pronósticos agrupen exactamente igual."""
+
     if granularidad == GRANULARIDAD_HORA:
         return fecha_local.replace(minute=0, second=0, microsecond=0)
     if granularidad == GRANULARIDAD_MES:
         return fecha_local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    return fecha_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio_dia = fecha_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    if granularidad == GRANULARIDAD_SEMANA:
+        return inicio_dia - timedelta(days=inicio_dia.weekday())
+    return inicio_dia
+
+
+_clave_bucket = clave_bucket
 
 
 def _siguiente_mes(fecha):
@@ -95,17 +107,24 @@ def _siguiente_mes(fecha):
     return fecha.replace(month=fecha.month + 1)
 
 
+def siguiente_clave(clave, granularidad):
+    """Inicio del bucket que sigue a `clave` (ya alineada con `clave_bucket`)."""
+
+    if granularidad == GRANULARIDAD_HORA:
+        return clave + timedelta(hours=1)
+    if granularidad == GRANULARIDAD_MES:
+        return _siguiente_mes(clave)
+    if granularidad == GRANULARIDAD_SEMANA:
+        return clave + timedelta(days=7)
+    return clave + timedelta(days=1)
+
+
 def _generar_claves(inicio, ahora, granularidad):
     claves = []
     cursor = inicio
     while cursor <= ahora:
         claves.append(cursor)
-        if granularidad == GRANULARIDAD_HORA:
-            cursor += timedelta(hours=1)
-        elif granularidad == GRANULARIDAD_MES:
-            cursor = _siguiente_mes(cursor)
-        else:
-            cursor += timedelta(days=1)
+        cursor = siguiente_clave(cursor, granularidad)
     return claves
 
 
@@ -281,10 +300,16 @@ def calcular_top_productos(periodo: str, orden: str = ORDEN_MAS, usuario=None) -
     """
 
     inicio, ahora, _ = _rango_periodo(periodo)
+    return top_productos_rango(inicio, ahora, orden=orden, usuario=usuario)
+
+
+def top_productos_rango(inicio, fin, orden: str = ORDEN_MAS, usuario=None) -> list:
+    """Igual que `calcular_top_productos`, sobre un rango explícito
+    `[inicio, fin]` (lo usa también `024 · Asistente conversacional`)."""
 
     query = (
         _por_usuario(DetalleVenta.objects, 'venta__usuario', usuario).filter(
-            venta__fecha__gte=inicio, venta__fecha__lte=ahora, venta__estado__in=ESTADOS_VENTA_CUENTAN,
+            venta__fecha__gte=inicio, venta__fecha__lte=fin, venta__estado__in=ESTADOS_VENTA_CUENTAN,
         )
         .values('producto__nombre_producto')
         .annotate(cantidad=Sum('cantidad'))
@@ -309,10 +334,15 @@ def calcular_top_clientes(
     """
 
     inicio, ahora, _ = _rango_periodo(periodo)
+    return top_clientes_rango(inicio, ahora, orden=orden, por=por, usuario=usuario)
+
+
+def top_clientes_rango(inicio, fin, orden: str = ORDEN_MAS, por: str = TOP_CLIENTES_POR_MONTO, usuario=None) -> list:
+    """Igual que `calcular_top_clientes`, sobre un rango explícito."""
 
     query = (
         _ventas(usuario).filter(
-            fecha__gte=inicio, fecha__lte=ahora, estado__in=ESTADOS_VENTA_CUENTAN, cliente__isnull=False,
+            fecha__gte=inicio, fecha__lte=fin, estado__in=ESTADOS_VENTA_CUENTAN, cliente__isnull=False,
         )
         .values('cliente__nombre_cliente')
     )
@@ -323,6 +353,43 @@ def calcular_top_clientes(
     query = query.order_by(por if orden == ORDEN_MENOS else f'-{por}')
 
     return [{'cliente': fila['cliente__nombre_cliente'], por: fila[por]} for fila in query[:5]]
+
+
+def top_proveedores_rango(inicio, fin, usuario=None) -> list:
+    """Top 5 proveedores por monto comprado en `[inicio, fin]` (compras que
+    cuentan, mismo criterio que el Dashboard). Lo usa `024`."""
+
+    query = (
+        _compras(usuario).filter(fecha__gte=inicio, fecha__lte=fin, estado__in=ESTADOS_COMPRA_CUENTAN)
+        .values('proveedor__nombre_proveedor')
+        .annotate(monto=Sum('total'), compras=Count('id'))
+        .filter(monto__gt=0)
+        .order_by('-monto')
+    )
+    return [
+        {'proveedor': fila['proveedor__nombre_proveedor'], 'monto': fila['monto'], 'compras': fila['compras']}
+        for fila in query[:5]
+    ]
+
+
+def resumen_rango(inicio, fin, usuario=None) -> dict:
+    """Totales de ventas y compras en `[inicio, fin]`, con el mismo alcance
+    y los mismos estados que `calcular_resumen` (Dashboard). Lo usa `024`;
+    `ganancia` = ventas − compras, la fórmula del Dashboard."""
+
+    ventas = _ventas(usuario).filter(fecha__gte=inicio, fecha__lte=fin, estado__in=ESTADOS_VENTA_CUENTAN)
+    compras = _compras(usuario).filter(fecha__gte=inicio, fecha__lte=fin, estado__in=ESTADOS_COMPRA_CUENTAN)
+    totales_ventas = ventas.aggregate(total=Sum('total'), numero=Count('id'))
+    totales_compras = compras.aggregate(total=Sum('total'), numero=Count('id'))
+    ventas_total = totales_ventas['total'] or CERO
+    compras_total = totales_compras['total'] or CERO
+    return {
+        'ventas_total': ventas_total,
+        'ventas_numero': totales_ventas['numero'],
+        'compras_total': compras_total,
+        'compras_numero': totales_compras['numero'],
+        'ganancia': ventas_total - compras_total,
+    }
 
 
 def obtener_movimientos_caja(periodo: str, limite: str = LIMITE_10):

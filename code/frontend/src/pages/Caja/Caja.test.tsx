@@ -8,6 +8,10 @@ import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Caja } from './Caja'
 
 vi.mock('../../hooks/useUsuarioActual')
+// 022: el resumen de auditoría no es el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAuditoria', () => ({
+  useResumenAuditoria: vi.fn(() => ({ data: undefined, isLoading: false })),
+}))
 vi.mock('../../hooks/useMovimientosCaja')
 
 function mockUsuarioActual(rol: 'admin' | 'operador') {

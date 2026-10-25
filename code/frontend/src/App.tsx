@@ -15,6 +15,7 @@ import { Contabilidad } from './pages/Contabilidad/Contabilidad'
 import { Dashboard } from './pages/Dashboard/Dashboard'
 import { DetalleFactura } from './pages/Facturacion/DetalleFactura'
 import { Facturacion } from './pages/Facturacion/Facturacion'
+import { AuditoriaAnalisis } from './pages/AuditoriaAnalisis/AuditoriaAnalisis'
 import { InformacionUsuario } from './pages/InformacionUsuario/InformacionUsuario'
 import { Inventario } from './pages/Inventario/Inventario'
 import { Login } from './pages/Login/Login'
@@ -91,6 +92,9 @@ function App() {
               <Route element={<RutaModulo slug="contabilidad" />}>
                 <Route path="/contabilidad" element={<Contabilidad />} />
               </Route>
+              <Route element={<RutaModulo slug="auditoria_analisis" />}>
+                <Route path="/auditoria-analisis" element={<AuditoriaAnalisisPorPestana />} />
+              </Route>
               <Route path="/informacion-usuario" element={<InformacionUsuario />} />
             </Route>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -111,3 +115,9 @@ function RRHHPorPestana() {
   return <RRHH key={search} />
 }
 
+// Igual que RRHH: los enlaces de Inventario, Caja y el Header cambian solo la
+// búsqueda (`?pestana=`, `?sucursal=`); la clave nueva vuelve a montar la página.
+function AuditoriaAnalisisPorPestana() {
+  const { search } = useLocation()
+  return <AuditoriaAnalisis key={search} />
+}

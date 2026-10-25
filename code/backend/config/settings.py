@@ -68,6 +68,9 @@ INSTALLED_APPS = [
     'apps.configuracion_fiscal',
     'apps.facturacion',
     'apps.contabilidad',
+    'apps.auditoria',
+    'apps.analitica',
+    'apps.asistente',
 ]
 
 MIDDLEWARE = [
@@ -133,8 +136,23 @@ REST_FRAMEWORK = {
         # no por IP: evita que se sature la bandeja de un usuario específico.
         'recuperar_password': '3/hour',
         'verificar_codigo': '5/min',
+        # 024 · Asistente conversacional, por usuario.
+        'asistente': '30/min',
     },
 }
+
+# --- 024 · Asistente conversacional ------------------------------------------
+# Modelo de embeddings local (fastembed/ONNX). Elegido en la calibración de
+# `tasks.md` frente a `potion-multilingual-128M`; `multilingual-e5-small`
+# (candidato de `plan.md`) no está disponible en fastembed 0.9.
+ASISTENTE_MODELO_EMBEDDINGS = os.environ.get(
+    'ASISTENTE_MODELO_EMBEDDINGS', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
+)
+ASISTENTE_CACHE_MODELOS = Path(os.environ.get('ASISTENTE_CACHE_MODELOS', BASE_DIR / '.modelos_embeddings'))
+# Calibrados con `python manage.py evaluar_asistente` (ver `tasks.md` de 024).
+ASISTENTE_UMBRAL_ALTO = float(os.environ.get('ASISTENTE_UMBRAL_ALTO', '0.78'))
+ASISTENTE_MARGEN = float(os.environ.get('ASISTENTE_MARGEN', '0.04'))
+ASISTENTE_UMBRAL_BAJO = float(os.environ.get('ASISTENTE_UMBRAL_BAJO', '0.65'))
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),

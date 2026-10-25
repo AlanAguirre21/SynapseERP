@@ -26,6 +26,7 @@ import {
 } from '../../hooks/useProveedores'
 import { useSolicitudNuevo } from '../../hooks/useSolicitudNuevo'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { PronosticoVinculado } from '../Dashboard/compartido/PronosticoVinculado'
 import { useVentas } from '../../hooks/useVentas'
 import { formatearMoneda } from '../../utils/moneda'
 import { normalizarBusqueda } from '../../utils/texto'
@@ -116,6 +117,8 @@ export function Terceros() {
   // pestaña; el contador conecta ambos (ver `useSolicitudNuevo`).
   const [solicitudes, setSolicitudes] = useState<Record<Pestaña, number>>({ clientes: 0, proveedores: 0 })
   const accion = PESTAÑAS.find((p) => p.clave === pestaña)?.accion
+  const { data: usuarioActual } = useUsuarioActual()
+  const esAdmin = usuarioActual?.rol === 'admin'
 
   return (
     <div className="page">
@@ -146,6 +149,17 @@ export function Terceros() {
         ))}
       </div>
 
+      {/* 023 · Analítica predictiva: solo admin. */}
+      {pestaña === 'clientes' && esAdmin && (
+        <PronosticoVinculado
+          titulo="Crecimiento de clientes"
+          metricas={[
+            { metrica: 'clientes_nuevos', titulo: 'Clientes nuevos', ejeY: 'Clientes', formato: (valor) => valor.toLocaleString('es-MX', { maximumFractionDigits: 0 }) },
+            { metrica: 'clientes_activos', titulo: 'Clientes activos', ejeY: 'Clientes', formato: (valor) => valor.toLocaleString('es-MX', { maximumFractionDigits: 0 }) },
+            { metrica: 'base_clientes', titulo: 'Base de clientes acumulada', ejeY: 'Clientes', formato: (valor) => valor.toLocaleString('es-MX', { maximumFractionDigits: 0 }) },
+          ]}
+        />
+      )}
       {pestaña === 'clientes' && <PestañaClientes solicitudNuevo={solicitudes.clientes} />}
       {pestaña === 'proveedores' && <PestañaProveedores solicitudNuevo={solicitudes.proveedores} />}
     </div>

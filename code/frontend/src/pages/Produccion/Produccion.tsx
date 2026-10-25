@@ -22,6 +22,7 @@ import {
 } from '../../hooks/useRecetas'
 import { useSucursales } from '../../hooks/useSucursales'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { DemandaPronosticadaResumen } from '../Dashboard/compartido/DemandaPronosticadaResumen'
 import { formatearMoneda } from '../../utils/moneda'
 import styles from './Produccion.module.css'
 
@@ -99,6 +100,8 @@ export function Produccion() {
         ))}
       </div>
 
+      {/* 023 · Analítica predictiva: solo admin. */}
+      {pestaña === 'producciones' && esAdmin && <DemandaPronosticadaResumen />}
       {pestaña === 'producciones' && <PestañaProducciones />}
       {pestaña === 'recetas' && (
         <PestañaRecetas esAdmin={esAdmin} modo={modoReceta} onCambiarModo={setModoReceta} />

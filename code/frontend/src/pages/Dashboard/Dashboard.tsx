@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import logoSynapse from '../../assets/synapse_img/synapseErp_logo_transparent.png'
+import type { UltimaEjecucionResumen } from '../../api/auditoria'
 import type { PeriodoDashboard } from '../../api/reportes'
 import { formatearMoneda } from './compartido/formato'
+import { useResumenAuditoria } from '../../hooks/useAuditoria'
 import { useSaldoCaja } from '../../hooks/useMovimientosCaja'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { SeccionClientes } from './secciones/SeccionClientes/SeccionClientes'
@@ -30,6 +33,39 @@ function SaldoCajaAdmin() {
         {isLoading || !saldos ? '…' : formatearMoneda(saldos.saldo_actual)}
       </span>
     </div>
+  )
+}
+
+// 022 · Auditoría automatizada: estado de la última ejecución de cada tipo.
+function UltimaAuditoria() {
+  const { data: resumen, isLoading } = useResumenAuditoria()
+
+  function tarjeta(etiqueta: string, ultima: UltimaEjecucionResumen | null | undefined) {
+    const abiertas = ultima?.discrepancias_abiertas ?? 0
+    const clase = ultima?.estado === 'fallida' ? 'statTile statTileDanger' : abiertas > 0 ? 'statTile statTileWarning' : 'statTile'
+    return (
+      <Link to="/auditoria-analisis?pestana=ejecuciones" className={clase}>
+        <span className="statLabel">{etiqueta}</span>
+        <span className="statValue">
+          {isLoading ? '…' : !ultima ? 'Sin ejecuciones' : ultima.estado === 'fallida' ? 'Falló' : `${abiertas} abierta(s)`}
+        </span>
+        {ultima && (
+          <span className="pageHint">
+            {new Date(ultima.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}
+          </span>
+        )}
+      </Link>
+    )
+  }
+
+  return (
+    <section aria-label="Última auditoría">
+      <h2 className="sectionTitle">Última auditoría</h2>
+      <div className="statRow">
+        {tarjeta('Conciliación de caja', resumen?.ultima_caja)}
+        {tarjeta('Auditoría de inventario', resumen?.ultima_inventario)}
+      </div>
+    </section>
   )
 }
 
@@ -69,7 +105,8 @@ export function Dashboard() {
 
       {/* Ganancia y movimientos de caja: solo admin (el backend tampoco se los da al operador). */}
       {esAdmin && <SeccionGanancias periodo={periodo} />}
-      <SeccionVentas periodo={periodo} />
+      {esAdmin && <UltimaAuditoria />}
+      <SeccionVentas periodo={periodo} esAdmin={esAdmin} />
       <SeccionCompras periodo={periodo} />
       <SeccionProductos periodo={periodo} />
       <SeccionClientes periodo={periodo} />

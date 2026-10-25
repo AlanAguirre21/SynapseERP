@@ -11,9 +11,11 @@ import type {
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
+import { useResumenAuditoria } from '../../hooks/useAuditoria'
 import { useCrearMovimientoCaja, useMovimientosCaja, useSaldoCaja } from '../../hooks/useMovimientosCaja'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { formatearMoneda } from '../../utils/moneda'
+import { GraficaBarras } from '../Dashboard/compartido/GraficaBarras'
 import styles from './Caja.module.css'
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
@@ -232,6 +234,8 @@ function CajaContenido() {
         </div>
       </div>
 
+      <ConciliacionCaja />
+
       <div className="filters">
         <label className="filterField">
           Tipo
@@ -441,4 +445,51 @@ function NuevoMovimientoModal({
 // Un saldo resultante negativo (sobregiro) se muestra con signo menos.
 function formatearFlujoSaldo(valor: number): string {
   return valor < 0 ? `−${formatearMoneda(-valor)}` : formatearMoneda(valor)
+}
+
+// 022 · Auditoría automatizada: diferencia entre el efectivo contado y el
+// saldo derivado en los últimos cortes auditados. Caja ya es solo admin.
+function ConciliacionCaja() {
+  const { data: resumen, isLoading } = useResumenAuditoria()
+  const cortes = resumen?.serie_cortes ?? []
+  const datos = cortes.map((corte) => ({
+    etiqueta: new Date(corte.fecha_hora_corte).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }),
+    valor: Number(corte.diferencia),
+  }))
+  // Faltante en rojo, sobrante en verde, cuadrado en el color de marca.
+  const colores = datos.map((d) =>
+    d.valor < 0 ? 'var(--color-error)' : d.valor > 0 ? 'var(--color-exito)' : 'var(--color-primario)',
+  )
+  const ultima = resumen?.ultima_caja
+
+  return (
+    <section className="card" aria-label="Conciliación de caja">
+      <div className="sectionHeader">
+        <div>
+          <h2 className="sectionTitle">Conciliación de caja</h2>
+          <p className="pageHint">
+            {isLoading
+              ? 'Cargando…'
+              : ultima
+                ? `Última conciliación: ${new Date(ultima.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })} · ${resumen?.abiertas_caja ?? 0} discrepancia(s) abierta(s).`
+                : 'Todavía no se ha ejecutado ninguna conciliación.'}
+          </p>
+        </div>
+        <Link to="/auditoria-analisis?pestana=cortes" className="actionLink">
+          Ver cortes de caja
+        </Link>
+      </div>
+      {cortes.length > 0 ? (
+        <GraficaBarras
+          titulo="Contado − saldo esperado por corte"
+          datos={datos}
+          colores={colores}
+          etiquetaEjeY="Diferencia"
+          formatoValor={formatearFlujo}
+        />
+      ) : (
+        !isLoading && <p className="emptyState">Registra un corte de caja para ver aquí su conciliación.</p>
+      )}
+    </section>
+  )
 }

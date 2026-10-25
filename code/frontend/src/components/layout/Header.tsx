@@ -2,8 +2,10 @@ import { useEffect, useRef, useState, type FocusEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import logoSynapse from '../../assets/synapse_img/synapseErp_logo_transparent.png'
+import { useAsistente } from '../../context/AsistenteContext'
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
+import { useResumenAuditoria } from '../../hooks/useAuditoria'
 import { useSolicitudesNominaPendientes } from '../../hooks/useSolicitudesNomina'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { formatearMoneda } from '../../utils/moneda'
@@ -18,6 +20,7 @@ interface HeaderProps {
 type Desplegable = 'notificaciones' | 'usuario'
 
 const RUTA_NOMINAS = '/rrhh?pestana=nominas'
+const RUTA_DISCREPANCIAS = '/auditoria-analisis?pestana=discrepancias'
 
 // `AAAA-MM-DD` -> `DD/MM/AAAA`, sin pasar por `Date` (evita el corrimiento de zona horaria).
 function fechaCorta(iso: string): string {
@@ -33,6 +36,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   // pide el endpoint para operador, que de todos modos lo tiene vedado en el
   // backend. Se resuelven en la pestaña "Nóminas" de RRHH, no aquí.
   const { data: solicitudesNomina, isLoading: solicitudesCargando } = useSolicitudesNominaPendientes(esAdmin)
+  // 022 · Auditoría automatizada: solo admin, mismo criterio que la nómina.
+  const { data: resumenAuditoria } = useResumenAuditoria(esAdmin)
   // Un solo estado para los dos desplegables: abrir uno cierra el otro.
   const [desplegable, setDesplegable] = useState<Desplegable | null>(null)
   const notificacionesAbiertas = desplegable === 'notificaciones'
@@ -42,6 +47,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const botonNotificaciones = useRef<HTMLButtonElement>(null)
   const botonUsuario = useRef<HTMLButtonElement>(null)
   const { logout } = useAuth()
+  // 024: `null` fuera de MainLayout (el botón no se muestra).
+  const asistente = useAsistente()
   const navigate = useNavigate()
 
   // Cierra el desplegable al cambiar de ruta (el Header no se vuelve a montar
@@ -97,7 +104,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
   const totalAlertas = alertas?.length ?? 0
   const totalSolicitudes = esAdmin ? solicitudesNomina?.length ?? 0 : 0
-  const totalNotificaciones = totalAlertas + totalSolicitudes
+  // Una alerta por tipo cuya última ejecución dejó discrepancias abiertas.
+  const alertasAuditoria = esAdmin
+    ? [
+        { clave: 'caja', etiqueta: 'Conciliación de caja', ultima: resumenAuditoria?.ultima_caja },
+        { clave: 'inventario', etiqueta: 'Auditoría de inventario', ultima: resumenAuditoria?.ultima_inventario },
+      ].filter((alerta) => (alerta.ultima?.discrepancias_abiertas ?? 0) > 0)
+    : []
+  const totalNotificaciones = totalAlertas + totalSolicitudes + alertasAuditoria.length
 
   function cerrarSesion() {
     logout()
@@ -121,6 +135,17 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       </div>
 
       <div className={styles.headerRight}>
+        {asistente && (
+          <button
+            type="button"
+            className={styles.notificationsButton}
+            onClick={asistente.alternar}
+            aria-label="Asistente"
+            aria-expanded={asistente.abierto}
+          >
+            <Icono nombre="asistente" tamano={20} />
+          </button>
+        )}
         <div
           ref={contenedorNotificaciones}
           className={styles.notifications}
@@ -187,6 +212,22 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                   <Link to={RUTA_NOMINAS} className={`${styles.menuItem} ${styles.dropdownFooter}`}>
                     Ver nóminas
                   </Link>
+
+                  <p className={styles.dropdownSection}>Auditorías</p>
+                  {alertasAuditoria.length === 0 ? (
+                    <p className={styles.dropdownEmpty}>Sin discrepancias abiertas</p>
+                  ) : (
+                    <ul className={styles.requestList}>
+                      {alertasAuditoria.map((alerta) => (
+                        <li key={alerta.clave}>
+                          <Link to={RUTA_DISCREPANCIAS} className={styles.requestLink}>
+                            <strong>{alerta.etiqueta}</strong>
+                            <span>{alerta.ultima?.discrepancias_abiertas} discrepancia(s) abierta(s)</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               )}
             </div>

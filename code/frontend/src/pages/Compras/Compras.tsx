@@ -7,6 +7,7 @@ import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
 import { useCompras } from '../../hooks/useCompras'
 import { useProveedores } from '../../hooks/useProveedores'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
+import { DemandaPronosticadaResumen } from '../Dashboard/compartido/DemandaPronosticadaResumen'
 import { useUsuarios } from '../../hooks/useUsuarios'
 import { formatearMoneda } from '../../utils/moneda'
 
@@ -102,6 +103,9 @@ export function Compras() {
           <span className="statValue">{compras ? recibidas : '…'}</span>
         </div>
       </div>
+
+      {/* 023 · Analítica predictiva: solo admin. */}
+      {esAdmin && <DemandaPronosticadaResumen />}
 
       <div className="filters">
         <label className="filterField">

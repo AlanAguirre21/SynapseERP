@@ -32,6 +32,15 @@ vi.mock('../../hooks/useResumenFacturacion')
 vi.mock('../../hooks/useMovimientosCajaDashboard')
 vi.mock('../../hooks/useMovimientosCaja')
 vi.mock('../../hooks/useUsuarioActual')
+// 023: los pronósticos no son el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAnalitica', () => {
+  const vacio = () => ({ data: undefined, isLoading: false })
+  return { useVistaPronostico: vi.fn(vacio), useDemandaPronosticada: vi.fn(vacio), useProyeccionDashboard: vi.fn(vacio) }
+})
+// 022: el resumen de auditoría no es el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAuditoria', () => ({
+  useResumenAuditoria: vi.fn(() => ({ data: undefined, isLoading: false })),
+}))
 
 function resumenBase(overrides: Partial<ResumenDashboard> = {}): ResumenDashboard {
   return {

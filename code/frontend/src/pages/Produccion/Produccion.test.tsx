@@ -21,6 +21,14 @@ import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Produccion } from './Produccion'
 
 vi.mock('../../hooks/useUsuarioActual')
+// 023: estas pruebas renderizan sin enrutador; el resumen de demanda (que
+// enlaza a Auditoría y análisis) no es su objeto.
+vi.mock('../Dashboard/compartido/DemandaPronosticadaResumen', () => ({ DemandaPronosticadaResumen: () => null }))
+// 023: los pronósticos no son el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAnalitica', () => {
+  const vacio = () => ({ data: undefined, isLoading: false })
+  return { useVistaPronostico: vi.fn(vacio), useDemandaPronosticada: vi.fn(vacio), useProyeccionDashboard: vi.fn(vacio) }
+})
 vi.mock('../../hooks/useProducciones')
 vi.mock('../../hooks/useRecetas')
 vi.mock('../../hooks/useProductos')

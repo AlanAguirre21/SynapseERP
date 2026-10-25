@@ -18,6 +18,8 @@ export const ESTILO_TOOLTIP = {
   fontSize: 13,
 }
 
+export const ESTILO_LEYENDA = { fontSize: 12, color: 'var(--color-texto-suave)' }
+
 export const CURSOR_TOOLTIP = { fill: 'var(--color-primario-suave)', opacity: 0.4 }
 
 const formatoCompacto = new Intl.NumberFormat('es-MX', { notation: 'compact', maximumFractionDigits: 1 })

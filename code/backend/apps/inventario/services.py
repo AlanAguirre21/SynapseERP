@@ -55,6 +55,36 @@ def _bloquear_inventario(tipo_item, sucursal, item):
     return bloquear_inventario_materia_prima(sucursal, item)
 
 
+def ajustar_stock(*, sucursal, tipo_item, item, diferencia, referencia_id, usuario):
+    """Aplica un ajuste de stock por `diferencia` (positiva = entrada,
+    negativa = salida) con su `MovimientoInventario` motivo `ajuste`. Lo usa
+    la aprobación de discrepancias de conteo físico (`022 · Auditoría
+    automatizada`). Debe llamarse dentro de `transaction.atomic()`.
+
+    Rechaza una salida mayor al stock actual: el stock nunca queda negativo.
+    """
+
+    if diferencia == 0:
+        raise ValidationError({'detail': 'Un ajuste de stock necesita una diferencia distinta de cero.'})
+
+    inventario = _bloquear_inventario(tipo_item, sucursal, item)
+    cantidad = abs(diferencia)
+    if diferencia < 0 and inventario.stock_actual < cantidad:
+        raise ValidationError({
+            'detail': f'No se puede retirar {cantidad} de "{_nombre_item(tipo_item, item)}" en '
+                      f'{sucursal.nombre_sucursal}: el stock actual es {inventario.stock_actual}.',
+        })
+
+    inventario.stock_actual += diferencia
+    inventario.save(update_fields=['stock_actual'])
+    return registrar_movimiento_inventario(
+        sucursal=sucursal, tipo_item=tipo_item, item_id=item.pk,
+        tipo_movimiento=MovimientoInventario.ENTRADA if diferencia > 0 else MovimientoInventario.SALIDA,
+        cantidad=cantidad, motivo=MovimientoInventario.MOTIVO_AJUSTE, referencia_id=referencia_id,
+        stock_resultante=inventario.stock_actual, usuario=usuario,
+    )
+
+
 def trasladar_stock(*, sucursal_origen, sucursal_destino, lineas, usuario):
     """Registra un `Traslado` con sus líneas y mueve el stock de origen a
     destino. Debe llamarse dentro de `transaction.atomic()`.
