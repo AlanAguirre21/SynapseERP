@@ -3,7 +3,6 @@ import { useState } from 'react'
 import type { OrdenTop, PeriodoDashboard } from '../../../../api/reportes'
 import { GraficaBarras } from '../../compartido/GraficaBarras'
 import { useProductosTop } from '../../../../hooks/useProductosTop'
-import styles from '../../compartido/SeccionTop.module.css'
 
 interface SeccionProductosProps {
   periodo: PeriodoDashboard
@@ -16,13 +15,13 @@ export function SeccionProductos({ periodo }: SeccionProductosProps) {
   const datos = (productos ?? []).map((producto) => ({ etiqueta: producto.producto, valor: Number(producto.cantidad) }))
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.tituloSeccion}>Resumen de productos</h2>
-        <div className={styles.selectorOrden} role="group" aria-label="Orden del ranking de productos">
+    <section className="card">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Resumen de productos</h2>
+        <div className="segmented" role="group" aria-label="Orden del ranking de productos">
           <button
             type="button"
-            className={orden === 'mas' ? `${styles.opcionOrden} ${styles.opcionOrdenActiva}` : styles.opcionOrden}
+            className={orden === 'mas' ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
             aria-pressed={orden === 'mas'}
             onClick={() => setOrden('mas')}
           >
@@ -30,7 +29,7 @@ export function SeccionProductos({ periodo }: SeccionProductosProps) {
           </button>
           <button
             type="button"
-            className={orden === 'menos' ? `${styles.opcionOrden} ${styles.opcionOrdenActiva}` : styles.opcionOrden}
+            className={orden === 'menos' ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
             aria-pressed={orden === 'menos'}
             onClick={() => setOrden('menos')}
           >
@@ -42,7 +41,7 @@ export function SeccionProductos({ periodo }: SeccionProductosProps) {
       {isLoading ? (
         <p>Cargando productos…</p>
       ) : datos.length === 0 ? (
-        <p className={styles.sinDatos}>No hay ventas de productos en este periodo.</p>
+        <p className="emptyState">No hay ventas de productos en este periodo.</p>
       ) : (
         <GraficaBarras
           titulo={orden === 'mas' ? 'Top 5 productos más vendidos' : 'Top 5 productos menos vendidos'}

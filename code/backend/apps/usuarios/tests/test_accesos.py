@@ -7,7 +7,7 @@ from apps.usuarios.models import RegistroAcceso, Usuario
 @pytest.fixture
 def admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123',
         rol_usuario='admin',
     )
 
@@ -15,7 +15,7 @@ def admin(db):
 @pytest.fixture
 def operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
         rol_usuario='operador',
     )
 
@@ -76,7 +76,7 @@ def test_accesos_orden_mas_reciente_primero(admin_client, operador):
 
 @pytest.mark.django_db
 def test_accesos_no_muestra_intentos_sin_usuario_vinculado(admin_client, operador):
-    RegistroAcceso.objects.create(usuario=None, tipo='fallido', email_intentado='no-existe@flebosil.test')
+    RegistroAcceso.objects.create(usuario=None, tipo='fallido', email_intentado='no-existe@synapse.test')
     _crear_registros(operador, 2)
 
     response = admin_client.get(f'/api/usuarios/{operador.id}/accesos/?limite=todos')

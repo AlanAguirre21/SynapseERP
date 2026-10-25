@@ -15,7 +15,14 @@ export interface Usuario {
   nombre: string
   rol: 'admin' | 'operador'
   modulos: ModuloMenu[]
+  // URL absoluta de la fotografía de perfil, o `null` (017 / 010).
+  foto_usuario: string | null
 }
+
+// Cambio de fotografía en un formulario: archivo nuevo para subirla, `null`
+// para quitarla. Sin cambio, la clave no se envía y la petición es la misma
+// de siempre (JSON sin fotografía).
+export type CambioFoto = File | null
 
 export interface InformacionUsuarioFormulario {
   username: string
@@ -23,6 +30,48 @@ export interface InformacionUsuarioFormulario {
   first_name: string
   last_name: string
   rol_usuario?: 'admin' | 'operador'
+  foto_usuario?: CambioFoto
+}
+
+export type RolUsuario = 'admin' | 'operador'
+
+export const ETIQUETAS_ROL: Record<RolUsuario, string> = {
+  admin: 'Administrador',
+  operador: 'Operador',
+}
+
+// Qué implica cada rol, al elegirlo o al consultarlo (Usuarios e Información
+// de Usuario). Refleja `backend/core/modules.py` (la fuente de verdad es el
+// backend): si cambian los módulos de un rol, se actualiza aquí a mano
+// (checklist de mantenimiento de 021).
+export const DESCRIPCIONES_ROL: Record<RolUsuario, string> = {
+  admin:
+    'Acceso a todos los módulos, incluidos Caja, Recursos Humanos, Usuarios, Contabilidad y Configuración Fiscal.',
+  operador:
+    'La operación diaria (ventas, compras, producción, inventario, facturación, catálogo, terceros y sucursales), sin Caja, Recursos Humanos, Usuarios, Contabilidad ni Configuración Fiscal.',
+}
+
+// Formatos y tamaño que acepta el backend (`apps/usuarios/validators.py`);
+// en el navegador solo adelantan el aviso, la validación real es la del backend.
+export const TIPOS_FOTO_USUARIO = ['image/jpeg', 'image/png', 'image/webp']
+export const TAMANO_MAXIMO_FOTO_USUARIO = 2 * 1024 * 1024
+export const MENSAJE_FOTO_INVALIDA = 'La fotografía debe ser JPG, PNG o WebP de hasta 2 MB.'
+
+export function esFotoValida(archivo: File): boolean {
+  return TIPOS_FOTO_USUARIO.includes(archivo.type) && archivo.size <= TAMANO_MAXIMO_FOTO_USUARIO
+}
+
+// Solo una fotografía nueva necesita multipart; quitarla (`null`) o no
+// tocarla viaja como JSON. En multipart, `null` (ej. `empleado`) va vacío:
+// DRF lo interpreta como `null` en campos relacionales.
+function cuerpoConFoto<T extends { foto_usuario?: CambioFoto }>(datos: T): T | FormData {
+  if (!(datos.foto_usuario instanceof File)) return datos
+  const formData = new FormData()
+  Object.entries(datos).forEach(([clave, valor]) => {
+    if (valor === undefined) return
+    formData.append(clave, valor instanceof File ? valor : valor === null ? '' : String(valor))
+  })
+  return formData
 }
 
 export async function getUsuarioActual(): Promise<Usuario> {
@@ -35,7 +84,7 @@ export async function getUsuarioActual(): Promise<Usuario> {
 // terceros y es exclusivo de admin.
 
 export async function actualizarMiInformacion(datos: InformacionUsuarioFormulario): Promise<Usuario> {
-  const { data } = await apiClient.patch<Usuario>('/usuarios/me/', datos)
+  const { data } = await apiClient.patch<Usuario>('/usuarios/me/', cuerpoConFoto(datos))
   return data
 }
 
@@ -52,17 +101,18 @@ export interface UsuarioCuenta {
   rol_usuario: 'admin' | 'operador'
   empleado: number | null
   activo: boolean
+  foto_usuario: string | null
 }
 
 export type UsuarioCuentaFormularioCreacion = Pick<
   UsuarioCuenta,
   'first_name' | 'last_name' | 'email' | 'rol_usuario' | 'empleado'
-> & { password: string }
+> & { password: string; foto_usuario?: CambioFoto }
 
 export type UsuarioCuentaFormularioEdicion = Pick<
   UsuarioCuenta,
   'first_name' | 'last_name' | 'email' | 'rol_usuario' | 'empleado'
->
+> & { foto_usuario?: CambioFoto }
 
 export async function getUsuariosCuentas(): Promise<UsuarioCuenta[]> {
   const { data } = await apiClient.get<UsuarioCuenta[]>('/usuarios/')
@@ -70,7 +120,7 @@ export async function getUsuariosCuentas(): Promise<UsuarioCuenta[]> {
 }
 
 export async function crearUsuarioCuenta(datos: UsuarioCuentaFormularioCreacion): Promise<UsuarioCuenta> {
-  const { data } = await apiClient.post<UsuarioCuenta>('/usuarios/', datos)
+  const { data } = await apiClient.post<UsuarioCuenta>('/usuarios/', cuerpoConFoto(datos))
   return data
 }
 
@@ -78,7 +128,7 @@ export async function editarUsuarioCuenta(
   id: number,
   datos: UsuarioCuentaFormularioEdicion,
 ): Promise<UsuarioCuenta> {
-  const { data } = await apiClient.patch<UsuarioCuenta>(`/usuarios/${id}/`, datos)
+  const { data } = await apiClient.patch<UsuarioCuenta>(`/usuarios/${id}/`, cuerpoConFoto(datos))
   return data
 }
 

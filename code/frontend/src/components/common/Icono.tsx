@@ -16,10 +16,13 @@ export type NombreIcono =
   | 'catalogo'
   | 'rrhh'
   | 'personas'
+  | 'persona'
   | 'sucursales'
   | 'contabilidad'
   | 'configuracionFiscal'
   | 'usuarios'
+  | 'mas'
+  | 'desplegar'
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   menu: (
@@ -117,6 +120,13 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <rect x="10.5" y="11.7" width="3" height="2.6" rx="0.5" fill="currentColor" stroke="none" />
     </>
   ),
+  // Una sola persona: avatar sin fotografía ni nombre todavía.
+  persona: (
+    <>
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
+    </>
+  ),
   personas: (
     <>
       <circle cx="8.5" cy="8" r="3" />
@@ -161,6 +171,14 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M14 10h5M14 13h5M14 16h3" />
     </>
   ),
+  mas: (
+    <>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </>
+  ),
+  // Chevrón hacia la derecha; las filas desplegadas lo giran 90° con CSS.
+  desplegar: <path d="M9 6l6 6-6 6" />,
 }
 
 interface IconoProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

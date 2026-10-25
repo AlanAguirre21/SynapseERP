@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -86,5 +86,17 @@ describe('DetalleCompra', () => {
 
     expect(screen.getByText('Suero fisiológico')).toBeInTheDocument()
     expect(screen.getByTestId('total-compra')).toHaveTextContent('55.00')
+  })
+
+  // 012: una compra ajena (o inexistente) llega como 404 y la pantalla lo dice.
+  it('sin compra muestra "No se encontró la compra." y "Volver al listado" regresa al listado', () => {
+    mockearHooks('pendiente')
+    vi.mocked(useCompra).mockReturnValue({ data: undefined, isLoading: false } as unknown as ReturnType<typeof useCompra>)
+
+    renderDetalle()
+    fireEvent.click(screen.getByRole('button', { name: 'Volver al listado' }))
+
+    expect(screen.getByText('No se encontró la compra.')).toBeInTheDocument()
+    expect(navigateMock).toHaveBeenCalledWith('/compras')
   })
 })

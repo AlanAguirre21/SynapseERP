@@ -1,65 +1,52 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-4;
+/* Estilos propios de Sucursales: directorio de ubicaciones en tarjetas.
+   La superficie es la clase global `card`; lo demás usa clases globales. */
+
+.branchGrid {
+  @apply grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4;
 }
 
-.encabezado {
-  @apply flex items-center justify-between;
+.branchCard {
+  @apply justify-between;
 }
 
-.titulo {
-  @apply m-0 text-texto text-xl font-semibold;
+.branchHeader {
+  @apply flex items-center gap-3 min-w-0;
 }
 
-.estadoActivo {
-  @apply text-exito text-[0.8rem] font-semibold;
+/* Icono de ubicación en el tono de la marca: identifica la pantalla sin
+   competir con el color de estado del stock. */
+.branchIcon {
+  @apply flex items-center justify-center shrink-0 w-10 h-10 rounded-pildora bg-primario-suave text-primario;
 }
 
-.estadoInactivo {
-  @apply text-error text-[0.8rem] font-semibold;
+.branchName {
+  @apply flex-1 min-w-0 m-0 text-[1.15rem] font-semibold break-words;
 }
 
-.acciones {
-  @apply flex items-center gap-3;
+.branchFact {
+  @apply flex flex-col gap-1;
 }
 
-.enlaceAccion {
-  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
+.branchStock {
+  @apply flex flex-wrap gap-2;
 }
 
-.enlaceAccion:hover {
-  @apply underline;
+.branchFooter {
+  @apply flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-borde;
 }
 
-.enlaceAccionPeligro {
-  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
+/* Sucursal inactiva: atenuada sin bajar la opacidad, para que el texto
+   conserve su contraste. */
+.branchCardInactive {
+  @apply bg-fondo shadow-none;
 }
 
-.enlaceAccionPeligro:hover {
-  @apply underline;
+.branchCardInactive .branchIcon {
+  @apply bg-borde text-texto-suave;
 }
 
-.formulario {
-  @apply flex flex-col gap-4;
-}
-
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campo input {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
-}
-
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.textoConfirmacion {
-  @apply text-texto text-[0.9rem] mb-4;
-}
-
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
+.branchCardInactive .branchName {
+  @apply text-texto-suave;
 }

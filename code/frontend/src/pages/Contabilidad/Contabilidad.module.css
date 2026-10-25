@@ -1,148 +1,89 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-4;
+/* Estilos propios de Contabilidad: catálogo jerárquico, pólizas desplegables
+   del libro diario y título del balance con su etiqueta de cuadre. */
+
+/* --- Catálogo de cuentas ------------------------------------------------ */
+
+/* Sangría por nivel de la jerarquía; a partir del cuarto nivel se reutiliza
+   la última (mismo recurso que el árbol de RRHH). */
+.accountLevel0 {
+  @apply pl-0;
 }
 
-.encabezado {
-  @apply flex items-center justify-between mb-4;
+.accountLevel1 {
+  @apply pl-5;
 }
 
-.titulo {
-  @apply m-0 text-texto text-xl font-semibold;
+.accountLevel2 {
+  @apply pl-10;
 }
 
-.pestañas {
-  @apply flex items-center gap-1 border-b border-texto/10;
+.accountLevel3 {
+  @apply pl-15;
 }
 
-.pestaña {
-  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2 text-[0.9rem] text-texto/70 cursor-pointer;
+/* Cuenta de mayor (tiene subcuentas). */
+.accountGroup {
+  @apply font-semibold text-texto;
 }
 
-.pestaña:hover {
-  @apply text-texto;
-}
+/* --- Libro diario ------------------------------------------------------- */
 
-.pestañaActiva {
-  @apply text-primario border-primario font-semibold;
-}
-
-.seccion {
-  @apply flex flex-col gap-4 pt-4;
-}
-
-.subtitulo {
-  @apply m-0 text-texto text-base font-semibold;
-}
-
-.encabezadoSeccion {
-  @apply flex items-center justify-between;
-}
-
-.filtros {
-  @apply flex flex-wrap items-end gap-4 mb-2;
-}
-
-.campoFiltro {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campoFiltro select,
-.campoFiltro input {
-  @apply px-3 py-2 text-base border border-texto/20 rounded-md min-w-[160px];
-}
-
-.acciones {
-  @apply flex items-center gap-3;
-}
-
-.enlaceAccion {
-  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
-}
-
-.enlaceAccion:hover {
-  @apply underline;
-}
-
-.enlaceAccionPeligro {
-  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
-}
-
-.enlaceAccionPeligro:hover {
-  @apply underline;
-}
-
-.estadoActivo {
-  @apply text-exito text-[0.8rem] font-semibold;
-}
-
-.estadoInactivo {
-  @apply text-error text-[0.8rem] font-semibold;
-}
-
-.formulario {
-  @apply flex flex-col gap-4;
-}
-
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
-}
-
-.campo input,
-.campo select {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-md;
-}
-
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.textoConfirmacion {
-  @apply text-texto text-[0.9rem] mb-4;
-}
-
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
-}
-
-.mensajeVacio {
-  @apply text-texto/60 text-[0.9rem];
-}
-
-.listaAsientos {
+.entryList {
   @apply flex flex-col gap-2;
 }
 
-.asiento {
-  @apply border border-texto/10 rounded-md overflow-hidden;
+.entry {
+  @apply bg-superficie border border-borde rounded-control overflow-hidden;
 }
 
-.asientoEncabezado {
-  @apply w-full grid grid-cols-[1.5rem_12rem_1fr_8rem] items-center gap-3 bg-transparent border-0 px-3 py-2 text-left text-[0.85rem] text-texto cursor-pointer;
+/* Fila de póliza: indicador, número, fecha, concepto, origen e importe. En
+   pantallas angostas el concepto y el importe bajan a una segunda fila
+   (concepto a la izquierda, importe a la derecha). */
+.entryHeader {
+  @apply w-full grid grid-cols-[1rem_auto_1fr_auto] md:grid-cols-[1rem_6.5rem_8.5rem_1fr_auto_8rem] items-center gap-x-3 gap-y-1 px-3 py-2.5 bg-transparent border-0 text-left text-[0.85rem] text-texto cursor-pointer;
 }
 
-.asientoEncabezado:hover {
-  @apply bg-[color-mix(in_srgb,var(--color-texto)_4%,transparent)];
+.entryHeader:hover {
+  @apply bg-fondo;
 }
 
-.origenAsiento {
-  @apply text-texto/60 text-right;
+.entryNumber {
+  @apply font-semibold whitespace-nowrap;
 }
 
-.tablaMovimientos {
-  @apply w-full text-left text-[0.85rem] border-t border-texto/10;
+.entryConcept {
+  @apply col-start-2 col-span-2 row-start-2 md:col-start-auto md:col-span-1 md:row-start-auto min-w-0;
 }
 
-.tablaMovimientos th,
-.tablaMovimientos td {
-  @apply px-3 py-2 border-b border-texto/10;
+.entryAmount {
+  @apply col-start-4 row-start-2 md:col-start-auto md:row-start-auto text-right font-semibold tabular-nums whitespace-nowrap;
 }
 
-.saldoDeudor {
+.entryDetail {
+  @apply flex flex-col gap-3 px-3 pb-3 border-t border-borde;
+}
+
+/* "Sumas iguales" de la póliza: debajo de la tabla de movimientos. */
+.entryTotals {
+  @apply flex flex-wrap items-center justify-end gap-x-5 gap-y-2 pt-2 text-[0.85rem] text-texto-suave tabular-nums;
+}
+
+.entryTotals strong {
   @apply text-texto;
 }
 
-.saldoAcreedor {
-  @apply text-texto/70;
+/* --- Balance de comprobación ------------------------------------------- */
+
+.titleWithStatus {
+  @apply flex items-center gap-3 flex-wrap;
+}
+
+.debitBalance {
+  @apply text-texto;
+}
+
+.creditBalance {
+  @apply text-texto-suave;
 }

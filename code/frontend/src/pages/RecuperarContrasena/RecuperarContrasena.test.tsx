@@ -28,7 +28,7 @@ function renderPantalla({ state }: { state?: unknown } = {}) {
   )
 }
 
-async function avanzarAlPasoDeCodigo(email = 'ana@flebosil.test') {
+async function avanzarAlPasoDeCodigo(email = 'ana@synapse.test') {
   fireEvent.change(screen.getByLabelText(/correo electrónico/i), { target: { value: email } })
   fireEvent.click(screen.getByRole('button', { name: /enviar código/i }))
   await waitFor(() => expect(screen.getByLabelText(/código de 6 dígitos/i)).toBeInTheDocument())
@@ -67,7 +67,7 @@ describe('RecuperarContrasena', () => {
     renderPantalla()
     await avanzarAlPasoDeCodigo()
 
-    expect(solicitarRecuperacionMock).toHaveBeenCalledWith('ana@flebosil.test')
+    expect(solicitarRecuperacionMock).toHaveBeenCalledWith('ana@synapse.test')
     expect(
       screen.getByText(/si el correo está registrado, te enviamos un código/i),
     ).toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('RecuperarContrasena', () => {
     verificarCodigoMock.mockResolvedValue({ detail: 'Código verificado correctamente.' })
 
     renderPantalla()
-    await avanzarAlPasoDeCodigo('ana@flebosil.test')
+    await avanzarAlPasoDeCodigo('ana@synapse.test')
     fireEvent.change(screen.getByLabelText(/código de 6 dígitos/i), {
       target: { value: '123456' },
     })
@@ -97,7 +97,7 @@ describe('RecuperarContrasena', () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith('/cambiar-contrasena', {
         replace: true,
-        state: { email: 'ana@flebosil.test' },
+        state: { email: 'ana@synapse.test' },
       }),
     )
   })

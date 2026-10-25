@@ -99,4 +99,62 @@ describe('DetalleFactura', () => {
 
     expect(screen.getByRole('button', { name: /registrar pago/i })).toBeDisabled()
   })
+
+  it('muestra los códigos del SAT con su descripción y el total en moneda', () => {
+    mockearHooks(facturaBase({ uso_cfdi: 'G03', forma_pago: '99', metodo_pago: 'PUE' }))
+    renderDetalle()
+
+    expect(screen.getByText('G03 — Gastos en general')).toBeInTheDocument()
+    expect(screen.getByText('99 — Por definir')).toBeInTheDocument()
+    expect(screen.getByText('PUE — Pago en una sola exhibición')).toBeInTheDocument()
+    expect(screen.getByTestId('total-factura')).toHaveTextContent('$90.00')
+    expect(screen.getByRole('button', { name: 'Venta #10' })).toBeInTheDocument()
+  })
+
+  it('un código del SAT fuera del catálogo se muestra tal cual', () => {
+    mockearHooks(facturaBase({ uso_cfdi: 'CP01' }))
+    renderDetalle()
+
+    expect(screen.getByText('CP01')).toBeInTheDocument()
+  })
+
+  it('en PPD resume lo pagado y el saldo, contando solo complementos timbrados', () => {
+    mockearHooks(facturaBase({ metodo_pago: 'PPD', venta_total: '1000.00' }))
+    vi.mocked(useComplementosPago).mockReturnValue({
+      data: [
+        { id: 1, factura: 1, monto_pagado: '400.00', fecha_pago: '2026-10-10', folio_fiscal_rep: 'rep-1', estado: 'timbrada' },
+        { id: 2, factura: 1, monto_pagado: '300.00', fecha_pago: '2026-10-15', folio_fiscal_rep: '', estado: 'error' },
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useComplementosPago>)
+    renderDetalle()
+
+    expect(screen.getByTestId('pagado-factura')).toHaveTextContent('$400.00')
+    expect(screen.getByTestId('saldo-factura')).toHaveTextContent('$600.00')
+    // La fecha "AAAA-MM-DD" se muestra en el mismo día, sin correrse por zona horaria.
+    expect(screen.getByText('10/10/2026')).toBeInTheDocument()
+    expect(screen.getByText('Timbrado')).toBeInTheDocument()
+  })
+
+  it('"Copiar" copia el folio fiscal al portapapeles y lo confirma', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    mockearHooks(facturaBase({ folio_fiscal: '3F2504E0-4F89-41D3-9A0C-0305E82C3301' }))
+    renderDetalle()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copiar folio fiscal' }))
+
+    expect(writeText).toHaveBeenCalledWith('3F2504E0-4F89-41D3-9A0C-0305E82C3301')
+    expect(await screen.findByText('Copiado')).toBeInTheDocument()
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+  })
+
+  it('sin folio fiscal no se ofrece el botón "Copiar"', () => {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn() }, configurable: true })
+    mockearHooks(facturaBase({ folio_fiscal: '', estado: 'error' }))
+    renderDetalle()
+
+    expect(screen.queryByRole('button', { name: 'Copiar folio fiscal' })).not.toBeInTheDocument()
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+  })
 })

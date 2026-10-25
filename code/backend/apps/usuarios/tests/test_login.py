@@ -8,7 +8,7 @@ from apps.usuarios.models import RegistroAcceso, Usuario
 @pytest.fixture
 def usuario_activo(db):
     return Usuario.objects.create_user(
-        username='ana', email='ana@flebosil.test', password='clave-super-123',
+        username='ana', email='ana@synapse.test', password='clave-super-123',
         rol_usuario='operador',
     )
 
@@ -16,7 +16,7 @@ def usuario_activo(db):
 @pytest.fixture
 def usuario_inactivo(db):
     usuario = Usuario.objects.create_user(
-        username='ines', email='ines@flebosil.test', password='clave-super-123',
+        username='ines', email='ines@synapse.test', password='clave-super-123',
         rol_usuario='operador', is_active=False,
     )
     return usuario
@@ -28,7 +28,7 @@ def test_login_exitoso_devuelve_tokens(usuario_activo):
     client = APIClient()
     response = client.post(
         '/api/auth/login/',
-        {'email': 'ana@flebosil.test', 'password': 'clave-super-123'},
+        {'email': 'ana@synapse.test', 'password': 'clave-super-123'},
         format='json',
     )
 
@@ -47,7 +47,7 @@ def test_login_password_incorrecta_mensaje_generico(usuario_activo):
     client = APIClient()
     response = client.post(
         '/api/auth/login/',
-        {'email': 'ana@flebosil.test', 'password': 'incorrecta'},
+        {'email': 'ana@synapse.test', 'password': 'incorrecta'},
         format='json',
     )
 
@@ -65,14 +65,14 @@ def test_login_email_inexistente_mismo_mensaje_generico(db):
     client = APIClient()
     response = client.post(
         '/api/auth/login/',
-        {'email': 'no-existe@flebosil.test', 'password': 'lo-que-sea'},
+        {'email': 'no-existe@synapse.test', 'password': 'lo-que-sea'},
         format='json',
     )
 
     assert response.status_code == 401
     assert response.data['detail'] == 'Correo o contraseña incorrectos.'
 
-    registro = RegistroAcceso.objects.get(email_intentado='no-existe@flebosil.test')
+    registro = RegistroAcceso.objects.get(email_intentado='no-existe@synapse.test')
     assert registro.tipo == 'fallido'
     assert registro.usuario is None
 
@@ -83,7 +83,7 @@ def test_login_usuario_inactivo_mensaje_especifico(usuario_inactivo):
     client = APIClient()
     response = client.post(
         '/api/auth/login/',
-        {'email': 'ines@flebosil.test', 'password': 'clave-super-123'},
+        {'email': 'ines@synapse.test', 'password': 'clave-super-123'},
         format='json',
     )
 
@@ -113,7 +113,7 @@ def test_login_aplica_throttling_tras_varios_intentos(usuario_activo):
     # real configurado en vez de simular uno distinto.
     cache.clear()
     client = APIClient()
-    credenciales = {'email': 'ana@flebosil.test', 'password': 'incorrecta'}
+    credenciales = {'email': 'ana@synapse.test', 'password': 'incorrecta'}
 
     for _ in range(5):
         respuesta = client.post('/api/auth/login/', credenciales, format='json')

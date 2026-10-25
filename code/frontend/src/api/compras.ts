@@ -2,6 +2,13 @@ import { apiClient } from './client'
 
 export type EstadoCompra = 'pendiente' | 'recibida' | 'cancelada'
 
+// Etiquetas compartidas por Compras, DetalleCompra y el estado de cuenta de Terceros.
+export const ETIQUETAS_ESTADO_COMPRA: Record<EstadoCompra, string> = {
+  pendiente: 'Pendiente',
+  recibida: 'Recibida',
+  cancelada: 'Cancelada',
+}
+
 export interface DetalleCompraProducto {
   id: number
   producto: number
@@ -59,6 +66,8 @@ export interface FiltrosCompras {
   estado?: EstadoCompra
   fecha_desde?: string
   fecha_hasta?: string
+  // Solo tiene efecto para el admin; el operador siempre recibe solo las suyas.
+  usuario?: number
 }
 
 export async function getCompras(filtros: FiltrosCompras): Promise<Compra[]> {

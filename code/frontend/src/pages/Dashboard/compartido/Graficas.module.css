@@ -1,17 +1,19 @@
 @reference "../../../index.css";
 
-.grafica {
-  @apply flex flex-col gap-2 p-4 rounded-xl border border-texto/10 min-w-0;
+/* Panel de una gráfica: sin borde, sobre el fondo cálido, para no apilar un
+   marco dentro de la tarjeta de la sección. */
+.chart {
+  @apply flex flex-col gap-3 min-w-0 p-4 bg-fondo rounded-control;
 }
 
-.graficaTitulo {
-  @apply m-0 text-[0.9rem] font-semibold text-texto;
+.chartTitle {
+  @apply m-0 text-[0.85rem] font-base font-semibold text-texto-suave;
 }
 
-.graficaLienzo {
+.chartCanvas {
   @apply h-[220px];
 }
 
-.graficaVacia {
-  @apply flex items-center justify-center h-[220px] text-[0.85rem] text-texto/50 text-center;
+.chartEmpty {
+  @apply flex items-center justify-center h-[220px] text-[0.85rem] text-texto-suave text-center;
 }

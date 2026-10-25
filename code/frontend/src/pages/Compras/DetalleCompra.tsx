@@ -1,24 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { EstadoCompra } from '../../api/compras'
+import { ETIQUETAS_ESTADO_COMPRA, type EstadoCompra } from '../../api/compras'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
 import { useCancelarCompra, useCompra, useRecibirCompra } from '../../hooks/useCompras'
 import { useMateriaPrima } from '../../hooks/useMateriaPrima'
 import { useProductos } from '../../hooks/useProductos'
-import styles from './DetalleCompra.module.css'
-
-const ETIQUETAS_ESTADO: Record<EstadoCompra, string> = {
-  pendiente: 'Pendiente',
-  recibida: 'Recibida',
-  cancelada: 'Cancelada',
-}
 
 function claseEstado(estado: EstadoCompra) {
-  if (estado === 'recibida') return styles.estadoRecibida
-  if (estado === 'cancelada') return styles.estadoCancelada
-  return styles.estadoPendiente
+  if (estado === 'recibida') return 'status statusSuccess'
+  if (estado === 'cancelada') return 'status statusError'
+  return 'status statusWarning'
 }
 
 function extraerMensajeError(err: unknown, mensajePorDefecto: string): string {
@@ -72,97 +65,137 @@ export function DetalleCompra() {
   }
 
   if (isLoading) return <p>Cargando compra…</p>
-  if (!compra) return <p>No se encontró la compra.</p>
+  if (!compra) {
+    return (
+      <div className="documentPage">
+        <div className="documentToolbar">
+          <BotonPrimario variante="secundario" onClick={() => navigate('/compras')}>
+            Volver al listado
+          </BotonPrimario>
+        </div>
+        <div className="placeholderBox">
+          <span className="placeholderTitle">No se encontró la compra.</span>
+          <span>Puede que no exista o que no tengas acceso a ella.</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className={styles.pagina}>
-      <div className={styles.encabezado}>
-        <h1 className={styles.titulo}>Compra #{compra.id}</h1>
+    <div className="documentPage">
+      <div className="documentToolbar">
         <BotonPrimario variante="secundario" onClick={() => navigate('/compras')}>
           Volver al listado
         </BotonPrimario>
       </div>
 
-      <div className={styles.datosGenerales}>
-        <span className={styles.etiqueta}>Proveedor</span>
-        <span>{compra.proveedor_nombre}</span>
+      <article className="document">
+        <header className="documentHeader documentHeaderPurchase">
+          <div className="documentHeaderRow">
+            <div className="documentHeaderText">
+              <span className="documentEyebrow">Compras</span>
+              <h1 className="documentTitle">Compra #{compra.id}</h1>
+              <p className="documentHint">Registrada el {new Date(compra.fecha).toLocaleString('es-MX')}</p>
+            </div>
+            <span className={claseEstado(compra.estado)}>{ETIQUETAS_ESTADO_COMPRA[compra.estado]}</span>
+          </div>
+        </header>
 
-        <span className={styles.etiqueta}>Sucursal destino</span>
-        <span>{compra.sucursal_nombre}</span>
+        <section className="documentSection">
+          <h2 className="sectionTitle">Datos generales</h2>
+          <dl className="factGrid factGridThree">
+            <div>
+              <dt>Proveedor</dt>
+              <dd>{compra.proveedor_nombre}</dd>
+            </div>
+            <div>
+              <dt>Sucursal destino</dt>
+              <dd>{compra.sucursal_nombre}</dd>
+            </div>
+            <div>
+              <dt>Registrada por</dt>
+              <dd>{compra.usuario_nombre}</dd>
+            </div>
+            <div>
+              <dt>Fecha de entrega estimada</dt>
+              <dd>{compra.fecha_entrega ?? '—'}</dd>
+            </div>
+          </dl>
+        </section>
 
-        <span className={styles.etiqueta}>Fecha</span>
-        <span>{new Date(compra.fecha).toLocaleString('es-MX')}</span>
+        <section className="documentSection">
+          <h2 className="sectionTitle">Líneas de la compra</h2>
+          <div className="tableScroll">
+            <table className="linesTable">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Ítem</th>
+                  <th className="numeric">Cantidad</th>
+                  <th className="numeric">Costo unitario</th>
+                  <th className="numeric">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compra.detalles_producto.map((linea) => (
+                  <tr key={`producto-${linea.id}`}>
+                    <td>Producto</td>
+                    <td>{nombreProducto(linea.producto)}</td>
+                    <td className="numeric">{linea.cantidad}</td>
+                    <td className="numeric">{linea.costo_unitario}</td>
+                    <td className="numeric">{linea.subtotal}</td>
+                  </tr>
+                ))}
+                {compra.detalles_materia_prima.map((linea) => (
+                  <tr key={`materia-prima-${linea.id}`}>
+                    <td>Materia prima</td>
+                    <td>{nombreMateriaPrima(linea.materia_prima)}</td>
+                    <td className="numeric">{linea.cantidad}</td>
+                    <td className="numeric">{linea.costo_unitario}</td>
+                    <td className="numeric">{linea.subtotal}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        <span className={styles.etiqueta}>Fecha de entrega estimada</span>
-        <span>{compra.fecha_entrega ?? '—'}</span>
+          <div className="summary">
+            <div className="summaryRow">
+              <span>Líneas</span>
+              <span>{compra.detalles_producto.length + compra.detalles_materia_prima.length}</span>
+            </div>
+            <div className="summaryRow summaryTotal">
+              <span>Total</span>
+              <span data-testid="total-compra">{compra.total}</span>
+            </div>
+          </div>
+        </section>
 
-        <span className={styles.etiqueta}>Registrada por</span>
-        <span>{compra.usuario_nombre}</span>
+        <footer className="documentFooter">
+          {errorAccion && (
+            <p className="errorMessage" role="alert">
+              {errorAccion}
+            </p>
+          )}
 
-        <span className={styles.etiqueta}>Estado</span>
-        <span className={claseEstado(compra.estado)}>{ETIQUETAS_ESTADO[compra.estado]}</span>
-      </div>
-
-      <table className={styles.tablaLineas}>
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Ítem</th>
-            <th>Cantidad</th>
-            <th>Costo unitario</th>
-            <th>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {compra.detalles_producto.map((linea) => (
-            <tr key={`producto-${linea.id}`}>
-              <td>Producto</td>
-              <td>{nombreProducto(linea.producto)}</td>
-              <td>{linea.cantidad}</td>
-              <td>{linea.costo_unitario}</td>
-              <td>{linea.subtotal}</td>
-            </tr>
-          ))}
-          {compra.detalles_materia_prima.map((linea) => (
-            <tr key={`materia-prima-${linea.id}`}>
-              <td>Materia prima</td>
-              <td>{nombreMateriaPrima(linea.materia_prima)}</td>
-              <td>{linea.cantidad}</td>
-              <td>{linea.costo_unitario}</td>
-              <td>{linea.subtotal}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className={styles.total}>
-        <span>Total:</span>
-        <span data-testid="total-compra">{compra.total}</span>
-      </div>
-
-      {errorAccion && (
-        <p className={styles.error} role="alert">
-          {errorAccion}
-        </p>
-      )}
-
-      <div className={styles.acciones}>
-        {compra.estado === 'pendiente' && (
-          <BotonPrimario onClick={() => setConfirmarRecibir(true)}>Marcar como recibida</BotonPrimario>
-        )}
-        {compra.estado !== 'cancelada' && (
-          <BotonPrimario variante="peligro" onClick={() => setConfirmarCancelar(true)}>
-            Cancelar compra
-          </BotonPrimario>
-        )}
-      </div>
+          <div className="pageActions">
+            {compra.estado === 'pendiente' && (
+              <BotonPrimario onClick={() => setConfirmarRecibir(true)}>Marcar como recibida</BotonPrimario>
+            )}
+            {compra.estado !== 'cancelada' && (
+              <BotonPrimario variante="peligro" onClick={() => setConfirmarCancelar(true)}>
+                Cancelar compra
+              </BotonPrimario>
+            )}
+          </div>
+        </footer>
+      </article>
 
       <Modal titulo="Marcar como recibida" abierto={confirmarRecibir} onCerrar={() => setConfirmarRecibir(false)}>
-        <p className={styles.textoConfirmacion}>
-          ¿Confirmas que quieres marcar la compra #{compra.id} como recibida? Esto aumentará el stock de sus líneas
-          en {compra.sucursal_nombre} y registrará el movimiento de entrada correspondiente.
+        <p className="confirmText">
+          ¿Confirmas que quieres marcar la compra #{compra.id} como recibida?
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setConfirmarRecibir(false)}>
             Cancelar
           </BotonPrimario>
@@ -173,12 +206,12 @@ export function DetalleCompra() {
       </Modal>
 
       <Modal titulo="Cancelar compra" abierto={confirmarCancelar} onCerrar={() => setConfirmarCancelar(false)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           {compra.estado === 'recibida'
             ? `¿Confirmas que quieres cancelar la compra #${compra.id}? Como ya fue recibida, se generará un movimiento de salida inverso por cada línea para revertir el stock.`
             : `¿Confirmas que quieres cancelar la compra #${compra.id}?`}
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setConfirmarCancelar(false)}>
             Volver
           </BotonPrimario>

@@ -1,11 +1,12 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import type {
-  ConfiguracionPACFormulario,
-  DatosFiscalesEmpresaFormulario,
-  SerieFolio,
-  SerieFolioFormulario,
+import {
+  REGIMENES_FISCALES,
+  type ConfiguracionPACFormulario,
+  type DatosFiscalesEmpresaFormulario,
+  type SerieFolio,
+  type SerieFolioFormulario,
 } from '../../api/configuracionFiscal'
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Modal } from '../../components/common/Modal'
@@ -60,25 +61,76 @@ export function ConfiguracionFiscal() {
 function ConfiguracionFiscalContenido() {
   const { data: datosFiscales, isLoading: datosFiscalesCargando } = useDatosFiscalesEmpresa()
   const { data: pac, isLoading: pacCargando } = useConfiguracionPAC()
+  const { data: series } = useSeriesFolio()
 
   const configuracionIncompleta =
     !datosFiscalesCargando && !pacCargando && (datosFiscales?.completa === false || pac?.completa === false)
 
+  // Solo informativo: las reglas para timbrar viven en el backend. La serie
+  // activa no está en ningún `completa`, pero sin ella tampoco se timbra.
+  const comprobaciones = [
+    { etiqueta: 'Datos fiscales completos', lista: datosFiscales?.completa === true },
+    { etiqueta: 'Conexión al PAC configurada y activa', lista: pac?.completa === true },
+    { etiqueta: 'Al menos una serie activa', lista: (series ?? []).some((s) => s.activo) },
+  ]
+  const todoListo = comprobaciones.every((c) => c.lista)
+  const cargando = datosFiscalesCargando || pacCargando || !series
+
   return (
-    <div className={styles.pagina}>
-      <h1 className={styles.titulo}>Configuración Fiscal</h1>
+    <div className="page">
+      <div className="pageHeader">
+        <div className="pageHeading">
+          <h1 className="pageTitle">Configuración Fiscal</h1>
+          <p className="pageHint">Datos de la empresa, conexión al PAC y series con los que se timbran las facturas (CFDI).</p>
+        </div>
+      </div>
 
       {configuracionIncompleta && (
-        <p className={styles.aviso} role="alert">
-          Configuración incompleta — completa los datos fiscales y la conexión al PAC antes de que{' '}
-          <strong>017 · Facturación</strong> pueda timbrar.
+        <p className="notice" role="alert">
+          Configuración incompleta — completa los datos fiscales y la conexión al PAC antes de poder timbrar facturas.
         </p>
       )}
 
-      <DatosFiscalesForm />
-      <ConfiguracionPACForm />
-      <SeriesFolioSeccion />
+      {!cargando && (
+        <section className={styles.readiness} aria-label="Estado para timbrar">
+          <div className={styles.readinessHeader}>
+            <h2 className="sectionTitle">Estado para timbrar</h2>
+            <span className={todoListo ? 'status statusSuccess' : 'status statusWarning'}>
+              {todoListo ? 'Listo para timbrar' : 'Configuración incompleta'}
+            </span>
+          </div>
+          <ul className={styles.readinessList}>
+            {comprobaciones.map((c) => (
+              <li key={c.etiqueta} className={styles.readinessItem}>
+                <span>{c.etiqueta}</span>
+                <span className={c.lista ? 'status statusSuccess' : 'status statusWarning'}>
+                  {c.lista ? 'Listo' : 'Pendiente'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div>
+        <DatosFiscalesForm />
+        <ConfiguracionPACForm />
+        <SeriesFolioSeccion />
+      </div>
     </div>
+  )
+}
+
+// Fila de ajustes: título y explicación a la izquierda, contenido a la derecha.
+function FilaAjustes({ titulo, descripcion, children }: { titulo: string; descripcion: string; children: ReactNode }) {
+  return (
+    <section className="settingsRow">
+      <div className="settingsIntro">
+        <h2 className="sectionTitle">{titulo}</h2>
+        <p className="settingsDescription">{descripcion}</p>
+      </div>
+      <div className="card">{children}</div>
+    </section>
   )
 }
 
@@ -122,65 +174,80 @@ function DatosFiscalesForm() {
     }
   }
 
-  return (
-    <section className={styles.seccion}>
-      <h2 className={styles.subtitulo}>Datos fiscales de la empresa</h2>
+  // Descripción del régimen capturado; un código fuera del catálogo no muestra nada.
+  const descripcionRegimen = REGIMENES_FISCALES.find((r) => r.valor === valores.regimen_fiscal.trim())?.etiqueta
 
+  return (
+    <FilaAjustes
+      titulo="Datos fiscales de la empresa"
+      descripcion="Identifican a la empresa como emisora en cada factura. Deben coincidir con su constancia de situación fiscal del SAT."
+    >
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
-            RFC
-            <input type="text" value={valores.rfc} onChange={(e) => actualizarCampo('rfc', e.target.value)} />
-          </label>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          <div className="formGrid">
+            <label className="field">
+              RFC
+              <input type="text" value={valores.rfc} onChange={(e) => actualizarCampo('rfc', e.target.value)} />
+            </label>
 
-          <label className={styles.campo}>
-            Razón social
-            <input
-              type="text"
-              value={valores.razon_social}
-              onChange={(e) => actualizarCampo('razon_social', e.target.value)}
-            />
-          </label>
+            <label className="field">
+              Código postal fiscal
+              <input
+                type="text"
+                value={valores.codigo_postal_fiscal}
+                onChange={(e) => actualizarCampo('codigo_postal_fiscal', e.target.value)}
+              />
+            </label>
 
-          <label className={styles.campo}>
-            Régimen fiscal
-            <input
-              type="text"
-              value={valores.regimen_fiscal}
-              onChange={(e) => actualizarCampo('regimen_fiscal', e.target.value)}
-            />
-          </label>
+            <label className="field formGridFull">
+              Razón social
+              <input
+                type="text"
+                value={valores.razon_social}
+                onChange={(e) => actualizarCampo('razon_social', e.target.value)}
+              />
+            </label>
 
-          <label className={styles.campo}>
-            Código postal fiscal
-            <input
-              type="text"
-              value={valores.codigo_postal_fiscal}
-              onChange={(e) => actualizarCampo('codigo_postal_fiscal', e.target.value)}
-            />
-          </label>
+            {/* La descripción va fuera de la etiqueta (enlazada con aria-describedby)
+                para que el nombre accesible del campo siga siendo "Régimen fiscal". */}
+            <div className="field formGridFull">
+              <label htmlFor="regimen-fiscal">Régimen fiscal</label>
+              <input
+                id="regimen-fiscal"
+                type="text"
+                value={valores.regimen_fiscal}
+                onChange={(e) => actualizarCampo('regimen_fiscal', e.target.value)}
+                aria-describedby={descripcionRegimen ? 'regimen-fiscal-descripcion' : undefined}
+              />
+              {descripcionRegimen && (
+                <span id="regimen-fiscal-descripcion" className="fieldHint">
+                  {descripcionRegimen}
+                </span>
+              )}
+            </div>
+          </div>
 
           {error && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {error}
             </p>
           )}
           {exito && (
-            <p className={styles.exito} role="status">
+            <p className="successMessage" role="status">
               Datos fiscales actualizados.
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="submit" disabled={actualizar.isPending}>
               {actualizar.isPending ? 'Guardando…' : 'Guardar'}
             </BotonPrimario>
           </div>
         </form>
       )}
-    </section>
+    </FilaAjustes>
   )
 }
 
@@ -220,52 +287,67 @@ function ConfiguracionPACForm() {
   }
 
   return (
-    <section className={styles.seccion}>
-      <h2 className={styles.subtitulo}>Conexión al PAC</h2>
-
+    <FilaAjustes
+      titulo="Conexión al PAC"
+      descripcion="El Proveedor Autorizado de Certificación timbra cada factura ante el SAT. La API key nunca se muestra; déjala en blanco para conservar la guardada."
+    >
       {isLoading ? (
         <p>Cargando…</p>
       ) : (
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
-            Proveedor
-            <input
-              type="text"
-              value={proveedor}
-              onChange={(e) => {
-                setProveedor(e.target.value)
-                setExito(false)
-              }}
-            />
-          </label>
+        <form className="form" onSubmit={alGuardar} noValidate>
+          {/* Estado de lo guardado, no de lo que se está editando. */}
+          {pac && (
+            <div className={styles.statusBar} role="group" aria-label="Estado de la conexión guardada">
+              <span className={pac.activo ? 'status statusSuccess' : 'status statusNeutral'}>
+                {pac.activo ? 'Conexión activa' : 'Conexión inactiva'}
+              </span>
+              <span className={pac.api_key_configurada ? 'status statusSuccess' : 'status statusWarning'}>
+                {pac.api_key_configurada ? 'API key configurada' : 'API key sin configurar'}
+              </span>
+            </div>
+          )}
 
-          <label className={styles.campo}>
-            Endpoint de la API
-            <input
-              type="text"
-              value={apiEndpoint}
-              onChange={(e) => {
-                setApiEndpoint(e.target.value)
-                setExito(false)
-              }}
-            />
-          </label>
+          <div className="formGrid">
+            <label className="field">
+              Proveedor
+              <input
+                type="text"
+                value={proveedor}
+                onChange={(e) => {
+                  setProveedor(e.target.value)
+                  setExito(false)
+                }}
+              />
+            </label>
 
-          <label className={styles.campo}>
-            API key
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => {
-                setApiKey(e.target.value)
-                setExito(false)
-              }}
-              placeholder={pac?.api_key_configurada ? 'Configurada — deja en blanco para no cambiarla' : 'Sin configurar'}
-              autoComplete="new-password"
-            />
-          </label>
+            <label className="field">
+              Endpoint de la API
+              <input
+                type="text"
+                value={apiEndpoint}
+                onChange={(e) => {
+                  setApiEndpoint(e.target.value)
+                  setExito(false)
+                }}
+              />
+            </label>
 
-          <label className={styles.campoCheckbox}>
+            <label className="field formGridFull">
+              API key
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value)
+                  setExito(false)
+                }}
+                placeholder={pac?.api_key_configurada ? 'Configurada — deja en blanco para no cambiarla' : 'Sin configurar'}
+                autoComplete="new-password"
+              />
+            </label>
+          </div>
+
+          <label className="fieldCheckbox">
             <input
               type="checkbox"
               checked={activo}
@@ -278,24 +360,24 @@ function ConfiguracionPACForm() {
           </label>
 
           {error && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {error}
             </p>
           )}
           {exito && (
-            <p className={styles.exito} role="status">
+            <p className="successMessage" role="status">
               Conexión al PAC actualizada.
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="submit" disabled={actualizar.isPending}>
               {actualizar.isPending ? 'Guardando…' : 'Guardar'}
             </BotonPrimario>
           </div>
         </form>
       )}
-    </section>
+    </FilaAjustes>
   )
 }
 
@@ -385,12 +467,19 @@ function SeriesFolioSeccion() {
 
   const columnas: ColumnaTabla<SerieFolio>[] = [
     { clave: 'serie', encabezado: 'Serie' },
-    { clave: 'folio_actual', encabezado: 'Folio actual' },
+    { clave: 'folio_actual', alineacion: 'derecha', encabezado: 'Folio actual' },
+    {
+      // Lo que asigna el backend al timbrar: incrementa `folio_actual` y usa el resultado.
+      clave: 'id',
+      alineacion: 'derecha',
+      encabezado: 'Próximo folio',
+      render: (fila) => `${fila.serie}-${fila.folio_actual + 1}`,
+    },
     {
       clave: 'activo',
       encabezado: 'Estado',
       render: (fila) => (
-        <span className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}>
+        <span className={fila.activo ? 'status statusSuccess' : 'status statusNeutral'}>
           {fila.activo ? 'Activa' : 'Inactiva'}
         </span>
       ),
@@ -398,9 +487,11 @@ function SeriesFolioSeccion() {
   ]
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.subtitulo}>Series de facturación</h2>
+    <FilaAjustes
+      titulo="Series de facturación"
+      descripcion="Cada factura timbrada toma el siguiente folio de una serie activa. Una serie desactivada conserva su historial."
+    >
+      <div className={styles.cardActions}>
         <BotonPrimario onClick={abrirCrear}>Nueva serie</BotonPrimario>
       </div>
 
@@ -412,20 +503,20 @@ function SeriesFolioSeccion() {
           datos={series ?? []}
           mensajeVacio="Todavía no hay series registradas."
           renderAcciones={(fila) => (
-            <div className={styles.acciones}>
-              <button type="button" className={styles.enlaceAccion} onClick={() => abrirEditar(fila)}>
+            <div className="rowActions">
+              <button type="button" className="actionLink" onClick={() => abrirEditar(fila)}>
                 Editar
               </button>
               {fila.activo ? (
                 <button
                   type="button"
-                  className={styles.enlaceAccionPeligro}
+                  className="dangerActionLink"
                   onClick={() => setSerieADesactivar(fila)}
                 >
                   Desactivar
                 </button>
               ) : (
-                <button type="button" className={styles.enlaceAccion} onClick={() => abrirReactivar(fila)}>
+                <button type="button" className="actionLink" onClick={() => abrirReactivar(fila)}>
                   Reactivar
                 </button>
               )}
@@ -439,8 +530,8 @@ function SeriesFolioSeccion() {
         abierto={formularioAbierto}
         onCerrar={cerrarFormulario}
       >
-        <form className={styles.formulario} onSubmit={alGuardar} noValidate>
-          <label className={styles.campo}>
+        <form className="form formNarrow" onSubmit={alGuardar} noValidate>
+          <label className="field">
             Serie
             <input
               type="text"
@@ -450,7 +541,7 @@ function SeriesFolioSeccion() {
             />
           </label>
 
-          <label className={styles.campo}>
+          <label className="field">
             Folio actual
             <input
               type="number"
@@ -461,12 +552,12 @@ function SeriesFolioSeccion() {
           </label>
 
           {errorFormulario && (
-            <p className={styles.error} role="alert">
+            <p className="errorMessage" role="alert">
               {errorFormulario}
             </p>
           )}
 
-          <div className={styles.accionesFormulario}>
+          <div className="formActions">
             <BotonPrimario type="button" variante="secundario" onClick={cerrarFormulario}>
               Cancelar
             </BotonPrimario>
@@ -478,11 +569,11 @@ function SeriesFolioSeccion() {
       </Modal>
 
       <Modal titulo="Desactivar serie" abierto={Boolean(serieADesactivar)} onCerrar={() => setSerieADesactivar(null)}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres desactivar la serie "{serieADesactivar?.serie}"? Dejará de estar disponible para
           nuevas facturas, pero su historial se conserva.
         </p>
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={() => setSerieADesactivar(null)}>
             Cancelar
           </BotonPrimario>
@@ -493,18 +584,18 @@ function SeriesFolioSeccion() {
       </Modal>
 
       <Modal titulo="Reactivar serie" abierto={Boolean(serieAReactivar)} onCerrar={cerrarReactivar}>
-        <p className={styles.textoConfirmacion}>
+        <p className="confirmText">
           ¿Confirmas que quieres reactivar la serie "{serieAReactivar?.serie}"? Volverá a estar disponible para
           nuevas facturas.
         </p>
 
         {errorReactivar && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {errorReactivar}
           </p>
         )}
 
-        <div className={styles.accionesFormulario}>
+        <div className="formActions">
           <BotonPrimario variante="secundario" onClick={cerrarReactivar}>
             Cancelar
           </BotonPrimario>
@@ -513,6 +604,6 @@ function SeriesFolioSeccion() {
           </BotonPrimario>
         </div>
       </Modal>
-    </section>
+    </FilaAjustes>
   )
 }

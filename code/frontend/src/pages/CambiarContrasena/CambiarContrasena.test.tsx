@@ -54,7 +54,7 @@ describe('CambiarContrasena', () => {
   it('renderiza el formulario cuando hay un correo validado en el estado', () => {
     mockAuth({ iniciarSesionConTokens: vi.fn() })
 
-    renderPantalla({ state: { email: 'ana@flebosil.test' } })
+    renderPantalla({ state: { email: 'ana@synapse.test' } })
 
     expect(screen.getByLabelText(/^nueva contraseña$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/confirmar nueva contraseña/i)).toBeInTheDocument()
@@ -65,7 +65,7 @@ describe('CambiarContrasena', () => {
     cambiarContrasenaMock.mockImplementation(cambiarMock)
     mockAuth({ iniciarSesionConTokens: vi.fn() })
 
-    renderPantalla({ state: { email: 'ana@flebosil.test' } })
+    renderPantalla({ state: { email: 'ana@synapse.test' } })
     fireEvent.change(screen.getByLabelText(/^nueva contraseña$/i), {
       target: { value: 'clave-nueva-456' },
     })
@@ -83,7 +83,7 @@ describe('CambiarContrasena', () => {
     const iniciarSesionConTokensMock = vi.fn()
     mockAuth({ iniciarSesionConTokens: iniciarSesionConTokensMock })
 
-    renderPantalla({ state: { email: 'ana@flebosil.test' } })
+    renderPantalla({ state: { email: 'ana@synapse.test' } })
     fireEvent.change(screen.getByLabelText(/^nueva contraseña$/i), {
       target: { value: 'clave-nueva-456' },
     })
@@ -97,7 +97,7 @@ describe('CambiarContrasena', () => {
     )
     expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true })
     expect(cambiarContrasenaMock).toHaveBeenCalledWith(
-      'ana@flebosil.test',
+      'ana@synapse.test',
       'clave-nueva-456',
       'clave-nueva-456',
     )
@@ -109,7 +109,7 @@ describe('CambiarContrasena', () => {
     })
     mockAuth({ iniciarSesionConTokens: vi.fn() })
 
-    renderPantalla({ state: { email: 'ana@flebosil.test' } })
+    renderPantalla({ state: { email: 'ana@synapse.test' } })
     fireEvent.change(screen.getByLabelText(/^nueva contraseña$/i), { target: { value: '123' } })
     fireEvent.change(screen.getByLabelText(/confirmar nueva contraseña/i), {
       target: { value: '123' },

@@ -4,7 +4,10 @@ import type { OrdenTop, PeriodoDashboard } from '../../../../api/reportes'
 import { formatearMoneda } from '../../compartido/formato'
 import { GraficaBarras } from '../../compartido/GraficaBarras'
 import { useClientesTop } from '../../../../hooks/useClientesTop'
-import styles from '../../compartido/SeccionTop.module.css'
+
+function formatearCompras(valor: number): string {
+  return valor === 1 ? '1 compra' : `${valor} compras`
+}
 
 interface SeccionClientesProps {
   periodo: PeriodoDashboard
@@ -14,16 +17,21 @@ export function SeccionClientes({ periodo }: SeccionClientesProps) {
   const [orden, setOrden] = useState<OrdenTop>('mas')
   const { data: clientes, isLoading } = useClientesTop(periodo, orden)
 
-  const datos = (clientes ?? []).map((cliente) => ({ etiqueta: cliente.cliente, valor: Number(cliente.monto) }))
+  // El admin recibe el monto comprado; el operador, el número de compras (sin importes).
+  const porCompras = (clientes ?? []).some((cliente) => cliente.compras !== undefined)
+  const datos = (clientes ?? []).map((cliente) => ({
+    etiqueta: cliente.cliente,
+    valor: porCompras ? Number(cliente.compras ?? 0) : Number(cliente.monto ?? 0),
+  }))
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.tituloSeccion}>Resumen clientes</h2>
-        <div className={styles.selectorOrden} role="group" aria-label="Orden del ranking de clientes">
+    <section className="card">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Resumen clientes</h2>
+        <div className="segmented" role="group" aria-label="Orden del ranking de clientes">
           <button
             type="button"
-            className={orden === 'mas' ? `${styles.opcionOrden} ${styles.opcionOrdenActiva}` : styles.opcionOrden}
+            className={orden === 'mas' ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
             aria-pressed={orden === 'mas'}
             onClick={() => setOrden('mas')}
           >
@@ -31,7 +39,7 @@ export function SeccionClientes({ periodo }: SeccionClientesProps) {
           </button>
           <button
             type="button"
-            className={orden === 'menos' ? `${styles.opcionOrden} ${styles.opcionOrdenActiva}` : styles.opcionOrden}
+            className={orden === 'menos' ? 'segmentedOption segmentedOptionActive' : 'segmentedOption'}
             aria-pressed={orden === 'menos'}
             onClick={() => setOrden('menos')}
           >
@@ -43,14 +51,14 @@ export function SeccionClientes({ periodo }: SeccionClientesProps) {
       {isLoading ? (
         <p>Cargando clientes…</p>
       ) : datos.length === 0 ? (
-        <p className={styles.sinDatos}>No hay compras de clientes en este periodo.</p>
+        <p className="emptyState">No hay compras de clientes en este periodo.</p>
       ) : (
         <GraficaBarras
           titulo={orden === 'mas' ? 'Top 5 clientes con más compras' : 'Top 5 clientes con menos compras'}
           datos={datos}
           colores={['var(--color-primario)']}
-          etiquetaEjeY="Monto ($)"
-          formatoValor={formatearMoneda}
+          etiquetaEjeY={porCompras ? 'Compras' : 'Monto ($)'}
+          formatoValor={porCompras ? formatearCompras : formatearMoneda}
         />
       )}
     </section>

@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Empleado } from '../../api/rrhh'
 import type { RegistroAcceso, UsuarioCuenta } from '../../api/usuarios'
-import { useEmpleado, useEmpleadosDisponibles } from '../../hooks/useEmpleadosRRHH'
+import { useEmpleado, useEmpleadosDisponibles, useEmpleadosRRHH } from '../../hooks/useEmpleadosRRHH'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import {
   useAccesosUsuario,
@@ -28,12 +28,12 @@ const useEmpleadoMock = vi.mocked(useEmpleado)
 
 const USUARIOS: UsuarioCuenta[] = [
   {
-    id: 1, username: 'ana', first_name: 'Ana', last_name: 'Torres', email: 'ana@flebosil.test',
-    rol_usuario: 'admin', empleado: 2, activo: true,
+    id: 1, username: 'ana', first_name: 'Ana', last_name: 'Torres', email: 'ana@synapse.test',
+    rol_usuario: 'admin', empleado: 2, activo: true, foto_usuario: null,
   },
   {
-    id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@flebosil.test',
-    rol_usuario: 'operador', empleado: null, activo: false,
+    id: 2, username: 'luis', first_name: 'Luis', last_name: 'Pérez', email: 'luis@synapse.test',
+    rol_usuario: 'operador', empleado: null, activo: false, foto_usuario: null,
   },
 ]
 
@@ -72,6 +72,10 @@ function mockearHooks({ accesos = [] }: { accesos?: RegistroAcceso[] } = {}) {
   useEmpleadoMock.mockReturnValue(
     { data: undefined, isLoading: false } as unknown as ReturnType<typeof useEmpleado>,
   )
+  // Lista completa de empleados (columna "Empleado" del rediseño de 021).
+  vi.mocked(useEmpleadosRRHH).mockReturnValue(
+    { data: [EMPLEADO_VINCULADO, ...EMPLEADOS_DISPONIBLES], isLoading: false } as unknown as ReturnType<typeof useEmpleadosRRHH>,
+  )
 
   vi.mocked(useCrearUsuario).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useCrearUsuario>)
   vi.mocked(useEditarUsuario).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as unknown as ReturnType<typeof useEditarUsuario>)
@@ -85,6 +89,13 @@ function renderUsuarios() {
       <Usuarios />
     </MemoryRouter>,
   )
+}
+
+// Recuadro completo de un indicador (etiqueta + cifra) a partir de su etiqueta.
+function indicador(etiqueta: string): HTMLElement {
+  const recuadro = screen.getByText(etiqueta, { selector: '.statLabel' }).parentElement
+  if (!recuadro) throw new Error(`Indicador "${etiqueta}" sin contenedor`)
+  return recuadro
 }
 
 describe('Usuarios', () => {
@@ -178,4 +189,119 @@ describe('Usuarios', () => {
 
     expect(screen.getByText('Este usuario todavía no tiene accesos registrados.')).toBeInTheDocument()
   })
+  it('muestra los indicadores de cuentas', () => {
+    mockearHooks()
+    renderUsuarios()
+
+    expect(indicador('Usuarios activos')).toHaveTextContent('1')
+    expect(indicador('Administradores')).toHaveTextContent('1')
+    expect(indicador('Operadores')).toHaveTextContent('0')
+    expect(indicador('Inactivos')).toHaveTextContent('1')
+  })
+
+  it('cada usuario se identifica con su nombre, usuario y correo, su rol como etiqueta y su empleado vinculado', () => {
+    mockearHooks()
+    renderUsuarios()
+
+    const fila = screen.getByRole('button', { name: /ana torres/i }).closest('tr') as HTMLElement
+    expect(fila).toHaveTextContent('ana@synapse.test')
+    expect(within(fila).getByText('ana')).toBeInTheDocument()
+    expect(within(fila).getByText('Administrador')).toHaveClass('statusPrimary')
+    expect(fila).toHaveTextContent('Empleado Ya Vinculado')
+
+    fireEvent.click(screen.getByLabelText(/mostrar inactivos/i))
+    const filaLuis = screen.getByRole('button', { name: /luis pérez/i }).closest('tr') as HTMLElement
+    expect(filaLuis).toHaveTextContent('Sin vincular')
+    expect(within(filaLuis).getByText('Operador')).toHaveClass('statusNeutral')
+  })
+
+  it('busca por nombre, usuario o correo sin acentos y filtra por rol', () => {
+    mockearHooks()
+    renderUsuarios()
+    fireEvent.click(screen.getByLabelText(/mostrar inactivos/i))
+
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'perez' } })
+    expect(screen.getByText('luis')).toBeInTheDocument()
+    expect(screen.queryByText('ana')).not.toBeInTheDocument()
+    expect(screen.getByText('Mostrando 1 de 2')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    fireEvent.change(screen.getByLabelText('Rol'), { target: { value: 'admin' } })
+    expect(screen.getByText('ana')).toBeInTheDocument()
+    expect(screen.queryByText('luis')).not.toBeInTheDocument()
+  })
+
+  it('el historial se despliega bajo la fila del usuario, con resumen y etiquetas por tipo', () => {
+    mockearHooks({
+      accesos: [
+        { id: 1, tipo: 'fallido', ip: '10.0.0.5', creado_en: '2026-10-02T10:00:00Z' },
+        { id: 2, tipo: 'exitoso', ip: '10.0.0.5', creado_en: '2026-10-01T10:00:00Z' },
+        { id: 3, tipo: 'fallido', ip: '10.0.0.9', creado_en: '2026-09-30T10:00:00Z' },
+      ],
+    })
+    renderUsuarios()
+
+    fireEvent.click(screen.getByRole('button', { name: /ana/i }))
+
+    const filaUsuario = screen.getByRole('button', { name: /ana torres/i }).closest('tr') as HTMLElement
+    const filaHistorial = filaUsuario.nextElementSibling as HTMLElement
+    expect(filaHistorial).toHaveTextContent('Historial de accesos de ana')
+
+    const resumen = within(filaHistorial.querySelector('dl') as HTMLElement)
+    expect(resumen.getByText(/intentos fallidos/i).closest('div')).toHaveTextContent('2')
+    expect(within(filaHistorial).getAllByText('Intento fallido')[0]).toHaveClass('statusError')
+    expect(within(filaHistorial).getByText('Inicio de sesión exitoso')).toHaveClass('statusSuccess')
+  })
+
+  it('el formulario describe el rol elegido sin cambiar el nombre del campo', () => {
+    mockearHooks()
+    renderUsuarios()
+
+    fireEvent.click(screen.getByRole('button', { name: /nuevo usuario/i }))
+    const dialogo = within(screen.getByRole('dialog', { name: /nuevo usuario/i }))
+    const rol = dialogo.getByLabelText('Rol')
+
+    expect(dialogo.getByText(/la operación diaria/i)).toBeInTheDocument()
+    fireEvent.change(rol, { target: { value: 'admin' } })
+    expect(dialogo.getByText(/acceso a todos los módulos/i)).toBeInTheDocument()
+    expect(rol).toHaveAttribute('aria-describedby', 'usuario-rol-descripcion')
+  })
+
+  it('la celda de identidad muestra la fotografía del usuario si la tiene', () => {
+    mockearHooks()
+    useUsuariosMock.mockReturnValue({
+      data: [{ ...USUARIOS[0], foto_usuario: 'http://servidor/fotos-usuarios/ana.png' }],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useUsuarios>)
+    const { container } = renderUsuarios()
+
+    expect(container.querySelector('img[src="http://servidor/fotos-usuarios/ana.png"]')).toBeInTheDocument()
+  })
+
+  it('el alta envía la fotografía elegida; sin tocarla, la edición no la envía', async () => {
+    mockearHooks()
+    const crearMock = vi.fn().mockResolvedValue(undefined)
+    const editarMock = vi.fn().mockResolvedValue(undefined)
+    vi.mocked(useCrearUsuario).mockReturnValue({ mutateAsync: crearMock, isPending: false } as unknown as ReturnType<typeof useCrearUsuario>)
+    vi.mocked(useEditarUsuario).mockReturnValue({ mutateAsync: editarMock, isPending: false } as unknown as ReturnType<typeof useEditarUsuario>)
+    renderUsuarios()
+
+    fireEvent.click(screen.getByRole('button', { name: /nuevo usuario/i }))
+    const dialogo = within(screen.getByRole('dialog', { name: /nuevo usuario/i }))
+    const foto = new File([new Uint8Array(10)], 'foto.webp', { type: 'image/webp' })
+    fireEvent.change(dialogo.getByLabelText('Fotografía de perfil'), { target: { files: [foto] } })
+    expect(dialogo.getByRole('button', { name: 'Cambiar fotografía' })).toBeInTheDocument()
+    fireEvent.change(dialogo.getByLabelText(/correo electrónico/i), { target: { value: 'nuevo@synapse.test' } })
+    fireEvent.change(dialogo.getByLabelText(/^contraseña$/i), { target: { value: 'Clave-segura-123' } })
+    fireEvent.click(dialogo.getByRole('button', { name: /^guardar$/i }))
+
+    await waitFor(() => expect(crearMock).toHaveBeenCalledWith(expect.objectContaining({ foto_usuario: foto })))
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^editar$/i })[0] as HTMLElement)
+    fireEvent.click(within(screen.getByRole('dialog', { name: /editar usuario/i })).getByRole('button', { name: /^guardar$/i }))
+
+    await waitFor(() => expect(editarMock).toHaveBeenCalled())
+    expect(editarMock.mock.calls[0]?.[0].datos).not.toHaveProperty('foto_usuario')
+  })
 })
+

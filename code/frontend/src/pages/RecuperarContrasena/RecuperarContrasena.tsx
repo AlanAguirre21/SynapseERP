@@ -86,8 +86,8 @@ export function RecuperarContrasena() {
 
   return paso === 'correo' ? (
     <PaginaAuth titulo="Recuperar contraseña" subtitulo="Te enviaremos un código de verificación por correo">
-      <form className={styles.formulario} onSubmit={alEnviarCorreo} noValidate>
-        <label className={styles.campo}>
+      <form className="form" onSubmit={alEnviarCorreo} noValidate>
+        <label className="field">
           Correo electrónico
           <input
             type="email"
@@ -99,7 +99,7 @@ export function RecuperarContrasena() {
         </label>
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {error}
           </p>
         )}
@@ -108,22 +108,22 @@ export function RecuperarContrasena() {
           {cargando ? 'Enviando…' : 'Enviar código'}
         </BotonPrimario>
 
-        <Link to="/login" className={styles.enlace}>
+        <Link to="/login" className="link linkCentered">
           Volver a iniciar sesión
         </Link>
       </form>
     </PaginaAuth>
   ) : (
     <PaginaAuth titulo="Verifica tu código" subtitulo={`Enviamos un código de 6 dígitos a ${email}`}>
-      <form className={styles.formulario} onSubmit={alVerificarCodigo} noValidate>
-        {mensaje && <p className={styles.mensaje}>{mensaje}</p>}
+      <form className="form" onSubmit={alVerificarCodigo} noValidate>
+        {mensaje && <p className="successMessage">{mensaje}</p>}
 
-        <label className={styles.campo}>
+        <label className="field">
           Código de 6 dígitos
           <input
             type="text"
             inputMode="numeric"
-            className={styles.inputCodigo}
+            className={styles.codeInput}
             maxLength={6}
             value={codigo}
             onChange={(evento) => setCodigo(evento.target.value.replace(/\D/g, ''))}
@@ -132,7 +132,7 @@ export function RecuperarContrasena() {
         </label>
 
         {error && (
-          <p className={styles.error} role="alert">
+          <p className="errorMessage" role="alert">
             {error}
           </p>
         )}
@@ -143,14 +143,14 @@ export function RecuperarContrasena() {
 
         <button
           type="button"
-          className={styles.enlaceBoton}
+          className="link linkCentered"
           onClick={alReenviar}
           disabled={cargando}
         >
           Reenviar código
         </button>
 
-        <Link to="/login" className={styles.enlace}>
+        <Link to="/login" className="link linkCentered">
           Volver a iniciar sesión
         </Link>
       </form>

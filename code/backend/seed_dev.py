@@ -42,16 +42,16 @@ InventarioSucursalMateriaPrima.objects.update_or_create(
     defaults={'stock_actual': '1.00', 'stock_minimo': '5.00'},
 )
 
-if not Usuario.objects.filter(email='admin@flebosil.test').exists():
+if not Usuario.objects.filter(email='admin@synapse.test').exists():
     Usuario.objects.create_user(
-        username='admin1', email='admin@flebosil.test', password='clave-admin-123',
+        username='admin1', email='admin@synapse.test', password='clave-admin-123',
         rol_usuario='admin',
     )
 
-if not Usuario.objects.filter(email='operador@flebosil.test').exists():
+if not Usuario.objects.filter(email='operador@synapse.test').exists():
     Usuario.objects.create_user(
-        username='operador1', email='operador@flebosil.test', password='clave-operador-123',
+        username='operador1', email='operador@synapse.test', password='clave-operador-123',
         rol_usuario='operador',
     )
 
-print('Seed listo: admin@flebosil.test / operador@flebosil.test (contraseñas en este script)')
+print('Seed listo: admin@synapse.test / operador@synapse.test (contraseñas en este script)')

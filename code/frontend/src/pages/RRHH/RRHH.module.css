@@ -1,249 +1,238 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-4;
+/* Estilos propios de Recursos Humanos: barra de departamentos,
+   organigrama de posiciones, tarjetas de empleado y ficha de empleado.
+   Lo demás usa las clases globales. */
+
+/* --- Barra de departamentos --------------------------------------------- */
+
+/* Pestañas a la izquierda, acciones del departamento elegido a la derecha,
+   sobre una misma línea base. En pantallas angostas las acciones bajan a su
+   propia línea (antes se partían y el separador quedaba suelto). */
+.departmentBar {
+  @apply flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between md:gap-4 border-b border-borde;
 }
 
-.encabezado {
-  @apply flex items-center justify-between mb-4 gap-3;
-}
-
-.titulo {
-  @apply m-0 text-texto text-xl font-semibold;
-}
-
-.subtitulo {
-  @apply m-0 text-texto text-base font-semibold;
-}
-
-/* Fila de departamentos: pestañas a la izquierda, acciones a la derecha,
-   ambas centradas en la misma línea — mismo alto, mismo estilo. */
-.barraDepartamentos {
-  @apply flex items-center justify-between gap-4 flex-wrap border-b border-texto/10;
-}
-
-.pestañas {
+.departmentTabs {
   @apply flex items-center gap-1 flex-wrap;
 }
 
-.pestaña {
-  @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-3 text-[0.9rem] text-texto/70 cursor-pointer;
+.departmentActions {
+  @apply flex items-center gap-3 divide-x divide-borde text-[0.85rem] pb-2 md:pb-0 whitespace-nowrap;
 }
 
-.pestaña:hover {
-  @apply text-texto;
-}
-
-.pestañaActiva {
-  @apply text-primario border-primario font-semibold;
-}
-
-.accionesDepartamento {
-  @apply flex items-center gap-3 divide-x divide-texto/15 text-[0.85rem];
-}
-
-.accionesDepartamento > button {
+.departmentActions > button {
   @apply pl-3 first:pl-0;
 }
 
-/* Sección de posiciones como tarjeta — mismo lenguaje visual que las
-   secciones del Dashboard (bg-superficie + borde suave, sin sombra). */
-.panel {
-  @apply flex flex-col gap-4 mt-2 bg-superficie border border-texto/10 rounded-xl p-5;
-}
+/* --- Árbol de posiciones ------------------------------------------------ */
 
-.vacio {
-  @apply text-texto/60 text-[0.9rem];
-}
-
-.enlaceAccion {
-  @apply bg-transparent border-0 text-primario text-[0.85rem] cursor-pointer p-0;
-}
-
-.enlaceAccion:hover {
-  @apply underline;
-}
-
-.enlaceAccionPeligro {
-  @apply bg-transparent border-0 text-error text-[0.85rem] cursor-pointer p-0;
-}
-
-.enlaceAccionPeligro:hover {
-  @apply underline;
-}
-
-/* --- Tabla de posiciones ---------------------------------------------- */
-
-.tablaPosiciones {
-  @apply w-full border-collapse text-left text-[0.9rem];
-}
-
-.tablaPosiciones thead th {
-  @apply px-4 py-3 bg-texto/[0.03] text-texto font-semibold border-b border-b-texto/10 whitespace-nowrap;
-}
-
-.tablaPosiciones tbody td {
-  /* `border-b-texto/5` (no solo `border-texto/5`) a propósito: la versión
-     sin lado pone el color en las cuatro aristas, ganándole por
-     especificidad al `border-l-secundario` de `.celdaPosicionRaiz` más
-     abajo — bug real encontrado al verificar el rediseño en el navegador. */
-  @apply px-4 py-3 border-b border-b-texto/5 text-texto align-middle;
-}
-
-.filaPosicion {
+.positionRow {
   @apply cursor-pointer;
 }
 
-.filaPosicion:hover {
-  @apply bg-texto/[0.02];
-}
-
-/* La fila raíz (sin superior) lleva un acento de color en su primera
-   celda — la jerarquía se remarca por color/peso, no solo por sangría. */
-.celdaPosicionRaiz {
+/* La fila raíz (sin superior) lleva un acento de color en su primera celda:
+   la jerarquía se remarca por color/peso, no solo por sangría. */
+.rootPositionCell {
   @apply border-l-[3px] border-l-secundario;
 }
 
-.tituloPosicion {
+.positionTitle {
   @apply inline-flex items-center;
 }
 
-.indicadorExpandir {
-  @apply inline-block w-4 text-texto/40 text-[0.75rem];
+/* Sangría por nivel de profundidad; a partir del quinto nivel se reutiliza la última. */
+.treeLevel1 {
+  @apply pl-6;
 }
 
-.conectorArbol {
-  @apply text-texto/35 mr-1.5 font-mono;
+.treeLevel2 {
+  @apply pl-12;
 }
 
-.nombrePosicionRaiz {
+.treeLevel3 {
+  @apply pl-[72px];
+}
+
+.treeLevel4 {
+  @apply pl-24;
+}
+
+.treeLevel5 {
+  @apply pl-[120px];
+}
+
+.treeConnector {
+  @apply mr-1.5 font-mono text-texto-suave;
+}
+
+.rootPositionName {
   @apply font-semibold text-secundario-texto;
 }
 
-.nombrePosicionHija {
+.childPositionName {
   @apply text-texto;
 }
 
-.celdaSalario {
-  @apply text-texto/80 whitespace-nowrap;
+.salaryCell {
+  @apply whitespace-nowrap;
 }
 
-.accionesFila {
-  @apply flex items-center gap-3;
+.expandedCell {
+  @apply p-0 bg-fondo;
 }
 
-.celdaExpandida {
-  @apply p-0 bg-texto/[0.015];
-}
+/* --- Empleados de una posición (fila expandida) -------------------------- */
 
-/* --- Panel de empleados por posición (fila expandida) ------------------ */
-
-.panelEmpleados {
+.employeePanel {
   @apply flex flex-col gap-3 p-4;
 }
 
-.encabezadoEmpleados {
-  @apply flex items-center justify-between gap-3;
+.employeeList {
+  @apply grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-2 list-none p-0 m-0;
 }
 
-.selectorLimite {
-  @apply flex items-center gap-1 rounded-control border border-borde p-1;
+.employeeItem {
+  @apply w-full flex items-center gap-3 p-2.5 bg-superficie border border-borde rounded-control text-left text-texto cursor-pointer transition-[border-color,box-shadow];
 }
 
-.botonLimite {
-  @apply bg-transparent border-0 rounded-control px-3 py-1 text-[0.8rem] text-texto/70 cursor-pointer transition-colors;
+.employeeItem:hover {
+  @apply border-primario shadow-suave;
 }
 
-.botonLimite:hover {
-  @apply text-texto;
+.employeeItemText {
+  @apply flex flex-col min-w-0 leading-tight;
 }
 
-.botonLimiteActivo {
-  @apply bg-primario-suave text-primario font-semibold;
+.employeeItemName {
+  @apply font-semibold text-[0.9rem] overflow-hidden text-ellipsis whitespace-nowrap;
 }
 
-.listaEmpleados {
-  @apply flex flex-col gap-1 list-none p-0 m-0;
+.employeeItemMeta {
+  @apply text-[0.78rem] text-texto-suave;
 }
 
-.itemEmpleado {
-  @apply w-full flex items-center justify-between gap-3 bg-superficie border border-texto/10 text-left px-3 py-2 rounded-control cursor-pointer text-texto;
+/* Fotografía o iniciales del empleado. */
+.employeeAvatar {
+  @apply flex items-center justify-center shrink-0 object-cover bg-primario-suave text-primario font-titulo font-semibold;
 }
 
-.itemEmpleado:hover {
-  @apply border-primario/40 bg-primario-suave/40;
+.employeeAvatarSmall {
+  @apply w-10 h-10 text-[0.85rem] rounded-pildora;
 }
 
-.itemEmpleadoPosicion {
-  @apply text-[0.8rem] text-texto/60;
+.employeeAvatarLarge {
+  @apply w-28 h-28 sm:w-36 sm:h-36 text-4xl border-4 border-superficie rounded-tarjeta shadow-marcada;
 }
 
-.formulario {
-  @apply flex flex-col gap-4;
+/* --- Ficha de empleado (modal) ------------------------------------------- */
+
+/* Cabecera de perfil: ocupa todo el ancho del modal, pegada a su barra. */
+.profileHero {
+  @apply flex flex-col sm:flex-row items-center sm:items-end gap-5 -mx-6 -mt-5 mb-6 px-6 py-6 border-b border-borde bg-linear-to-br from-primario-suave to-superficie text-center sm:text-left;
 }
 
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+.profileIdentity {
+  @apply flex flex-col items-center sm:items-start gap-1.5 min-w-0;
 }
 
-.campo input,
-.campo select {
-  @apply px-3 py-[10px] text-base border border-texto/20 rounded-control;
+.profileName {
+  @apply m-0 text-texto text-2xl sm:text-3xl font-titulo font-semibold leading-tight;
 }
 
-.campo input:disabled,
-.campo select:disabled {
-  @apply bg-texto/5 text-texto/60;
+.profileRole {
+  @apply m-0 text-[0.95rem] font-semibold text-primario;
 }
 
-.fotoEmpleado {
-  @apply w-20 h-20 rounded-full object-cover border border-texto/20;
+.profileFacts {
+  @apply flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-2 m-0 mt-2;
 }
 
-.ayuda {
-  @apply text-[0.75rem] text-texto/60;
+.profileFacts dt {
+  @apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-texto-suave;
 }
 
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-control text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
+.profileFacts dd {
+  @apply m-0 text-[0.95rem] font-semibold text-texto tabular-nums;
 }
 
-.textoConfirmacion {
-  @apply text-texto text-[0.9rem] mb-4;
+.dataSection {
+  @apply flex flex-col gap-3 pb-5 border-b border-borde;
 }
 
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
+/* Paneles bajo los datos: contactos y dependientes lado a lado, nómina a todo el ancho. */
+.profilePanels {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6;
 }
 
-.estadoActivo {
-  @apply text-exito text-[0.8rem] font-semibold;
+.infoPanel {
+  @apply flex flex-col gap-3 min-w-0 p-4 bg-fondo border border-borde rounded-control;
 }
 
-.estadoInactivo {
-  @apply text-error text-[0.8rem] font-semibold;
+.infoPanelWide {
+  @apply sm:col-span-2;
 }
 
-.seccionAnexos {
-  @apply flex flex-col gap-4 mt-4 pt-4 border-t border-texto/10;
+.infoList {
+  @apply flex flex-col list-none p-0 m-0;
 }
 
-.subtituloAnexo {
-  @apply m-0 mb-2 text-[0.9rem] font-semibold text-texto;
+.infoList li {
+  @apply flex items-center justify-between gap-3 py-2 border-b border-borde;
 }
 
-.listaAnexo {
-  @apply flex flex-col gap-1 list-none p-0 m-0 mb-2;
+.infoList li:last-child {
+  @apply border-b-0;
 }
 
-.listaAnexo li {
-  @apply flex items-center justify-between gap-3 text-[0.85rem] text-texto;
+.infoItemText {
+  @apply flex flex-col min-w-0 leading-tight;
 }
 
-.filaAgregarAnexo {
-  @apply flex items-center gap-2 flex-wrap;
+.infoItemName {
+  @apply text-[0.9rem] font-semibold text-texto;
 }
 
-.filaAgregarAnexo input {
-  @apply px-3 py-2 text-[0.85rem] border border-texto/20 rounded-control flex-1 min-w-[120px];
+.infoItemMeta {
+  @apply text-[0.8rem] text-texto-suave;
 }
+
+.infoAddRow {
+  @apply flex flex-col gap-2 mt-auto;
+}
+
+.infoAddRow input {
+  @apply text-[0.85rem];
+}
+
+.infoAddRow button {
+  @apply self-end;
+}
+
+.payrollRow {
+  @apply flex flex-wrap items-end gap-3;
+}
+
+.payrollRow > label {
+  @apply flex-1 min-w-[150px];
+}
+
+/* --- Directorio --------------------------------------------------------- */
+
+/* Avatar y nombre del empleado en la primera columna del directorio. */
+.directoryName {
+  @apply inline-flex items-center gap-3 whitespace-nowrap;
+}
+
+/* --- Nóminas -------------------------------------------------------------- */
+
+/* Barra que aparece al seleccionar solicitudes pendientes: resumen y pago en bloque. */
+.selectionBar {
+  @apply flex items-center justify-between gap-4 flex-wrap px-4 py-3 bg-primario-suave border border-borde rounded-tarjeta text-[0.9rem] font-medium text-texto;
+}
+
+/* Empleados omitidos al generar la nómina, con su motivo. */
+.skippedList {
+  @apply flex flex-col gap-1.5 m-0 pl-5 text-[0.85rem] text-texto;
+}
+

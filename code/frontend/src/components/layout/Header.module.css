@@ -1,136 +1,144 @@
 @reference "../../index.css";
 
 .header {
-  @apply flex items-center justify-between h-16 px-4 bg-fondo text-texto border-b border-borde;
+  @apply relative flex items-center justify-between gap-3 h-16 px-3 md:px-5 bg-superficie text-texto border-b border-borde shrink-0 z-30;
 }
 
-.izquierda {
-  @apply flex items-center gap-3;
+/* Franja de marca: los tres colores del logotipo y de la aplicación. */
+.header::before {
+  content: '';
+  @apply absolute top-0 inset-x-0 h-[3px] bg-linear-to-r from-primario via-inicio to-secundario;
 }
 
-.botonSidebar {
-  @apply bg-transparent border-0 text-texto/70 cursor-pointer p-2 min-w-[44px] min-h-[44px] rounded-control transition-colors;
+.headerLeft {
+  @apply flex items-center gap-2 md:gap-3 min-w-0;
 }
 
-.botonSidebar:hover {
+.sidebarToggle {
+  @apply flex items-center justify-center w-10 h-10 shrink-0 bg-transparent border-0 text-texto-suave cursor-pointer rounded-pildora transition-colors;
+}
+
+.sidebarToggle:hover {
   @apply bg-primario-suave text-primario;
 }
 
 .logo {
-  @apply flex items-center no-underline text-inherit;
+  @apply flex items-center no-underline text-inherit rounded-control;
 }
 
-.logoImg {
+.logoImage {
   @apply h-10 w-auto block;
 }
 
-.derecha {
-  @apply flex items-center gap-2;
+.headerRight {
+  @apply flex items-center gap-2 md:gap-3;
 }
 
-.notificaciones,
-.usuario {
+.notifications,
+.userMenu {
   @apply relative;
 }
 
-.botonNotificaciones,
-.botonUsuario {
-  @apply bg-transparent border-0 text-texto cursor-pointer min-h-[44px] flex items-center gap-2 relative px-2 rounded-control transition-colors;
+.notificationsButton {
+  @apply relative flex items-center justify-center w-10 h-10 bg-transparent border border-borde text-texto-suave cursor-pointer rounded-pildora transition-colors;
 }
 
-.botonNotificaciones {
-  @apply min-w-[44px] justify-center;
+.notificationsButton:hover,
+.notificationsButton[aria-expanded='true'] {
+  @apply bg-primario-suave border-primario-suave text-primario;
 }
 
-.botonNotificaciones:hover {
-  @apply bg-primario-suave text-primario;
+.counter {
+  @apply absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-error text-superficie text-[0.65rem] font-semibold border-2 border-superficie rounded-pildora;
 }
 
-.botonUsuario:hover {
-  @apply bg-texto/5;
+/* Menú de usuario como píldora: avatar, nombre, rol e indicador de desplegable. */
+.userButton {
+  @apply flex items-center gap-2.5 min-h-[44px] p-1 sm:pr-3 bg-transparent border border-borde text-texto cursor-pointer rounded-pildora transition-colors;
 }
 
-.contador {
-  @apply absolute top-0 right-0 bg-error text-fondo rounded-full text-[0.65rem] min-w-[16px] h-4 flex items-center justify-center px-1;
+.userButton:hover,
+.userButton[aria-expanded='true'] {
+  @apply bg-fondo;
 }
 
-.avatar {
-  @apply flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primario-suave text-primario font-titulo font-semibold text-[0.8rem];
+.userData {
+  @apply hidden sm:flex flex-col items-start leading-tight;
 }
 
-.datosUsuario {
-  @apply flex flex-col items-start leading-tight;
+.userName {
+  @apply font-semibold text-[0.85rem];
 }
 
-.nombreUsuario {
-  @apply font-semibold text-[0.9rem];
+.userRole {
+  @apply text-[0.7rem] text-texto-suave capitalize;
 }
 
-.rolUsuario {
-  @apply text-[0.7rem] text-texto/60 capitalize;
+.caret {
+  @apply hidden sm:inline text-[0.7rem] text-texto-suave;
 }
 
 .dropdown {
-  @apply absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-superficie text-texto rounded-control shadow-marcada border border-borde overflow-hidden z-10;
+  @apply absolute top-[calc(100%+10px)] right-0 w-[min(300px,calc(100vw-24px))] bg-superficie text-texto border border-borde rounded-control shadow-marcada overflow-hidden z-10;
 }
 
-.dropdownVacio {
-  @apply px-4 py-3 m-0 text-[0.85rem];
+.dropdownEmpty {
+  @apply m-0 px-4 py-3 text-[0.85rem] text-texto-suave;
 }
 
-.listaAlertas {
-  @apply list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+.dropdownSection {
+  @apply m-0 px-4 py-2 text-[0.68rem] font-base font-semibold uppercase tracking-[0.14em] text-texto-suave bg-fondo border-b border-borde;
 }
 
-.listaAlertas li {
-  @apply flex flex-col px-4 py-[10px] border-b border-texto/[0.08] text-[0.85rem];
+.alertList,
+.requestList {
+  @apply list-none m-0 p-0 max-h-[260px] overflow-y-auto;
 }
 
-.listaAlertas li span {
-  @apply text-advertencia text-xs;
+/* Cada alerta lleva un acento lateral de advertencia. */
+.alertList li {
+  @apply flex flex-col gap-0.5 px-4 py-2.5 text-[0.85rem] border-b border-borde border-l-[3px] border-l-advertencia;
 }
 
-.dropdownSeccion {
-  @apply m-0 px-4 py-2 text-[0.75rem] font-semibold text-texto/60 border-t border-texto/[0.08];
+.alertList li span {
+  @apply text-xs text-texto-suave;
 }
 
-.listaSolicitudes {
-  @apply list-none m-0 p-0 max-h-[280px] overflow-y-auto;
+.requestList li {
+  @apply border-b border-borde;
 }
 
-.listaSolicitudes li {
-  @apply flex flex-col gap-2 px-4 py-[10px] border-b border-texto/[0.08] text-[0.85rem];
+/* Cada solicitud pendiente enlaza a la pestaña "Nóminas" de RRHH. */
+.requestLink {
+  @apply flex flex-col gap-0.5 px-4 py-2.5 text-[0.85rem] text-texto no-underline transition-colors;
 }
 
-.datosSolicitud {
-  @apply flex flex-col;
+.requestLink:hover,
+.requestLink:focus-visible {
+  @apply bg-fondo;
 }
 
-.datosSolicitud span {
-  @apply text-texto/60 text-xs;
+.requestLink span {
+  @apply text-xs text-texto-suave;
 }
 
-.accionesSolicitud {
-  @apply flex items-center gap-2;
+/* "Ver nóminas", al pie de las solicitudes. */
+.dropdownFooter {
+  @apply text-[0.85rem] font-semibold text-primario;
 }
 
-.botonAprobar,
-.botonRechazar {
-  @apply border-0 rounded-control px-3 py-1 text-[0.8rem] cursor-pointer;
+.menuItem {
+  @apply block w-full px-4 py-2.5 bg-transparent border-0 text-left text-[0.9rem] text-inherit no-underline cursor-pointer transition-colors;
 }
 
-.botonAprobar {
-  @apply bg-exito/15 text-exito;
+.menuItem:hover {
+  @apply bg-fondo;
 }
 
-.botonRechazar {
-  @apply bg-error/15 text-error;
+.menuItemDanger {
+  @apply text-error border-t border-borde;
 }
 
-.itemMenu {
-  @apply block w-full text-left px-4 py-[10px] bg-transparent border-0 text-inherit no-underline cursor-pointer text-[0.9rem];
-}
-
-.itemMenu:hover {
-  @apply bg-primario-suave/50;
+.menuItemDanger:hover {
+  @apply bg-error-suave;
 }

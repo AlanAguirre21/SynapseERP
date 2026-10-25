@@ -11,7 +11,7 @@ from apps.usuarios.models import CodigoRecuperacion, Usuario
 @pytest.fixture
 def usuario_activo(db):
     return Usuario.objects.create_user(
-        username='ana', email='ana@flebosil.test', password='clave-vieja-123',
+        username='ana', email='ana@synapse.test', password='clave-vieja-123',
         rol_usuario='operador',
     )
 
@@ -33,7 +33,7 @@ def test_cambiar_contrasena_exitoso(usuario_activo, codigo_verificado):
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-nueva-456',
             'password_confirmacion': 'clave-nueva-456',
         },
@@ -58,7 +58,7 @@ def test_cambiar_contrasena_no_coincide_confirmacion(usuario_activo, codigo_veri
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-nueva-456',
             'password_confirmacion': 'otra-cosa-789',
         },
@@ -79,7 +79,7 @@ def test_cambiar_contrasena_sin_verificacion_previa(usuario_activo):
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-nueva-456',
             'password_confirmacion': 'clave-nueva-456',
         },
@@ -99,7 +99,7 @@ def test_cambiar_contrasena_codigo_expirado(usuario_activo, codigo_verificado):
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-nueva-456',
             'password_confirmacion': 'clave-nueva-456',
         },
@@ -116,7 +116,7 @@ def test_cambiar_contrasena_igual_a_la_anterior(usuario_activo, codigo_verificad
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-vieja-123',
             'password_confirmacion': 'clave-vieja-123',
         },
@@ -134,7 +134,7 @@ def test_cambiar_contrasena_no_cumple_requisitos_minimos(usuario_activo, codigo_
     response = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': '123',
             'password_confirmacion': '123',
         },
@@ -152,7 +152,7 @@ def test_cambiar_contrasena_no_reutiliza_el_mismo_codigo(usuario_activo, codigo_
     primera = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'clave-nueva-456',
             'password_confirmacion': 'clave-nueva-456',
         },
@@ -163,7 +163,7 @@ def test_cambiar_contrasena_no_reutiliza_el_mismo_codigo(usuario_activo, codigo_
     segunda = client.post(
         '/api/auth/cambiar-contrasena/',
         {
-            'email': 'ana@flebosil.test',
+            'email': 'ana@synapse.test',
             'password': 'otra-clave-789',
             'password_confirmacion': 'otra-clave-789',
         },

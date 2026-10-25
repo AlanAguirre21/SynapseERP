@@ -25,9 +25,9 @@ export function CampoContrasena({
   const [mostrar, setMostrar] = useState(false)
 
   return (
-    <label className={styles.campo}>
+    <label className="field">
       {etiqueta}
-      <div className={styles.campoConIcono}>
+      <div className={styles.inputWrapper}>
         <input
           type={mostrar ? 'text' : 'password'}
           value={valor}
@@ -37,7 +37,7 @@ export function CampoContrasena({
         />
         <button
           type="button"
-          className={styles.botonOjo}
+          className={styles.eyeButton}
           onClick={() => setMostrar((v) => !v)}
           aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
         >
@@ -45,7 +45,7 @@ export function CampoContrasena({
         </button>
       </div>
       {botonGenerar && (
-        <button type="button" className={styles.botonGenerar} onClick={botonGenerar.onClick}>
+        <button type="button" className={styles.generateButton} onClick={botonGenerar.onClick}>
           Generar
         </button>
       )}

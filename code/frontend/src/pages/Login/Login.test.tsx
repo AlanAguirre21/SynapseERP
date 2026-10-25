@@ -72,7 +72,7 @@ describe('Login', () => {
 
     renderLogin()
     fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
-      target: { value: 'ana@flebosil.test' },
+      target: { value: 'ana@synapse.test' },
     })
     fireEvent.change(screen.getByLabelText(/^contraseña$/i), {
       target: { value: 'clave-super-123' },
@@ -82,7 +82,7 @@ describe('Login', () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith('/dashboard', { replace: true }),
     )
-    expect(loginMock).toHaveBeenCalledWith('ana@flebosil.test', 'clave-super-123')
+    expect(loginMock).toHaveBeenCalledWith('ana@synapse.test', 'clave-super-123')
   })
 
   it('alterna la visibilidad de la contraseña al hacer clic en el botón de ojo', () => {
@@ -109,7 +109,7 @@ describe('Login', () => {
 
     renderLogin()
     fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
-      target: { value: 'ana@flebosil.test' },
+      target: { value: 'ana@synapse.test' },
     })
     fireEvent.change(screen.getByLabelText(/^contraseña$/i), { target: { value: 'mal' } })
     fireEvent.click(screen.getByRole('button', { name: /ingresar/i }))

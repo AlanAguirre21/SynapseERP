@@ -3,9 +3,11 @@
 /.claude
 /.agents
 /synapse_img
+/media_rrhh
+/media_usuarios
 
 # FILES
-Base de Datos Flebosil.txt
+Base de Datos Synapse.txt
 CLAUDE.md
 skills-lock.json
 
@@ -17,6 +19,11 @@ db.sqlite3
 staticfiles/
 .pytest_cache/
 code/backend/media/
+code/backend/media_rrhh/
+code/backend/media_usuarios/
+
+# Node
+node_modules/
 
 # Env / secrets
 .env

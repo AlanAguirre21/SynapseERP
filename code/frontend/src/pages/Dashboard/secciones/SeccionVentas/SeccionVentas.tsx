@@ -24,13 +24,13 @@ export function SeccionVentas({ periodo }: SeccionVentasProps) {
   const datosConteo = (resumen?.conteo_estado ?? []).map((fila) => ({ etiqueta: fila.tipo, valor: fila.cantidad }))
 
   return (
-    <section className={styles.seccion}>
-      <div className={styles.encabezadoSeccion}>
-        <h2 className={styles.tituloSeccion}>Resumen de ventas</h2>
-        <div className={styles.accionesSeccion}>
-          <span className={styles.indicadorSeccion}>
-            <span className={styles.indicadorEtiqueta}>Ganancia de ventas</span>
-            <span className={styles.indicadorMonto}>
+    <section className="card">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Resumen de ventas</h2>
+        <div className="headerActions">
+          <span className={styles.indicator}>
+            <span className={styles.indicatorLabel}>Ganancia de ventas</span>
+            <span className={styles.indicatorAmount}>
               {resumenGeneral ? formatearMoneda(resumenGeneral.ventas_total) : '…'}
             </span>
           </span>
@@ -42,12 +42,12 @@ export function SeccionVentas({ periodo }: SeccionVentasProps) {
         <p>Cargando resumen de ventas…</p>
       ) : (
         <>
-          <div className={styles.filaTresGraficas}>
+          <div className={styles.chartRowThree}>
             <GraficaLinea titulo="Ventas con envío" datos={mapear(resumen.con_envio)} color="var(--color-primario)" />
             <GraficaLinea titulo="Ventas sin envío" datos={mapear(resumen.sin_envio)} color="var(--color-secundario)" />
-            <GraficaLinea titulo="Costo de envío" datos={mapear(resumen.envio)} color="var(--color-advertencia)" />
+            <GraficaLinea titulo="Costo de envío" datos={mapear(resumen.envio)} color="var(--color-inicio)" />
           </div>
-          <div className={styles.filaUnaGrafica}>
+          <div className={styles.chartRowOne}>
             <GraficaBarras
               titulo="Ventas pendientes y entregadas"
               datos={datosConteo}

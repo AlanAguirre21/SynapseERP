@@ -1,71 +1,60 @@
 @reference "../../index.css";
 
-.pagina {
-  @apply flex flex-col gap-6 max-w-md mx-auto bg-superficie shadow-marcada rounded-tarjeta p-7;
+/* Estilos propios de Información de Usuario: cabecera de perfil, fila de
+   seguridad, lista de módulos y barra de guardado. Las filas de ajustes son
+   clases globales de index.css. */
+
+/* --- Cabecera de perfil -------------------------------------------------- */
+
+/* Única superficie con color de marca de la pantalla: degradado suave de
+   primario-suave, como el panel de saldo de Caja. El avatar y sus acciones
+   son el componente común `SelectorFotoPerfil`. */
+.profileHeader {
+  @apply px-6 py-6 border border-borde rounded-tarjeta shadow-suave bg-linear-to-br from-primario-suave to-superficie;
 }
 
-.titulo {
-  @apply m-0 text-texto text-xl font-titulo font-semibold;
+.profileName {
+  @apply m-0 text-texto font-titulo font-semibold text-[1.35rem] break-words;
 }
 
-.identidad {
-  @apply flex items-center gap-4 pb-6 border-b border-borde;
+.profileMeta {
+  @apply m-0 text-texto-suave text-[0.9rem] break-words;
 }
 
-.avatar {
-  @apply flex items-center justify-center w-14 h-14 shrink-0 rounded-full bg-primario-suave text-primario font-titulo font-semibold text-lg;
+/* --- Seguridad ----------------------------------------------------------- */
+
+.securityRow {
+  @apply flex items-center justify-between gap-4 flex-wrap;
 }
 
-.nombreCompleto {
-  @apply m-0 text-texto font-titulo font-semibold text-base;
+.securityText {
+  @apply flex flex-col gap-1;
 }
 
-.usernameEtiqueta {
-  @apply m-0 text-texto/55 text-[0.8rem];
+.securityTitle {
+  @apply text-[0.9rem] font-semibold text-texto;
 }
 
-.formulario {
-  @apply flex flex-col gap-4;
+/* --- Rol y acceso -------------------------------------------------------- */
+
+.moduleList {
+  @apply flex flex-wrap gap-2 m-0 p-0 list-none;
 }
 
-.campo {
-  @apply flex flex-col gap-1.5 text-[0.85rem] text-texto;
+/* --- Guardar ------------------------------------------------------------- */
+
+.saveArea {
+  @apply flex flex-col gap-3 pt-6 border-t border-borde;
 }
 
-.campo input,
-.campo select {
-  @apply px-3 py-[10px] text-base border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+.saveBar {
+  @apply flex items-center justify-between gap-4 flex-wrap;
 }
 
-.campo input:focus,
-.campo select:focus {
-  @apply border-primario shadow-[0_0_0_3px_var(--color-primario-suave)];
+.saveNote {
+  @apply text-[0.85rem] font-medium text-advertencia-texto;
 }
 
-.valorSoloLectura {
-  @apply inline-block m-0 mt-0.5 px-3 py-1 text-[0.85rem] font-medium text-secundario-texto bg-secundario-suave rounded-full w-fit;
-}
-
-.error {
-  @apply m-0 px-3 py-2 text-error rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)];
-}
-
-.exito {
-  @apply m-0 px-3 py-2 text-exito rounded-md text-[0.85rem] bg-[color-mix(in_srgb,var(--color-exito)_12%,transparent)];
-}
-
-.textoConfirmacion {
-  @apply text-texto text-[0.9rem] mb-4;
-}
-
-.enlace {
-  @apply self-start -mt-2 flex items-center gap-1.5 text-[0.85rem] text-primario no-underline;
-}
-
-.enlace:hover {
-  @apply underline;
-}
-
-.accionesFormulario {
-  @apply flex items-center justify-end gap-3;
+.saveActions {
+  @apply flex items-center gap-4 flex-wrap ml-auto;
 }

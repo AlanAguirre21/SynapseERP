@@ -1,6 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
 @import "tailwindcss";
 
+/* ==========================================================================
+   Núcleo CSS de SynapseERP.
+   Orden fijo: (1) tokens @theme, (2) estilos base, (3) clases globales.
+   Todo patrón visual usado en más de una pantalla se define aquí, una vez.
+   ========================================================================== */
+
 @theme {
   /* Paleta de marca */
   --color-primario: #a6295f;
@@ -13,25 +19,31 @@
   --color-fondo: #fbf8f6;
   --color-superficie: #ffffff;
   --color-texto: #241f26;
+  --color-texto-suave: #675e6a;
   --color-borde: #ebe2e6;
 
   /* Colores de estado (independientes de la paleta de marca) */
   --color-exito: #2e7d32;
+  --color-exito-suave: #e4f1e5;
   --color-error: #c62828;
+  --color-error-suave: #f9e2e2;
   --color-advertencia: #f9a825;
+  --color-advertencia-suave: #fdf1d0;
+  --color-advertencia-texto: #855600;
 
   /* Tipografía */
   --font-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-titulo: 'Fraunces', Georgia, serif;
 
-  /* Radios (tokens propios: no pisan la escala rounded-* por defecto de Tailwind,
-     para no re-teñir componentes que aún no adoptan el nuevo sistema visual) */
+  /* Radios (tokens propios: no se usa la escala rounded-* nativa de Tailwind) */
   --radius-control: 10px;
   --radius-tarjeta: 20px;
+  --radius-pildora: 9999px;
 
-  /* Sombras (mismo criterio que los radios: tokens propios, no la escala shadow-* nativa) */
+  /* Sombras (tokens propios: no se usa la escala shadow-* nativa de Tailwind) */
   --shadow-suave: 0 1px 3px rgba(166, 41, 95, 0.06);
   --shadow-marcada: 0 10px 28px rgba(166, 41, 95, 0.12);
+  --shadow-foco: 0 0 0 3px var(--color-primario-suave);
 
   /* Breakpoints */
   --breakpoint-sm: 480px;
@@ -39,11 +51,715 @@
   --breakpoint-lg: 1024px;
 }
 
-* {
-  box-sizing: border-box;
+/* ==========================================================================
+   Estilos base de elementos
+   ========================================================================== */
+
+@layer base {
+  body {
+    @apply font-base text-texto bg-fondo;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-titulo;
+  }
+
+  /* Aspecto único de los controles de formulario, estén o no dentro de un
+     `.field` (filtros, celdas de tablas de líneas, edición en línea). */
+  input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  select,
+  textarea {
+    @apply px-3 py-2 font-base text-[0.95rem] text-texto bg-superficie border border-borde rounded-control outline-none transition-[border-color,box-shadow];
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):focus,
+  select:focus,
+  textarea:focus {
+    @apply border-primario shadow-foco;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):disabled,
+  select:disabled,
+  textarea:disabled {
+    @apply bg-fondo text-texto-suave cursor-not-allowed;
+  }
+
+  textarea {
+    @apply resize-y min-h-[72px];
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    @apply accent-primario;
+  }
+
+  /* Foco visible por teclado en todo elemento interactivo que no es un control. */
+  a:focus-visible,
+  button:focus-visible,
+  input[type='checkbox']:focus-visible,
+  input[type='radio']:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primario;
+  }
 }
 
-body {
-  margin: 0;
-  @apply font-base text-texto bg-fondo;
+/* ==========================================================================
+   Clases globales compartidas
+   ========================================================================== */
+
+@layer components {
+  /* --- Página ------------------------------------------------------------ */
+
+  .page {
+    @apply flex flex-col gap-5;
+  }
+
+  /* Pantallas de alta y de detalle: columna de lectura más angosta. */
+  .pageNarrow {
+    @apply max-w-3xl;
+  }
+
+  .pageHeader {
+    @apply flex items-center justify-between gap-3 flex-wrap;
+  }
+
+  .pageTitle {
+    @apply m-0 text-texto text-2xl font-titulo font-semibold;
+  }
+
+  /* Título de página con una línea descriptiva debajo. */
+  .pageHeading {
+    @apply flex flex-col gap-1 min-w-0;
+  }
+
+  .pageHint {
+    @apply m-0 text-[0.9rem] text-texto-suave;
+  }
+
+  .headerActions {
+    @apply flex items-center gap-4 flex-wrap;
+  }
+
+  /* Acciones al pie de una pantalla de detalle. */
+  .pageActions {
+    @apply flex items-center justify-end gap-3 flex-wrap;
+  }
+
+  /* --- Secciones y superficies ------------------------------------------ */
+
+  .card {
+    @apply flex flex-col gap-4 p-5 min-w-0 bg-superficie border border-borde rounded-tarjeta shadow-suave;
+  }
+
+  .sectionHeader {
+    @apply flex items-center justify-between gap-3 flex-wrap;
+  }
+
+  .sectionTitle {
+    @apply m-0 text-texto text-lg font-titulo font-semibold;
+  }
+
+  .subtitle {
+    @apply m-0 text-texto text-[0.95rem] font-base font-semibold;
+  }
+
+  /* Indicadores de resumen sobre un listado. En pantallas angostas van de dos
+     en dos (uno por fila ocupaba más de una pantalla), con cifra y relleno
+     algo menores para que quepan importes de varios dígitos. */
+  .statRow {
+    @apply grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3;
+  }
+
+  .statTile {
+    @apply flex flex-col gap-1 min-w-0 px-4 md:px-5 py-4 bg-superficie border border-borde rounded-tarjeta shadow-suave;
+  }
+
+  .statLabel {
+    @apply text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-texto-suave;
+  }
+
+  /* La cifra nunca se parte (un importe cortado en dos líneas se lee mal);
+     en pantallas muy angostas baja de tamaño para que quepan dos por fila. */
+  .statValue {
+    @apply text-xl sm:text-2xl md:text-3xl font-titulo font-semibold text-texto tabular-nums whitespace-nowrap;
+  }
+
+  /* Indicador destacado con el tono del documento: ventas en primario, compras
+     en secundario, producción en inicio. */
+  .statTileSale {
+    @apply bg-primario-suave border-primario-suave;
+  }
+
+  .statTileSale .statValue {
+    @apply text-primario;
+  }
+
+  .statTilePurchase {
+    @apply bg-secundario-suave border-secundario-suave;
+  }
+
+  .statTilePurchase .statValue {
+    @apply text-secundario-texto;
+  }
+
+  .statTileProduction {
+    @apply bg-inicio-suave border-inicio-suave;
+  }
+
+  .statTileProduction .statValue {
+    @apply text-inicio;
+  }
+
+  /* Indicadores de alerta (stock bajo, agotados): se aplican solo cuando hay
+     algo que atender, nunca a un valor en cero. */
+  .statTileWarning {
+    @apply bg-advertencia-suave border-advertencia-suave;
+  }
+
+  .statTileWarning .statValue {
+    @apply text-advertencia-texto;
+  }
+
+  .statTileDanger {
+    @apply bg-error-suave border-error-suave;
+  }
+
+  .statTileDanger .statValue {
+    @apply text-error;
+  }
+
+  /* Recuadro punteado para "todavía no hay nada que mostrar aquí". */
+  .placeholderBox {
+    @apply flex flex-col items-center justify-center gap-2 min-h-[140px] px-6 text-center text-texto-suave border border-dashed border-borde rounded-tarjeta;
+  }
+
+  .placeholderTitle {
+    @apply text-texto font-semibold;
+  }
+
+  /* --- Pestañas ---------------------------------------------------------- */
+
+  .tabs {
+    @apply flex items-center gap-1 flex-wrap border-b border-borde;
+  }
+
+  .tab {
+    @apply bg-transparent border-0 border-b-2 border-transparent px-4 py-2.5 text-[0.9rem] text-texto-suave cursor-pointer transition-colors;
+  }
+
+  .tab:hover {
+    @apply text-texto;
+  }
+
+  .tabActive {
+    @apply text-primario border-primario font-semibold;
+  }
+
+  .tabActive:hover {
+    @apply text-primario;
+  }
+
+  /* Contenido de una pestaña: misma separación entre bloques que `.page`. */
+  .tabPanel {
+    @apply flex flex-col gap-5;
+  }
+
+  /* --- Selector segmentado (5 / 10 / todos, más / menos) ----------------- */
+
+  .segmented {
+    @apply flex items-center gap-1 p-1 bg-superficie border border-borde rounded-control;
+  }
+
+  .segmentedOption {
+    @apply bg-transparent border-0 rounded-control px-3 py-1 text-[0.8rem] text-texto-suave cursor-pointer transition-colors;
+  }
+
+  .segmentedOption:hover {
+    @apply text-texto;
+  }
+
+  .segmentedOptionActive {
+    @apply bg-primario-suave text-primario font-semibold;
+  }
+
+  .segmentedOptionActive:hover {
+    @apply text-primario;
+  }
+
+  /* --- Filtros ----------------------------------------------------------- */
+
+  /* Barra de filtros de un listado, sobre su propia superficie. */
+  .filters {
+    @apply flex flex-wrap items-end gap-4 p-4 bg-superficie border border-borde rounded-tarjeta shadow-suave;
+  }
+
+  .filterField {
+    @apply flex flex-col gap-1.5 text-[0.85rem] font-medium text-texto-suave;
+  }
+
+  .filterField select,
+  .filterField input {
+    @apply min-w-[160px];
+  }
+
+  /* Empuja un elemento de la barra de filtros al extremo derecho. */
+  .filtersEnd {
+    @apply ml-auto;
+  }
+
+  /* --- Formularios ------------------------------------------------------- */
+
+  .form {
+    @apply flex flex-col gap-4;
+  }
+
+  .formNarrow {
+    @apply max-w-md;
+  }
+
+  .field {
+    @apply flex flex-col gap-1.5 text-[0.85rem] font-medium text-texto;
+  }
+
+  .fieldRow {
+    @apply flex flex-wrap gap-4;
+  }
+
+  .fieldRow > .field {
+    @apply flex-1 min-w-[180px];
+  }
+
+  /* Rejilla de formulario a dos columnas; formGridFull ocupa la fila completa. */
+  .formGrid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+
+  .formGridFull {
+    @apply sm:col-span-2;
+  }
+
+  .fieldCheckbox {
+    @apply flex flex-row items-center gap-2 text-[0.85rem] text-texto cursor-pointer select-none;
+  }
+
+  /* Grupo de campos enmarcado dentro de un formulario. */
+  .fieldGroup {
+    @apply flex flex-col gap-4 p-4 min-w-0 border border-borde rounded-control;
+  }
+
+  .fieldHint {
+    @apply text-[0.8rem] font-normal text-texto-suave;
+  }
+
+  .fieldError {
+    @apply text-[0.8rem] font-semibold text-error;
+  }
+
+  .fieldWarning {
+    @apply block text-[0.8rem] font-semibold text-advertencia-texto;
+  }
+
+  /* Fila "elegir + cantidad + agregar" sobre una tabla de líneas. */
+  .addLineRow {
+    @apply flex flex-wrap items-end gap-3;
+  }
+
+  .addLineRow > .field {
+    @apply flex-1 min-w-[180px];
+  }
+
+  .formActions {
+    @apply flex items-center justify-end gap-3 flex-wrap;
+  }
+
+  /* Control angosto para edición dentro de una celda. */
+  .inputCompact {
+    @apply w-24 px-2 py-1 text-[0.9rem];
+  }
+
+  .cellStack {
+    @apply flex flex-col gap-1;
+  }
+
+  /* En una columna numérica, control y mensaje se alinean a la derecha. */
+  .numeric .cellStack {
+    @apply items-end;
+  }
+
+  /* --- Filas de ajustes ------------------------------------------------- */
+
+  /* Explicación a la izquierda, tarjeta a la derecha (Configuración Fiscal,
+     Información de Usuario); por debajo de md, la explicación va encima. */
+  .settingsRow {
+    @apply grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4 md:gap-8 py-6 border-t border-borde;
+  }
+
+  .settingsIntro {
+    @apply flex flex-col gap-2;
+  }
+
+  .settingsDescription {
+    @apply m-0 text-[0.9rem] text-texto-suave;
+  }
+
+  /* --- Mensajes ---------------------------------------------------------- */
+
+  .errorMessage {
+    @apply m-0 px-3 py-2 text-[0.85rem] text-error bg-error-suave rounded-control;
+  }
+
+  .successMessage {
+    @apply m-0 px-3 py-2 text-[0.85rem] text-exito bg-exito-suave rounded-control;
+  }
+
+  .notice {
+    @apply m-0 px-3 py-2 text-[0.85rem] text-advertencia-texto bg-advertencia-suave rounded-control;
+  }
+
+  .emptyState {
+    @apply m-0 text-[0.9rem] text-texto-suave;
+  }
+
+  .confirmText {
+    @apply m-0 mb-4 text-[0.9rem] text-texto;
+  }
+
+  .textSuccess {
+    @apply text-exito font-semibold whitespace-nowrap;
+  }
+
+  .textError {
+    @apply text-error font-semibold whitespace-nowrap;
+  }
+
+  /* --- Indicadores de estado -------------------------------------------- */
+
+  .status {
+    @apply inline-flex items-center w-fit px-2.5 py-0.5 text-[0.75rem] font-semibold whitespace-nowrap rounded-pildora;
+  }
+
+  .statusSuccess {
+    @apply bg-exito-suave text-exito;
+  }
+
+  .statusError {
+    @apply bg-error-suave text-error;
+  }
+
+  .statusWarning {
+    @apply bg-advertencia-suave text-advertencia-texto;
+  }
+
+  .statusNeutral {
+    @apply bg-borde text-texto-suave;
+  }
+
+  /* Etiqueta en el tono de la marca (ej. rol "Administrador"): resalta sin
+     significar éxito, error ni advertencia. */
+  .statusPrimary {
+    @apply bg-primario-suave text-primario;
+  }
+
+  /* --- Acciones y enlaces ------------------------------------------------ */
+
+  .rowActions {
+    @apply flex items-center gap-3;
+  }
+
+  .actionLink {
+    @apply bg-transparent border-0 p-0 text-[0.85rem] text-primario no-underline cursor-pointer;
+  }
+
+  .actionLink:hover {
+    @apply underline;
+  }
+
+  .dangerActionLink {
+    @apply bg-transparent border-0 p-0 text-[0.85rem] text-error no-underline cursor-pointer;
+  }
+
+  .dangerActionLink:hover {
+    @apply underline;
+  }
+
+  .link {
+    @apply inline-flex items-center gap-1.5 self-start bg-transparent border-0 p-0 text-[0.85rem] text-primario no-underline cursor-pointer;
+  }
+
+  .link:hover {
+    @apply underline;
+  }
+
+  .link:disabled {
+    @apply opacity-60 cursor-not-allowed no-underline;
+  }
+
+  .linkCentered {
+    @apply self-center;
+  }
+
+  /* --- Tablas ------------------------------------------------------------ */
+
+  /* Contenedor con desplazamiento horizontal para una tabla escrita a mano. */
+  .tableScroll {
+    @apply w-full overflow-x-auto;
+  }
+
+  .dataTable {
+    @apply w-full border-collapse text-left text-[0.9rem] tabular-nums;
+  }
+
+  .dataTable thead th {
+    @apply px-4 py-3 bg-fondo text-[0.8rem] text-texto-suave font-semibold border-b border-borde whitespace-nowrap;
+  }
+
+  .dataTable tbody td {
+    @apply px-4 py-3 text-texto border-b border-borde align-middle;
+  }
+
+  .dataTable tbody tr:hover {
+    @apply bg-fondo;
+  }
+
+  /* Fila de detalle desplegada (`renderExpandido` de Tabla): sin resaltado al
+     pasar el cursor y con el fondo de página, para leerse como parte de la fila
+     de arriba y no como un registro más. */
+  .dataTable tbody tr.expandedRow:hover {
+    @apply bg-transparent;
+  }
+
+  .dataTable tbody tr.expandedRow > td {
+    @apply bg-fondo px-4 py-4;
+  }
+
+  /* Fila de totales (`filaPie` de Tabla): separada del cuerpo y en negrita. */
+  .dataTable tfoot td {
+    @apply px-4 py-3 bg-fondo text-texto font-semibold border-t-2 border-borde tabular-nums;
+  }
+
+  /* Tabla compacta de líneas de un documento (venta, compra, producción, traslado). */
+  .linesTable {
+    @apply w-full border-collapse text-left text-[0.85rem] text-texto tabular-nums;
+  }
+
+  .linesTable th {
+    @apply px-2 py-2 text-[0.8rem] text-texto-suave font-semibold border-b border-borde whitespace-nowrap;
+  }
+
+  .linesTable td {
+    @apply px-2 py-2 border-b border-borde align-top;
+  }
+
+  .linesTable select,
+  .linesTable input:not([type='checkbox']):not([type='radio']) {
+    @apply px-2 py-1 text-[0.9rem];
+  }
+
+  .linesTable select {
+    @apply w-full;
+  }
+
+  /* Columna numérica o de dinero. */
+  .numeric {
+    @apply text-right;
+  }
+
+  /* Contenido de celda que no debe partirse en dos líneas (fechas, folios). */
+  .cellNoWrap {
+    @apply whitespace-nowrap;
+  }
+
+  /* --- Cabecera-detalle -------------------------------------------------- */
+
+  .detailData {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 p-5 text-[0.9rem] text-texto bg-superficie border border-borde rounded-tarjeta shadow-suave;
+  }
+
+  .label {
+    @apply text-texto-suave;
+  }
+
+  /* --- Documento de alta (Nueva venta / Nueva compra) -------------------- */
+
+  .documentPage {
+    @apply w-full max-w-[880px] mx-auto;
+  }
+
+  .document {
+    @apply flex flex-col bg-superficie border border-borde rounded-tarjeta shadow-marcada overflow-hidden;
+  }
+
+  .documentHeader {
+    @apply flex flex-col gap-1.5 px-5 sm:px-8 py-6 border-b border-borde bg-linear-to-br to-superficie;
+  }
+
+  .documentHeaderSale {
+    @apply from-primario-suave;
+  }
+
+  .documentHeaderPurchase {
+    @apply from-secundario-suave;
+  }
+
+  .documentHeaderProduction {
+    @apply from-inicio-suave;
+  }
+
+  .documentEyebrow {
+    @apply text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-primario;
+  }
+
+  .documentHeaderPurchase .documentEyebrow {
+    @apply text-secundario-texto;
+  }
+
+  .documentHeaderProduction .documentEyebrow {
+    @apply text-inicio;
+  }
+
+  .documentTitle {
+    @apply m-0 text-texto text-3xl font-titulo font-semibold;
+  }
+
+  .documentHint {
+    @apply m-0 text-[0.9rem] text-texto-suave;
+  }
+
+  /* Paso numerado: número y título en la primera fila, contenido alineado
+     bajo el título (a todo el ancho en pantallas angostas). */
+  .step {
+    @apply grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-4 px-5 sm:px-8 py-6 border-b border-borde;
+  }
+
+  .stepNumber {
+    @apply flex items-center justify-center w-8 h-8 rounded-pildora bg-primario-suave text-primario font-titulo font-semibold text-[0.9rem];
+  }
+
+  .documentHeaderPurchase ~ .step .stepNumber {
+    @apply bg-secundario-suave text-secundario-texto;
+  }
+
+  .stepTitle {
+    @apply m-0 text-texto text-lg font-titulo font-semibold;
+  }
+
+  .stepContent {
+    @apply col-span-2 sm:col-span-1 sm:col-start-2 flex flex-col gap-4 min-w-0;
+  }
+
+  /* Paso de cierre: un campo a la izquierda y el resumen a la derecha. */
+  .stepSplit {
+    @apply flex-row flex-wrap items-start justify-between gap-6;
+  }
+
+  .stepSplit > .field {
+    @apply flex-1 min-w-[200px] max-w-xs;
+  }
+
+  /* Barra sobre el documento (volver al listado). */
+  .documentToolbar {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  /* Cabecera de un documento ya registrado: folio a la izquierda, estado a la derecha. */
+  .documentHeaderRow {
+    @apply flex items-start justify-between gap-4 flex-wrap;
+  }
+
+  .documentHeaderText {
+    @apply flex flex-col gap-1.5 min-w-0;
+  }
+
+  /* Sección sin numerar de un documento en modo consulta. */
+  .documentSection {
+    @apply flex flex-col gap-4 px-5 sm:px-8 py-6 border-b border-borde;
+  }
+
+  /* Ficha de datos: etiqueta pequeña sobre su valor, en rejilla. */
+  .factGrid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 m-0;
+  }
+
+  .factGridThree {
+    @apply md:grid-cols-3;
+  }
+
+  /* Dato que ocupa toda la fila de la ficha (ej. un folio fiscal largo). */
+  .factGridFull {
+    @apply col-span-full;
+  }
+
+  .factGrid dt {
+    @apply text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-texto-suave;
+  }
+
+  .factGrid dd {
+    @apply m-0 mt-0.5 text-[0.95rem] text-texto break-words;
+  }
+
+  /* Resumen tipo recibo al cierre del documento. */
+  .summary {
+    @apply flex flex-col gap-2 w-full max-w-xs ml-auto p-4 bg-fondo border border-borde rounded-control;
+  }
+
+  .summaryRow {
+    @apply flex items-baseline justify-between gap-4 text-[0.9rem] text-texto-suave tabular-nums;
+  }
+
+  /* El importe (con su signo) nunca se parte; la etiqueta sí puede. */
+  .summaryRow > :last-child {
+    @apply whitespace-nowrap;
+  }
+
+  .summaryTotal {
+    @apply mt-1 pt-3 border-t border-borde text-texto text-xl font-titulo font-semibold;
+  }
+
+  /* Un resumen de una sola fila (solo el total) no necesita separador. */
+  .summaryTotal:first-child {
+    @apply mt-0 pt-0 border-t-0;
+  }
+
+  .summaryTotal > :last-child {
+    @apply text-primario;
+  }
+
+  .documentHeaderProduction ~ * .summaryTotal > :last-child {
+    @apply text-inicio;
+  }
+
+  .documentFooter {
+    @apply flex flex-col gap-4 px-5 sm:px-8 py-5 bg-fondo;
+  }
+
+  /* --- Fila expandible --------------------------------------------------- */
+
+  .expandLink {
+    @apply inline-flex items-center gap-1.5 bg-transparent border-0 p-0 text-[0.9rem] text-texto cursor-pointer;
+  }
+
+  .expandLink:hover {
+    @apply text-primario;
+  }
+
+  .expandIndicator {
+    @apply inline-block w-3 text-[0.75rem] text-texto-suave;
+  }
+
+  .expandedSection {
+    @apply flex flex-col gap-3 mt-2 mb-2 p-4 bg-fondo border border-borde rounded-control;
+  }
+
+  .expandedList {
+    @apply flex flex-col gap-1 list-none p-0 m-0;
+  }
+
+  .expandedList li {
+    @apply flex items-center justify-between gap-3 px-3 py-2 text-[0.85rem] text-texto border-b border-borde;
+  }
+
+  .expandedList li:last-child {
+    @apply border-b-0;
+  }
 }

@@ -21,6 +21,7 @@ from core.modules import modulos_para_rol
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
 from .models import CodigoRecuperacion, RegistroAcceso
+from .validators import MENSAJE_FORMATO_FOTO, validar_foto_usuario
 
 Usuario = get_user_model()
 
@@ -67,7 +68,34 @@ def _mensaje_recuperacion(email: str, codigo: str) -> EmailMultiAlternatives:
     return mensaje
 
 
-class UsuarioSerializer(serializers.ModelSerializer):
+def campo_foto_usuario():
+    """`foto_usuario` de escritura, idéntico en los dos serializers que lo
+    aceptan (010 y 017): multipart para subirla, `null` para quitarla. Los
+    mensajes de imagen inválida van en español, como el resto de la API.
+    """
+    return serializers.ImageField(
+        required=False, allow_null=True, validators=[validar_foto_usuario],
+        error_messages={'invalid_image': MENSAJE_FORMATO_FOTO, 'invalid': MENSAJE_FORMATO_FOTO},
+    )
+
+
+class BorradoFotoAnteriorMixin:
+    """Al reemplazar o quitar `foto_usuario`, borra el archivo anterior del
+    storage — pero solo cuando la transacción se confirma, para no perder la
+    foto si el guardado se revierte. Compartido por 010 y 017.
+    """
+
+    def update(self, instance, validated_data):
+        anterior = instance.foto_usuario.name if 'foto_usuario' in validated_data else ''
+        instance = super().update(instance, validated_data)
+
+        if anterior and anterior != instance.foto_usuario.name:
+            storage = instance.foto_usuario.storage
+            transaction.on_commit(lambda: storage.delete(anterior))
+        return instance
+
+
+class UsuarioSerializer(BorradoFotoAnteriorMixin, serializers.ModelSerializer):
     """CRUD administrativo de usuarios (feature 010 · Usuarios).
 
     `password` es `write_only` y solo se usa en creación — nunca se expone
@@ -82,12 +110,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=False, trim_whitespace=False)
     activo = serializers.BooleanField(source='is_active', read_only=True)
+    foto_usuario = campo_foto_usuario()
 
     class Meta:
         model = Usuario
         fields = [
             'id', 'username', 'first_name', 'last_name', 'email', 'rol_usuario',
-            'empleado', 'activo', 'password',
+            'empleado', 'activo', 'password', 'foto_usuario',
         ]
         read_only_fields = ['id']
         extra_kwargs = {'username': {'required': False}}
@@ -124,6 +153,8 @@ class UsuarioActualSerializer(serializers.Serializer):
     nombre = serializers.SerializerMethodField()
     rol = serializers.CharField(source='rol_usuario')
     modulos = serializers.SerializerMethodField()
+    # URL absoluta si la vista pasa `request` en el contexto; `null` sin foto.
+    foto_usuario = serializers.ImageField(read_only=True)
 
     def get_nombre(self, usuario):
         return usuario.nombre_mostrado()
@@ -132,7 +163,7 @@ class UsuarioActualSerializer(serializers.Serializer):
         return modulos_para_rol(usuario.rol_usuario)
 
 
-class UsuarioPropioSerializer(serializers.ModelSerializer):
+class UsuarioPropioSerializer(BorradoFotoAnteriorMixin, serializers.ModelSerializer):
     """Edición de la propia cuenta (feature 015 · Información de Usuario).
 
     Distinto de `UsuarioSerializer` (CRUD administrativo de `008`): expone
@@ -163,10 +194,12 @@ class UsuarioPropioSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True, allow_blank=False)
     last_name = serializers.CharField(required=True, allow_blank=False)
     rol_usuario = serializers.ChoiceField(choices=[(ROL_ADMIN, 'Administrador'), (ROL_OPERADOR, 'Operador')])
+    # Solo la propia: la vista siempre edita `request.user`.
+    foto_usuario = campo_foto_usuario()
 
     class Meta:
         model = Usuario
-        fields = ['username', 'email', 'first_name', 'last_name', 'rol_usuario']
+        fields = ['username', 'email', 'first_name', 'last_name', 'rol_usuario', 'foto_usuario']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

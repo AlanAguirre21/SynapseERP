@@ -8,3 +8,9 @@ export function obtenerIniciales(nombre: string | undefined): string {
 
   return (primera.charAt(0) + segunda.charAt(0)).toUpperCase()
 }
+
+// Texto comparable para búsquedas: minúsculas y sin acentos, para que
+// "fisiologico" encuentre "Fisiológico". No toca guiones ni espacios internos.
+export function normalizarBusqueda(texto: string): string {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+}

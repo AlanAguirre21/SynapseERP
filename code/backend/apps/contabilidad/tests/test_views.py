@@ -14,14 +14,14 @@ from apps.usuarios.models import Usuario
 @pytest.fixture
 def usuario_admin(db):
     return Usuario.objects.create_user(
-        username='admin1', email='admin1@flebosil.test', password='clave-segura-123', rol_usuario='admin',
+        username='admin1', email='admin1@synapse.test', password='clave-segura-123', rol_usuario='admin',
     )
 
 
 @pytest.fixture
 def usuario_operador(db):
     return Usuario.objects.create_user(
-        username='operador1', email='operador1@flebosil.test', password='clave-segura-123',
+        username='operador1', email='operador1@synapse.test', password='clave-segura-123',
     )
 
 
@@ -104,7 +104,7 @@ def test_admin_puede_crear_editar_y_desactivar_una_cuenta(admin_client):
 
     creada = admin_client.post(
         '/api/contabilidad/cuentas/',
-        {'codigo': '5300', 'nombre': 'Depreciación', 'tipo': 'egreso', 'cuenta_padre': padre.id},
+        {'codigo': '5900', 'nombre': 'Depreciación', 'tipo': 'egreso', 'cuenta_padre': padre.id},
         format='json',
     )
     assert creada.status_code == 201

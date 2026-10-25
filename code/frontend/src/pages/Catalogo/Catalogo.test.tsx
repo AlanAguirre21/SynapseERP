@@ -266,4 +266,149 @@ describe('Catalogo', () => {
 
     await waitFor(() => expect(reactivarMock).toHaveBeenCalledWith(4))
   })
+
+  it('la acción del encabezado corresponde a la pestaña activa y abre su formulario (solo admin)', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo producto' }))
+    expect(screen.getByRole('dialog', { name: 'Nuevo producto' })).toBeInTheDocument()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }))
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Materia Prima' }))
+    expect(screen.queryByRole('button', { name: 'Nuevo producto' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Nueva materia prima' }))
+    expect(screen.getByRole('dialog', { name: 'Nueva materia prima' })).toBeInTheDocument()
+  })
+
+  it('cambiar de pestaña no abre el formulario de alta de la pestaña nueva', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo producto' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Categorías' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Productos' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('busca productos por nombre sin importar acentos, y por SKU', () => {
+    mockearHooks()
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+    const buscar = screen.getByLabelText('Buscar')
+
+    fireEvent.change(buscar, { target: { value: 'fisiologico' } })
+    expect(screen.getByText('Suero fisiológico')).toBeInTheDocument()
+    expect(screen.queryByText('Vendas')).not.toBeInTheDocument()
+    expect(screen.getByText('Mostrando 1 de 2')).toBeInTheDocument()
+
+    fireEvent.change(buscar, { target: { value: 'sku-2' } })
+    expect(screen.getByText('Vendas')).toBeInTheDocument()
+    expect(screen.queryByText('Suero fisiológico')).not.toBeInTheDocument()
+  })
+
+  it('filtra por estado y por categoría, y "Limpiar filtros" los restablece', () => {
+    mockearHooks()
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'inactivos' } })
+    expect(screen.getByText('Vendas')).toBeInTheDocument()
+    expect(screen.queryByText('Suero fisiológico')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'todos' } })
+    fireEvent.change(screen.getByLabelText('Categoría'), { target: { value: '3' } })
+    expect(screen.getByText('Ningún producto coincide con los filtros.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    expect(screen.getByText('Mostrando 2 de 2')).toBeInTheDocument()
+    expect(screen.getByLabelText('Categoría')).toHaveValue('')
+  })
+
+  it('filtra las categorías por tipo', () => {
+    mockearHooks()
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Categorías' }))
+    fireEvent.change(screen.getByLabelText('Tipo'), { target: { value: 'materia_prima' } })
+
+    const tabla = within(screen.getByRole('table'))
+    expect(tabla.getByText('Químicos')).toBeInTheDocument()
+    expect(tabla.queryByText('Insumos médicos')).not.toBeInTheDocument()
+  })
+
+  it('la tabla de productos muestra categoría, precio y costo en moneda y el margen', () => {
+    mockearHooks()
+    useProductosMock.mockReturnValue({
+      data: [
+        ...PRODUCTOS,
+        {
+          id: 3, nombre_producto: 'Gasa', sku: 'SKU-3', descripcion_producto: '', categoria: 3,
+          unidad_medida: 'pza', precio_venta: '12.00', costo_produccion: '0', activo: true,
+        },
+      ],
+      isLoading: false,
+    } as unknown as ReturnType<typeof useProductos>)
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+
+    const filaSuero = screen.getByText('Suero fisiológico').closest('tr') as HTMLElement
+    expect(filaSuero).toHaveTextContent('Insumos médicos')
+    expect(filaSuero).toHaveTextContent('$45.00')
+    expect(filaSuero).toHaveTextContent('$10.00')
+    // (45 − 10) / 45
+    expect(filaSuero).toHaveTextContent('77.8%')
+
+    // Sin costo capturado no hay margen que mostrar.
+    const filaGasa = screen.getByText('Gasa').closest('tr') as HTMLElement
+    expect(within(filaGasa).getAllByRole('cell').map((c) => c.textContent)).toContain('—')
+  })
+
+  it('la tabla de materia prima muestra la categoría y el costo en moneda', () => {
+    mockearHooks()
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Materia Prima' }))
+
+    const fila = screen.getByText('Cloruro de sodio').closest('tr') as HTMLElement
+    expect(fila).toHaveTextContent('Químicos')
+    expect(fila).toHaveTextContent('$30.00')
+  })
+
+  it('muestra cuántos productos y materias primas usan cada categoría', () => {
+    mockearHooks()
+    mockUsuarioActual('operador')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Categorías' }))
+
+    const tabla = within(screen.getByRole('table'))
+    expect(tabla.getByText('Insumos médicos').closest('tr')).toHaveTextContent('2 productos · 0 materias primas')
+    expect(tabla.getByText('Químicos').closest('tr')).toHaveTextContent('0 productos · 2 materias primas')
+  })
+
+  it('el formulario de producto anticipa el margen con los valores capturados', () => {
+    mockearHooks()
+    mockUsuarioActual('admin')
+
+    render(<Catalogo />)
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo producto' }))
+    const dialogo = within(screen.getByRole('dialog', { name: 'Nuevo producto' }))
+
+    expect(dialogo.getByTestId('margen-vista-previa')).toHaveTextContent('—')
+
+    fireEvent.change(dialogo.getByLabelText('Precio de venta'), { target: { value: '100' } })
+    fireEvent.change(dialogo.getByLabelText('Costo de producción'), { target: { value: '60' } })
+    expect(dialogo.getByTestId('margen-vista-previa')).toHaveTextContent('40.0%')
+  })
 })

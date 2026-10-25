@@ -27,7 +27,7 @@ class Categoria(models.Model):
 
 class Producto(models.Model):
     """CRUD completo — feature 007 · Catálogo. No incluye todavía todos los
-    campos de Base de Datos FleboSil.txt (ej. fecha_registro), solo lo
+    campos de Base de Datos Synapse.txt (ej. fecha_registro), solo lo
     necesario para catálogo/inventario/alertas.
     """
 
