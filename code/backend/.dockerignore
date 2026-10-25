@@ -1,0 +1,16 @@
+# Secretos y artefactos locales: nunca entran a la imagen.
+.env
+.env.*
+!.env.example
+.modelos_embeddings/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+media/
+media_rrhh/
+media_usuarios/
+seed_dev.py
+Dockerfile
+.dockerignore

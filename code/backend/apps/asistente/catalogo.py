@@ -8,7 +8,7 @@ volver a indexar y que el test de evaluación siga en ≥ 90 %.
 
 from core.permissions import ROL_ADMIN, ROL_OPERADOR
 
-VERSION_CATALOGO = '2026.10-2'
+VERSION_CATALOGO = '2026.10-3'
 
 TODOS = (ROL_ADMIN, ROL_OPERADOR)
 SOLO_ADMIN = (ROL_ADMIN,)
@@ -25,7 +25,8 @@ INTENCIONES = {
             'suma de lo vendido', 'ingresos por ventas', 'cuánto facturamos en ventas', 'dime el total vendido',
             'cuánto he vendido', 'qué tanto vendimos', 'monto total de ventas', 'cuánto sacamos de ventas',
             'ventas en pesos', 'cuál fue la venta total', 'cuánto vendí', 'cuánto dinero vendí', 'el dinero de las ventas',
-            'cuánto se vendió en total en pesos',
+            'cuánto se vendió en total en pesos', 'cuál es el monto de las ventas', 'monto de lo vendido',
+            'cuánto fue lo que vendimos', 'cuánto dinero generamos con las ventas',
         ],
     },
     'ventas_numero': {
@@ -52,6 +53,7 @@ INTENCIONES = {
             'qué artículos se venden más', 'producto con más unidades vendidas', 'qué es lo que más compran los clientes',
             'los cinco productos más vendidos', 'qué se está vendiendo más', 'el producto con más salida',
             'qué productos se vendieron en mayor cantidad', 'cuál fue el artículo más vendido',
+            'los productos de mayor salida', 'qué artículos tuvieron más movimiento',
         ],
     },
     'ventas_top_clientes': {
@@ -89,7 +91,8 @@ INTENCIONES = {
             'cuánto dinero salió por compras', 'cuánto le pagamos a proveedores', 'importe de las compras',
             'cuánto llevamos comprado', 'cuánto gastamos en mercancía', 'cuánto he comprado', 'compras en pesos',
             'suma de las compras', 'cuánto invertimos en compras', 'cuál fue el gasto en compras', 'cuánto compré',
-            'el dinero gastado en compras', 'cuánto se compró en total en pesos',
+            'el dinero gastado en compras', 'cuánto se compró en total en pesos', 'monto de compras',
+            'cuál fue el monto de lo comprado',
         ],
     },
     'compras_numero': {
@@ -115,6 +118,7 @@ INTENCIONES = {
             'proveedores con más compras', 'a quién le compramos más', 'proveedores más usados', 'los cinco proveedores principales',
             'qué proveedor nos vende más', 'proveedor al que más le pagamos', 'de quién compramos más',
             'proveedores más importantes', 'en qué proveedor se fue más dinero', 'proveedor con el que más gastamos',
+            'con quién gastamos más', 'con quién compramos más', 'a quién se le fue más dinero de las compras',
         ],
     },
     'pronostico_ventas': {
@@ -128,6 +132,7 @@ INTENCIONES = {
             'cuánto vamos a vender la próxima semana', 'ventas esperadas', 'qué ventas se esperan',
             'cuánto dinero vamos a vender', 'tendencia de ventas a futuro', 'proyección de ingresos por ventas',
             'pronóstico de cuántas ventas habrá', 'cómo se ven las ventas para adelante',
+            'proyección de ventas del próximo mes',
         ],
     },
     'pronostico_demanda': {
@@ -142,6 +147,7 @@ INTENCIONES = {
             'cuántas unidades vamos a vender', 'qué inventario va a faltar', 'proyección de demanda',
             'qué productos se van a agotar', 'qué conviene reabastecer', 'qué productos se van a vender más adelante',
             'qué voy a necesitar producir', 'qué pedirle a los proveedores para no quedarme sin inventario',
+            'qué productos se venderán más la próxima semana', 'qué hay que producir para la siguiente semana',
         ],
     },
     'pronostico_clientes': {
