@@ -15,6 +15,10 @@ vi.mock('../../hooks/useMovimientosInventario')
 vi.mock('../../hooks/useProductos')
 vi.mock('../../hooks/useMateriaPrima')
 vi.mock('../../hooks/useUsuarioActual')
+// 022: el resumen de auditoría no es el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAuditoria', () => ({
+  useResumenAuditoria: vi.fn(() => ({ data: undefined, isLoading: false })),
+}))
 
 const useSucursalesMock = vi.mocked(useSucursales)
 const useStockMock = vi.mocked(useStock)

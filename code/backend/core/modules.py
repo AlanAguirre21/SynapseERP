@@ -24,6 +24,9 @@ MODULOS = [
     {'slug': 'sucursales', 'nombre': 'Sucursales', 'ruta': '/sucursales', 'roles': [ROL_ADMIN, ROL_OPERADOR]},
     {'slug': 'contabilidad', 'nombre': 'Contabilidad', 'ruta': '/contabilidad', 'roles': [ROL_ADMIN]},
     {'slug': 'configuracion_fiscal', 'nombre': 'Configuración Fiscal', 'ruta': '/configuracion-fiscal', 'roles': [ROL_ADMIN]},
+    # 022 · Auditoría automatizada: visible para ambos roles, pero el operador
+    # solo usa la pestaña "Conteos físicos" (el resto de sus endpoints es admin-only).
+    {'slug': 'auditoria_analisis', 'nombre': 'Auditoría y análisis', 'ruta': '/auditoria-analisis', 'roles': [ROL_ADMIN, ROL_OPERADOR]},
 ]
 
 

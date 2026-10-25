@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 
+import { AsistenteProvider, useAsistente } from '../../context/AsistenteContext'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import styles from './MainLayout.module.css'
+import { PanelAsistente } from './PanelAsistente'
 import { Sidebar } from './Sidebar'
 
 function esPantallaAngosta() {
@@ -30,16 +32,24 @@ export function MainLayout() {
   }
 
   return (
-    <div className={styles.layout}>
-      <Header onToggleSidebar={() => setColapsado((valor) => !valor)} />
-      <div className={styles.layoutBody}>
-        <Sidebar modulos={usuario.modulos} colapsado={colapsado} onNavegar={cerrarSiEsPanel} />
-        {!colapsado && <div className={styles.backdrop} onClick={() => setColapsado(true)} aria-hidden="true" />}
-        <main className={styles.layoutContent}>
-          <Outlet />
-        </main>
+    <AsistenteProvider>
+      <div className={styles.layout}>
+        <Header onToggleSidebar={() => setColapsado((valor) => !valor)} />
+        <div className={styles.layoutBody}>
+          <Sidebar modulos={usuario.modulos} colapsado={colapsado} onNavegar={cerrarSiEsPanel} />
+          {!colapsado && <div className={styles.backdrop} onClick={() => setColapsado(true)} aria-hidden="true" />}
+          <main className={styles.layoutContent}>
+            <Outlet />
+          </main>
+          <PanelSiAbierto />
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </AsistenteProvider>
   )
+}
+
+// El panel (024) se monta solo abierto; su conversación sigue en el contexto.
+function PanelSiAbierto() {
+  return useAsistente()?.abierto ? <PanelAsistente /> : null
 }

@@ -171,6 +171,12 @@
     @apply grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3;
   }
 
+  /* Rejilla de gráficas fuera del Dashboard (pronósticos de 023 en Auditoría,
+     Ventas y Terceros): una columna en móvil, dos desde `lg`. */
+  .chartGrid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4;
+  }
+
   .statTile {
     @apply flex flex-col gap-1 min-w-0 px-4 md:px-5 py-4 bg-superficie border border-borde rounded-tarjeta shadow-suave;
   }

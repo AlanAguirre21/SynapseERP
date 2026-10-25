@@ -1,0 +1,89 @@
+@reference "../../index.css";
+
+/* Panel derecho de 380 px junto al contenido; a pantalla completa por
+   debajo de --breakpoint-md (024). */
+.panel {
+  @apply flex flex-col w-[380px] shrink-0 min-h-0 bg-superficie border-l border-borde;
+  @apply max-md:fixed max-md:inset-0 max-md:z-30 max-md:w-full max-md:border-l-0;
+}
+
+.panelHeader {
+  @apply flex items-center justify-between gap-2 px-4 py-3 border-b border-borde;
+}
+
+.panelTitle {
+  @apply m-0 text-lg font-titulo font-semibold text-texto;
+}
+
+.closeButton {
+  @apply flex items-center justify-center w-9 h-9 bg-transparent border-0 text-texto-suave cursor-pointer rounded-pildora transition-colors;
+}
+
+.closeButton:hover {
+  @apply bg-primario-suave text-primario;
+}
+
+.messages {
+  @apply flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto p-4;
+}
+
+.assistantMessage,
+.userMessage {
+  @apply flex flex-col gap-2 max-w-[90%] px-3 py-2 rounded-tarjeta;
+}
+
+.assistantMessage {
+  @apply self-start bg-fondo border border-borde;
+}
+
+.userMessage {
+  @apply self-end bg-primario-suave;
+}
+
+.messageText {
+  @apply m-0 text-sm text-texto leading-relaxed whitespace-pre-line;
+}
+
+.messageLink {
+  @apply text-sm font-semibold text-primario no-underline hover:underline;
+}
+
+.quickReplies {
+  @apply flex flex-wrap gap-2;
+}
+
+.quickReply {
+  @apply px-3 py-1 text-xs font-semibold text-primario bg-superficie border border-primario cursor-pointer rounded-pildora transition-colors;
+}
+
+.quickReply:hover:not(:disabled) {
+  @apply bg-primario text-superficie;
+}
+
+.quickReply:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.typing {
+  @apply m-0 self-start text-xs text-texto-suave italic;
+}
+
+.notice {
+  @apply m-0 mx-4 mb-2 px-3 py-2 text-xs text-advertencia-texto bg-advertencia-suave rounded-control;
+}
+
+.composer {
+  @apply flex gap-2 p-3 border-t border-borde;
+}
+
+.composerInput {
+  @apply flex-1 min-w-0;
+}
+
+.sendButton {
+  @apply px-4 text-sm font-semibold text-superficie bg-primario border-0 cursor-pointer rounded-control;
+}
+
+.sendButton:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}

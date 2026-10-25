@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAuth } from '../../context/AuthContext'
 import { useAlertasStock } from '../../hooks/useAlertasStock'
+import { useResumenAuditoria } from '../../hooks/useAuditoria'
 import {
   useAprobarSolicitudNomina,
   useRechazarSolicitudNomina,
@@ -13,6 +14,10 @@ import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { Header } from './Header'
 
 vi.mock('../../hooks/useUsuarioActual')
+// 022: el resumen de auditoría no es el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAuditoria', () => ({
+  useResumenAuditoria: vi.fn(() => ({ data: undefined, isLoading: false })),
+}))
 vi.mock('../../hooks/useAlertasStock')
 vi.mock('../../hooks/useSolicitudesNomina')
 vi.mock('../../context/AuthContext')
@@ -290,3 +295,49 @@ describe('Header — cierre de los menús desplegables', () => {
   })
 })
 
+describe('Header — alertas de auditoría (022)', () => {
+  beforeEach(() => mockSolicitudesNomina())
+
+  function mockResumen(abiertasCaja: number) {
+    vi.mocked(useResumenAuditoria).mockReturnValue({
+      data: {
+        ultima_caja: {
+          id: 1, fecha: '2026-10-24T05:30:00Z', estado: 'exitosa', discrepancias_encontradas: abiertasCaja,
+          discrepancias_abiertas: abiertasCaja,
+        },
+        ultima_inventario: null,
+        abiertas_caja: abiertasCaja,
+        abiertas_inventario: 0,
+        abiertas_por_sucursal: [],
+        serie_cortes: [],
+      },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useResumenAuditoria>)
+  }
+
+  it('el admin ve la alerta de discrepancias abiertas, enlazada a Discrepancias, y cuenta en el contador', () => {
+    mockUsuarioActual({ data: { nombre: 'Ana', rol: 'admin', modulos: [] } })
+    mockAlertasStock({ data: [] })
+    mockResumen(2)
+
+    renderHeader()
+
+    expect(screen.getByText('1')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Alertas de stock' }))
+    const enlace = screen.getByRole('link', { name: /Conciliación de caja/ })
+    expect(enlace).toHaveAttribute('href', '/auditoria-analisis?pestana=discrepancias')
+    expect(enlace).toHaveTextContent('2 discrepancia(s) abierta(s)')
+  })
+
+  it('el operador no consulta el resumen de auditoría ni ve la sección', () => {
+    mockUsuarioActual({ data: { nombre: 'Luis', rol: 'operador', modulos: [] } })
+    mockAlertasStock({ data: [] })
+    mockResumen(2)
+
+    renderHeader()
+    fireEvent.click(screen.getByRole('button', { name: 'Alertas de stock' }))
+
+    expect(vi.mocked(useResumenAuditoria)).toHaveBeenLastCalledWith(false)
+    expect(screen.queryByText('Auditorías')).not.toBeInTheDocument()
+  })
+})

@@ -12,6 +12,11 @@ import { Compras } from './Compras'
 vi.mock('../../hooks/useCompras')
 vi.mock('../../hooks/useProveedores')
 vi.mock('../../hooks/useUsuarioActual')
+// 023: los pronósticos no son el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAnalitica', () => {
+  const vacio = () => ({ data: undefined, isLoading: false })
+  return { useVistaPronostico: vi.fn(vacio), useDemandaPronosticada: vi.fn(vacio), useProyeccionDashboard: vi.fn(vacio) }
+})
 vi.mock('../../hooks/useUsuarios')
 
 // 012, "Actualización: el operador solo ve sus propias compras".

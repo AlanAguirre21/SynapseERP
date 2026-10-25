@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { BotonPrimario } from '../../components/common/BotonPrimario'
 import { Tabla, type ColumnaTabla } from '../../components/common/Tabla'
@@ -16,6 +17,7 @@ import { useMovimientosInventario } from '../../hooks/useMovimientosInventario'
 import { useProductos } from '../../hooks/useProductos'
 import { useEditarStockMinimo, useStock } from '../../hooks/useInventario'
 import { useSucursales } from '../../hooks/useSucursales'
+import { useResumenAuditoria } from '../../hooks/useAuditoria'
 import { useUsuarioActual } from '../../hooks/useUsuarioActual'
 import { ModalTraslado } from './ModalTraslado'
 
@@ -124,6 +126,8 @@ export function Inventario() {
         </div>
         <BotonPrimario onClick={() => setTrasladoAbierto(true)}>Traslado</BotonPrimario>
       </div>
+
+      {esAdmin && <DiscrepanciasInventario />}
 
       <div className="tabs" role="tablist">
         {PESTAÑAS.map((p) => (
@@ -566,5 +570,48 @@ function PestañaMovimientos({ sucursalesActivas }: { sucursalesActivas: Sucursa
         />
       )}
     </div>
+  )
+}
+
+// --- Auditoría de inventario (022) --------------------------------------------
+
+// Solo admin: el resumen de auditoría es admin-only en el backend.
+function DiscrepanciasInventario() {
+  const { data: resumen, isLoading } = useResumenAuditoria()
+  if (isLoading || !resumen) return null
+
+  const ultima = resumen.ultima_inventario
+  return (
+    <section className="card" aria-label="Auditoría de inventario">
+      <div className="sectionHeader">
+        <div>
+          <h2 className="sectionTitle">Auditoría de inventario</h2>
+          <p className="pageHint">
+            {ultima
+              ? `Última auditoría: ${new Date(ultima.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })} · ${resumen.abiertas_inventario} discrepancia(s) abierta(s).`
+              : 'Todavía no se ha ejecutado ninguna auditoría de inventario.'}
+          </p>
+        </div>
+        <Link to="/auditoria-analisis?pestana=conteos" className="actionLink">
+          Registrar conteo físico
+        </Link>
+      </div>
+      {resumen.abiertas_por_sucursal.length > 0 ? (
+        <div className="statRow">
+          {resumen.abiertas_por_sucursal.map((fila) => (
+            <Link
+              key={fila.sucursal}
+              to={`/auditoria-analisis?pestana=discrepancias&sucursal=${fila.sucursal}`}
+              className="statTile statTileWarning"
+            >
+              <span className="statLabel">{fila.sucursal_nombre}</span>
+              <span className="statValue">{fila.abiertas}</span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        ultima && <p className="successMessage">Sin discrepancias de inventario abiertas.</p>
+      )}
+    </section>
   )
 }

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Venta } from '../../api/ventas'
+import { useVistaPronostico } from '../../hooks/useAnalitica'
 import { useClientes } from '../../hooks/useClientes'
 import { useProductos } from '../../hooks/useProductos'
 import { useSucursales } from '../../hooks/useSucursales'
@@ -15,6 +16,11 @@ vi.mock('../../hooks/useClientes')
 vi.mock('../../hooks/useProductos')
 vi.mock('../../hooks/useSucursales')
 vi.mock('../../hooks/useUsuarioActual')
+// 023: los pronósticos no son el objeto de estas pruebas; sin datos por defecto.
+vi.mock('../../hooks/useAnalitica', () => {
+  const vacio = () => ({ data: undefined, isLoading: false })
+  return { useVistaPronostico: vi.fn(vacio), useDemandaPronosticada: vi.fn(vacio), useProyeccionDashboard: vi.fn(vacio) }
+})
 vi.mock('../../hooks/useUsuarios')
 vi.mock('../../hooks/useVentas')
 
@@ -68,5 +74,23 @@ describe('Ventas — registros propios', () => {
     preparar('operador', [])
 
     expect(screen.getByText('Todavía no has registrado ventas.')).toBeInTheDocument()
+  })
+})
+
+describe('Ventas — pronóstico de ventas (023)', () => {
+  it('el admin ve la sección de pronóstico con sus dos gráficas', () => {
+    preparar('admin')
+
+    expect(screen.getByRole('region', { name: 'Pronóstico de ventas' })).toBeInTheDocument()
+    expect(useVistaPronostico).toHaveBeenCalledWith({ metrica: 'monto_ventas', horizonte: 'semanas_4' })
+    expect(useVistaPronostico).toHaveBeenCalledWith({ metrica: 'numero_ventas', horizonte: 'semanas_4' })
+  })
+
+  it('el operador no ve la sección ni se consultan los pronósticos', () => {
+    vi.mocked(useVistaPronostico).mockClear()
+    preparar('operador')
+
+    expect(screen.queryByRole('region', { name: 'Pronóstico de ventas' })).not.toBeInTheDocument()
+    expect(useVistaPronostico).not.toHaveBeenCalled()
   })
 })

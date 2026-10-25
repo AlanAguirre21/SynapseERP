@@ -1,0 +1,73 @@
+{% load static tz %}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: letter landscape; margin: 1.5cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #222; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  .subtitulo { color: #666; margin: 0 0 16px; }
+  /* xhtml2pdf no soporta flexbox: el resumen se maqueta con una tabla. */
+  table.resumen { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+  table.resumen td { padding: 3px 0; vertical-align: top; width: 25%; }
+  .etiqueta { color: #666; }
+  table.discrepancias { width: 100%; border-collapse: collapse; }
+  table.discrepancias th {
+    padding: 4px 6px; text-align: left; font-weight: bold; border-bottom: 1.5px solid #000;
+  }
+  table.discrepancias td { padding: 4px 6px; border-bottom: 0.5px solid #ccc; }
+  .numero { text-align: right; }
+  .vacio { color: #666; margin-top: 12px; }
+  .pie { margin-top: 18px; color: #666; font-size: 9px; }
+</style>
+</head>
+<body>
+  <img src="{% static 'ventas/img/logo_synapse.jpg' %}" alt="SynapseERP" width="220">
+  <h1>Reporte de {{ ejecucion.get_tipo_display|lower }} #{{ ejecucion.id }}</h1>
+  <p class="subtitulo">SynapseERP · Auditoría y análisis</p>
+
+  <table class="resumen">
+    <tr>
+      <td><span class="etiqueta">Inicio</span><br>{{ ejecucion.fecha_inicio|localtime|date:"d/m/Y H:i" }}</td>
+      <td><span class="etiqueta">Origen</span><br>{{ ejecucion.get_origen_display }}{% if ejecucion.iniciada_por %} ({{ ejecucion.iniciada_por.nombre_mostrado }}){% endif %}</td>
+      <td><span class="etiqueta">Estado</span><br>{{ ejecucion.get_estado_display }}</td>
+      <td><span class="etiqueta">Elementos revisados · discrepancias</span><br>{{ ejecucion.elementos_revisados }} · {{ ejecucion.discrepancias_encontradas }}</td>
+    </tr>
+  </table>
+
+  {% if ejecucion.mensaje_error %}<p><strong>Error:</strong> {{ ejecucion.mensaje_error }}</p>{% endif %}
+
+  {% if discrepancias %}
+  <table class="discrepancias">
+    <thead>
+      <tr>
+        <th>Categoría</th>
+        <th>Detalle</th>
+        <th>Sucursal</th>
+        <th class="numero">Esperado</th>
+        <th class="numero">Registrado</th>
+        <th class="numero">Diferencia</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in discrepancias %}
+      <tr>
+        <td>{{ fila.discrepancia.get_categoria_display }}</td>
+        <td>{{ fila.discrepancia.descripcion }}</td>
+        <td>{{ fila.discrepancia.sucursal.nombre_sucursal|default:"—" }}</td>
+        <td class="numero">{{ fila.discrepancia.valor_esperado }}</td>
+        <td class="numero">{{ fila.discrepancia.valor_registrado }}</td>
+        <td class="numero">{{ fila.discrepancia.diferencia }}</td>
+        <td>{{ fila.discrepancia.get_estado_display }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="vacio">Esta ejecución no encontró discrepancias.</p>
+  {% endif %}
+
+  <p class="pie">Generado el {{ generado|date:"d/m/Y H:i" }}.</p>
+</body>
+</html>

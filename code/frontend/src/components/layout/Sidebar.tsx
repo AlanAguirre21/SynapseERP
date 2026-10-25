@@ -25,6 +25,7 @@ const ICONO_POR_SLUG: Record<string, NombreIcono> = {
   contabilidad: 'contabilidad',
   configuracion_fiscal: 'configuracionFiscal',
   usuarios: 'usuarios',
+  auditoria_analisis: 'auditoria',
 }
 
 // Agrupación solo de presentación: qué módulos existen y cuáles ve cada rol lo
@@ -33,6 +34,7 @@ const GRUPOS: { titulo: string; slugs: string[] }[] = [
   { titulo: 'Operación', slugs: ['ventas', 'compras', 'produccion', 'inventario'] },
   { titulo: 'Finanzas', slugs: ['facturacion', 'caja', 'contabilidad', 'configuracion_fiscal'] },
   { titulo: 'Administración', slugs: ['catalogo', 'rrhh', 'terceros', 'usuarios', 'sucursales'] },
+  { titulo: 'Análisis', slugs: ['auditoria_analisis'] },
 ]
 
 function agruparModulos(modulos: ModuloMenu[]): { titulo: string; modulos: ModuloMenu[] }[] {
